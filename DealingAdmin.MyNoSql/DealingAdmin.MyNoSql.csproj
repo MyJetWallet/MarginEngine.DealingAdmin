@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MyNoSqlServer.DataReader" Version="1.4.2" />
+        <PackageReference Include="MyNoSqlServer.DataWriter" Version="1.4.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DealingAdmin.Abstractions\DealingAdmin.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

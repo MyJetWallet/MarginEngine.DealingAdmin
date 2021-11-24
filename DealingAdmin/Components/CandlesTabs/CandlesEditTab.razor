@@ -1,0 +1,365 @@
+﻿@using AntDesign
+@using DeakingAdmin.Abstractions
+@using DeakingAdmin.Abstractions.Models
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Abstraction.Candles
+@using System.IO
+@using System.Diagnostics
+@using SimpleTrading.CandlesHistory.Grpc
+@using SimpleTrading.CandlesHistory.Grpc.Contracts
+@using SimpleTrading.CandlesHistory.AzureStorage
+@using System.ComponentModel.DataAnnotations
+
+@inject IInstrumentsCache InstrumentsCache
+@inject ICandlesService CandlesService
+@inject ISimpleTradingCandlesHistoryGrpc CandlesHistoryGrpc
+@inject IUserMessageService MessageService
+
+
+<Row>
+    <Col Span="6" class="m-3">
+       <div class="m-1">Instrument:</div>
+        <Select
+            DataSource="@instrumentIds"
+            @bind-Value="@instrumentId"
+		    TItemValue="string"
+		    TItem="string"
+            EnableSearch>
+        </Select>
+    </Col>
+    <Col Span="2" class="m-3">
+        <div class="m-1">Type:</div>
+        <Select Mode="default"
+                @bind-Value="@candleType"
+                TItemValue="CandleType"
+                TItem="CandleType">
+            <SelectOptions>
+                @foreach (var item in Enum.GetValues<CandleType>())
+                {
+                    <SelectOption
+                        TItemValue="CandleType"
+                        TItem="CandleType"
+                        Value=@item
+                        Label="@item.ToString()"/>
+                }
+            </SelectOptions>
+        </Select>
+    </Col>
+    <Col Span="2" class="m-3">
+        <div class="m-1">Date:</div>
+         <DatePicker
+            @bind-Value="@candleDate"
+            TValue="DateTime"
+            AllowClear="false"
+            Picker="@DatePickerType.Date"/>
+    </Col>
+    <Col Span="1" class="my-3">
+        <div class="m-1">Hour:</div>
+        <Select
+            @bind-Value="@candleTimeHour"
+            TItem="string"
+            TItemValue="int">
+            <SelectOptions>
+                @foreach (var item in hoursList)
+                {
+                    <SelectOption
+                        TItemValue="int"
+                        TItem="string"
+                        Value=@item
+                        Label="@item.ToString("D2")"/>
+                }
+            </SelectOptions>
+        </Select>
+    </Col>
+    <Col Span="1" class="my-3 mx-1">
+        <div class="m-1">Minute:</div>
+        <Select
+            @bind-Value="@candleTimeMinute"
+            TItem="string"
+            TItemValue="int">
+            <SelectOptions>
+                @foreach (var item in minutesList)
+                {
+                    <SelectOption
+                        TItemValue="int"
+                        TItem="string"
+                        Value=@item
+                        Label="@item.ToString("D2")"/>
+                }
+            </SelectOptions>
+        </Select>
+    </Col>
+    <Col Span="2" class="m-4 px-3">
+        <br/>
+        <Button OnClick="@GetCurrentValue">
+            <span>Get Value</span>
+        </Button>
+    </Col>
+</Row>​
+<Row>
+    <Col Span="5">
+        <div class="simple-border mx-2">
+            <Row class="text-centered m-3">
+                <Col Span="24">
+                    <h5>Edit Candle</h5>
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    Open:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@editedCandle.Open"/>
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    Close:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@editedCandle.Close" />
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    High:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@editedCandle.High" />
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    Low:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@editedCandle.Low" />
+                </Col>
+            </Row>
+            <Row class="m-3">                
+                <Col Span="4" class="m-3">
+                </Col>
+                <Col Span="8" class="m-3">
+                    <Button OnClick="@SaveCandle" Disabled="@formIsValid">
+                        <span>Save Candle</span>  
+                    </Button>
+                </Col>
+            </Row>
+        </div>
+    </Col>
+    <Col Span="4">
+        <div class="simple-border mx-2">
+            <Row class="text-centered m-3">
+                <Col Span="24">
+                    <h5>Database Value</h5>
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    Open:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@dbCandle.Open" Disabled />
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    Close:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@dbCandle.Close" Disabled />
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    High:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@dbCandle.High" Disabled />
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    Low:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@dbCandle.Low" Disabled />
+                </Col>
+            </Row>
+         </div>
+    </Col>
+    <Col Span="4">
+        <div class="simple-border mx-2">
+            <Row class="text-centered m-3">
+                <Col Span="24">
+                    <h5>Cache Value</h5>
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    Open:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@cacheCandle.Open" Disabled />
+                </Col>                
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    Close:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@cacheCandle.Close" Disabled />
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    High:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@cacheCandle.High" Disabled />
+                </Col>
+            </Row>
+            <Row>
+                <Col Span="4" class="m-3">
+                    Low:
+                </Col>
+                <Col Span="8" class="m-3">
+                    <AntDesign.InputNumber @bind-Value="@cacheCandle.Low" Disabled />
+                </Col>
+            </Row>
+         </div>
+    </Col>
+</Row>
+
+
+@code {
+    CandleModel editedCandle = new();
+    NullableCandleModel dbCandle = new();
+    NullableCandleModel cacheCandle = new();
+    bool formIsValid = false;
+
+    List<string> instrumentIds = new List<string>();
+    List<int> minutesList = new List<int>();
+    List<int> hoursList = new List<int>();
+
+    string instrumentId;
+    CandleType candleType = CandleType.Minute;
+    DateTime candleDate = DateTime.UtcNow.Date;
+    int candleTimeHour;
+    int candleTimeMinute;
+
+    protected override async Task OnInitializedAsync()
+    {
+        instrumentIds = InstrumentsCache.GetAll().Select(x => x.Id).ToList();
+
+        for (int hh = 0; hh < 24; hh++)
+        {
+            hoursList.Add(hh);
+        }
+
+        for (int mm = 0; mm < 59; mm++)
+        {
+            minutesList.Add(mm);
+        }
+
+        instrumentId = instrumentIds.First();
+        candleTimeHour = hoursList.First();
+        candleTimeMinute = hoursList.First();
+    }
+
+    private DateTime GetSelectedDateTime()
+    {
+        var candleDateTime = candleDate;
+
+        if (candleType == CandleType.Minute)
+        {
+            candleDateTime = new DateTime(
+                candleDate.Year,
+                candleDate.Month,
+                candleDate.Day,
+                candleTimeHour,
+                candleTimeMinute,
+                0);
+        }
+        else if (candleType == CandleType.Minute)
+        {
+            candleDateTime = new DateTime(
+                candleDate.Year,
+                candleDate.Month,
+                candleDate.Day,
+                candleTimeHour,
+                0,
+                0);
+        }
+
+        return candleDateTime;
+    }
+
+    private async Task GetCurrentValue()
+    {
+        var candleDateTime = GetSelectedDateTime();
+
+        var dbCandleResult = await CandlesService.GetDbCandleValue(
+            instrumentId,
+            candleType,
+            candleDateTime);
+
+        dbCandle = dbCandleResult != null
+            ? NullableCandleModel.Create(dbCandleResult)
+            : new NullableCandleModel();
+
+        var cacheCandleResult = await CandlesService.GetDbCandleValue(
+            instrumentId,
+            candleType,
+            candleDateTime);
+
+        cacheCandle = cacheCandleResult != null
+            ? NullableCandleModel.Create(dbCandleResult)
+            : new NullableCandleModel();
+    }
+
+    private async Task SaveCandle()
+    {
+        try
+        {
+            await CandlesService.SaveCandle(new CandleEditContract
+            {
+                DateTime = GetSelectedDateTime(),
+                Open = editedCandle.Open,
+                Close = editedCandle.Close,
+                High = editedCandle.High,
+                Low = editedCandle.Low
+            });
+
+            await MessageService.SuccessAsync("Candle value was successfulyl saved");
+        }
+        catch (Exception e)
+        {
+            await MessageService.ErrorAsync(e.Message, e);
+        }
+    }
+
+    public class NullableCandleModel
+    {
+        public DateTime? DateTime { get; set; }
+        public double? Open { get; set; }
+        public double? Close { get; set; }
+        public double? High { get; set; }
+        public double? Low { get; set; }
+
+        public static NullableCandleModel Create(ICandleModel src)
+        {
+            return new NullableCandleModel
+            {
+                DateTime = src.DateTime,
+                Open = src.Open,
+                Close = src.Close,
+                High = src.Close,
+                Low = src.Low
+            };
+        }
+    }
+}
+

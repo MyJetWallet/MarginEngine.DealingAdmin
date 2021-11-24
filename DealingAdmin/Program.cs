@@ -13,10 +13,14 @@ var settingsModel = SettingsReader.ReadSettings<SettingsModel>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddAntDesign();
-            
-builder.Services.BindMyNoSql(settingsModel, liveDemoManager);
-builder.Services.InitLiveDemoManager(liveDemoManager);
 
+builder.Services.BindLogger(settingsModel);
+var serviceBusTcpClient = builder.Services.BindServiceBus(settingsModel);
+builder.Services.BindGrpcServices(settingsModel);
+builder.Services.BindMyNoSql(settingsModel, liveDemoManager);
+builder.Services.BindAzureStorage(settingsModel);
+builder.Services.InitLiveDemoManager(liveDemoManager);
+builder.Services.BindServices(settingsModel);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -37,3 +41,5 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
+
+serviceBusTcpClient.Start();

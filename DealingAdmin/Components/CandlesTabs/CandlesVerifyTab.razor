@@ -1,0 +1,219 @@
+﻿@using AntDesign
+@using DeakingAdmin.Abstractions
+@using DeakingAdmin.Abstractions.Models
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Abstraction.Candles
+@using System.IO
+@using System.Diagnostics
+@using SimpleTrading.CandlesHistory.Grpc
+@using SimpleTrading.CandlesHistory.Grpc.Contracts
+
+@inject IInstrumentsCache InstrumentsCache
+@inject ICandlesService CandlesService
+@inject ISimpleTradingCandlesHistoryGrpc CandlesHistoryGrpc
+@inject IUserMessageService MessageService
+
+<Title Level="4">Verify Candles History</Title>
+<Row>
+    <Col Xs="10" Sm="8" Md="6" Lg="4" Xl="3" class="m-3">
+        <div class="m-1">Source to check:</div>
+        <Select Mode="default"
+                @bind-Value="@sourceType"
+                TItemValue="CandlesSourceType"
+                TItem="CandlesSourceType">
+            <SelectOptions>
+                @foreach (var item in Enum.GetValues<CandlesSourceType>())
+                {
+                    <SelectOption
+                        TItemValue="CandlesSourceType"
+                        TItem="CandlesSourceType"
+                        Value=@item
+                        Label="@item.ToString()"/>
+                }
+            </SelectOptions>
+        </Select>
+    </Col>
+    <Col Xs="24" Sm="18" Md="14" Lg="10" Xl="6" class="m-3">
+        <div class="m-1">Instrument:</div>
+        <Select
+            DataSource="@instrumentIds"
+            @bind-Value="@instrumentId"
+		    TItemValue="string"
+		    TItem="string"
+            EnableSearch>
+        </Select>
+    </Col>
+    <Col Xs="10" Sm="8" Md="6" Lg="4" Xl="3" class="m-3">
+        <div class="m-1">Type:</div>
+        <Select Mode="default"
+                @bind-Value="@candleType"
+                TItemValue="CandleType"
+                TItem="CandleType">
+            <SelectOptions>
+                @foreach (var item in Enum.GetValues<CandleType>())
+                {
+                    <SelectOption
+                        TItemValue="CandleType"
+                        TItem="CandleType"
+                        Value=@item
+                        Label="@item.ToString()"/>
+                }
+            </SelectOptions>
+        </Select>
+    </Col>
+</Row>
+<Row>
+    <Col Xs="24" Sm="24" Md="20" Lg="16" Xl="8" class="m-3">
+        <div>Candles History File:</div>
+        <InputFile OnChange="@FileChanged"/>
+    </Col>
+    <Col Xs="6" Sm="6" Md="4" Lg="4" Xl="4" class="mx-3">
+        <br/>
+        <Button Icon="upload" OnClick="@VerifyCandles">
+            <span>Verify</span>
+        </Button>
+    </Col>
+</Row>
+<Divider />
+<Row class="m-3">
+    <h5>Verification Result: </h5><span style="@verifyResultStyle">@verifyResultText</span>
+</Row>
+@if (resultConformity.HasValue)
+{
+    <Row class="m-3">
+        Total Count: @verificationResult.TotalCount
+    </Row>
+    @if (showActualCount)
+    {
+        <Row> class="m-3"
+            Actual Count: @verificationResult.ActualCount
+        </Row>
+    }
+    <Row class="m-3">
+        Scanned Count: @verificationResult.ScannedCount
+    </Row>
+    <Row class="m-3">
+        Corresponding Count: <span style="color:green">@verificationResult.CorrespondingCount</span>
+    </Row>
+    <Row class="m-3">
+        Differing Count:  <span style="color:orange">@verificationResult.DifferingCount</span>
+    </Row>
+    <Row class="m-3"> 
+        Missed Count: <span style="color:red">@verificationResult.MissedCount</span>
+    </Row>
+}
+
+@code {
+    public enum CandlesSourceType
+    {
+        Database,
+        Cache
+    }
+
+    bool isLoading = false;
+    List<string> instrumentIds;
+    string instrumentId;
+    CandleType candleType = CandleType.Minute;
+    IBrowserFile candlesFile;
+    CandlesSourceType sourceType = CandlesSourceType.Database;
+    bool stopWithFirstDiff = false;
+    string verifyResultStyle = "";
+    string verifyResultText = "";
+    bool showActualCount = false;
+    CandlesVerificationResult verificationResult = new CandlesVerificationResult();
+    float? resultConformity;
+
+    protected override async Task OnInitializedAsync()
+    {
+        instrumentIds = InstrumentsCache.GetAll().Select(x => x.Id).ToList();
+        instrumentId = instrumentIds.First();
+    }
+
+    private void FileChanged(InputFileChangeEventArgs e)
+    {
+        candlesFile = e.File;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task VerifyCandles()
+    {
+        try
+        {
+            var maxFileSizeInMb = 15;
+            var fileSizeInBytes = maxFileSizeInMb * 1024 * 1024;
+
+            if (candlesFile.Size > fileSizeInBytes)
+            {
+                await MessageService.WarningAsync($"Max file size is {maxFileSizeInMb} MB");
+                return;
+            }
+
+            if (candlesFile.ContentType != "text/csv")
+            {
+                await MessageService.WarningAsync("You can only verify CSV file!");
+                return;
+            }
+
+            isLoading = true;
+            var candles = await CandlesService.ParseCandlesByType(candleType, candlesFile);
+
+            verificationResult = sourceType == CandlesSourceType.Database
+                ? await CandlesService.VerifyDbCandles(
+                    instrumentId,
+                    candles,
+                    candleType,
+                    stopWithFirstDiff)
+                : await CandlesService.VerifyCacheCandles(
+                    instrumentId,
+                    candles,
+                    candleType,
+                    stopWithFirstDiff);
+
+            showActualCount = candleType == CandleType.Minute || candleType == CandleType.Hour;
+            resultConformity = (verificationResult.CorrespondingCount / verificationResult.ActualCount) * 100;
+            verifyResultStyle = GetVerifyResultStyle();
+            verifyResultText = GetVerifyResultText();
+        }
+        catch (Exception e)
+        {
+            await MessageService.ErrorAsync(e.Message, e);
+            verificationResult = new CandlesVerificationResult();
+        }
+
+        isLoading = false;
+    }
+
+    private string GetVerifyResultStyle()
+    {
+        if (sourceType == CandlesSourceType.Cache && candleType == CandleType.Minute)
+        {
+            return resultConformity.HasValue && resultConformity.Value > 95
+               ? "color:green"
+               : "color:red";
+        }
+        else
+        {
+            return resultConformity.HasValue && resultConformity.Value == 100
+              ? "color:green"
+              : "color:red"; 
+        }
+    }
+
+    private string GetVerifyResultText()
+    {
+        if (!resultConformity.HasValue)
+        {
+            return "";
+        }
+
+        if (!stopWithFirstDiff || this.resultConformity == 100)
+        {
+            return $"{resultConformity.Value.ToString("N2")}% Conformity";
+        }
+
+        return  "Inconsistent record detected";
+    }
+}
+

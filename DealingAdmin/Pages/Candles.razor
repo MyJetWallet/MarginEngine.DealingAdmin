@@ -1,0 +1,34 @@
+﻿@page "/Candles"
+
+@using AntDesign
+@using DealingAdmin.Components.CandlesTabs
+
+<PageTitle>Candles</PageTitle>
+
+<Tabs TabBarStyle="" OnChange="@OnTabSelect" DefaultActiveKey="@SelectedTabKey" Animated="@false">
+    <TabPane Tab="UPLOAD" Key="CandlesUpload" ForceRender="true">
+        <CandlesUploadTab/>
+	</TabPane>
+    <TabPane Tab="VERIFY" Key="CandlesVerify" ForceRender="true">
+        <CandlesVerifyTab/>
+    </TabPane>
+    <TabPane Tab="EDIT" Key="CandlesEdit" ForceRender="true">
+        <CandlesEditTab/>
+    </TabPane>
+</Tabs>
+
+@code {
+    private string SelectedTabKey { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        SelectedTabKey = "CandlesUpload";
+        await base.OnInitializedAsync();
+    }
+
+    private void OnTabSelect(string tab)
+    {
+        SelectedTabKey = tab;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,165 @@
+﻿@using AntDesign
+@using DeakingAdmin.Abstractions
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Abstraction.Candles
+@using System.IO
+@using System.Diagnostics
+@using SimpleTrading.CandlesHistory.Grpc
+@using SimpleTrading.CandlesHistory.Grpc.Contracts
+
+@inject IInstrumentsCache InstrumentsCache
+@inject ICandlesService CandlesService
+@inject ISimpleTradingCandlesHistoryGrpc CandlesHistoryGrpc
+@inject IUserMessageService MessageService
+
+<Title Level="4">Upload Candles History</Title>
+<Row>
+    <Col Xs="24" Sm="24" Md="18" Lg="14" Xl="6" class="m-3">
+        <div class="m-1">Instrument:</div>
+        <Select
+            DataSource="@instrumentIds"
+            @bind-Value="@instrumentId"
+		    TItemValue="string"
+		    TItem="string"
+            EnableSearch>
+        </Select>
+    </Col>
+    <Col Xs="16" Sm="12" Md="6" Lg="6" Xl="4" class="m-3">
+        <div class="m-1">Type:</div>
+        <Select Mode="default"
+                @bind-Value="@candleType"
+                TItemValue="CandleType"
+                TItem="CandleType">
+            <SelectOptions>
+                @foreach (var item in Enum.GetValues<CandleType>())
+                {
+                    <SelectOption
+                        TItemValue="CandleType"
+                        TItem="CandleType"
+                        Value=@item
+                        Label="@item.ToString()"/>
+                }
+            </SelectOptions>
+        </Select>
+    </Col>
+</Row>
+<Row>
+    <Col Xs="24" Sm="24" Md="20" Lg="16" Xl="8" class="m-3">
+        <div>Candles History File:</div>
+        <InputFile OnChange="@FileChanged"/>
+    </Col>
+    <Col Xs="6" Sm="6" Md="4" Lg="4" Xl="4" class="mx-3">
+        <br/>
+        <Button Icon="upload" OnClick="@UploadCandles">
+            <span>Upload</span>
+        </Button>
+    </Col>
+</Row>
+
+<Divider />
+
+<Row>
+    <Title Level="4">Refresh Candles Cache</Title>
+</Row>
+<Row>
+    <Col Xs="24" Sm="24" Md="18" Lg="14" Xl="6" class="m-3">
+        <Select
+            DataSource="@instrumentIds"
+            @bind-Value="@instrumentId"
+		    TItemValue="string"
+		    TItem="string"
+            EnableSearch>
+        </Select>
+    </Col>
+    <Col Xs="16" Sm="12" Md="6" Lg="6" Xl="4" class="m-3">
+        <Button Icon="reload" OnClick="@RefreshCache">
+            <span>Refresh</span>
+        </Button>
+    </Col>
+</Row>
+
+@code {
+    bool isLoading = false;
+    List<string> instrumentIds = new List<string>();
+    string instrumentId;
+    CandleType candleType = CandleType.Minute;
+    IBrowserFile candlesFile;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        instrumentIds = InstrumentsCache.GetAll().Select(x => x.Id).ToList();
+        instrumentId = instrumentIds.First();
+    }
+
+    private void FileChanged(InputFileChangeEventArgs e)
+    {
+        candlesFile = e.File;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UploadCandles()
+    {
+        try
+        {
+            var maxFileSizeInMb = 15;
+            var fileSizeInBytes = maxFileSizeInMb * 1024 * 1024;
+
+            if (candlesFile.Size > fileSizeInBytes)
+            {
+                await MessageService.WarningAsync($"Max file size is {maxFileSizeInMb} MB");
+                return;
+            }
+
+            if (candlesFile.ContentType != "text/csv")
+            {
+                await MessageService.WarningAsync("You can only upload CSV file!");
+                return;
+            }
+
+            isLoading = true;
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            var candles = await CandlesService.ParseCandlesByType(candleType, candlesFile);
+            await CandlesService.BulkWriteCandles(instrumentId, candleType, candles);
+            stopwatch.Stop();
+
+            await MessageService.SuccessAsync(
+            $"Instrument {instrumentId} was recorded, time elapsed: {stopwatch.Elapsed}");
+        }
+        catch (Exception e)
+        {
+            await MessageService.ErrorAsync(e.Message, e);
+        }
+
+        isLoading = false;
+    }
+
+    private async Task RefreshCache()
+    {
+        if (string.IsNullOrEmpty(instrumentId))
+        {
+            await MessageService.WarningAsync($"Instrument must be not empty");
+            return;
+        }
+
+        var grpcResult = await CandlesHistoryGrpc.ReloadInstrumentAsync(
+            new ReloadInstrumentContract
+                {
+                    InstrumentId = instrumentId
+                });
+
+        if (grpcResult.Result)
+        {
+            await MessageService.SuccessAsync($"Cache was updated");
+        }
+        else
+        {
+            await MessageService.WarningAsync($"Can't run update because cache renewal is already in progress");
+        }
+    }
+}

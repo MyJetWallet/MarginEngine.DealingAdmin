@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DealingAdmin.Abstractions",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DealingAdmin.MyNoSql", "DealingAdmin.MyNoSql\DealingAdmin.MyNoSql.csproj", "{1D8D2317-AAF8-49CA-9AED-CAA222059408}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeakingAdmin.Services", "DeakingAdmin.Services\DeakingAdmin.Services.csproj", "{EE4EEEF7-6D12-41FA-A5FE-EB4A8E13913A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DealingAdmin.Services", "DealingAdmin.Services\DealingAdmin.Services.csproj", "{A36746DD-CEB1-4211-8CE7-48BA05A0A36A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{1D8D2317-AAF8-49CA-9AED-CAA222059408}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D8D2317-AAF8-49CA-9AED-CAA222059408}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D8D2317-AAF8-49CA-9AED-CAA222059408}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EE4EEEF7-6D12-41FA-A5FE-EB4A8E13913A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EE4EEEF7-6D12-41FA-A5FE-EB4A8E13913A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EE4EEEF7-6D12-41FA-A5FE-EB4A8E13913A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EE4EEEF7-6D12-41FA-A5FE-EB4A8E13913A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A36746DD-CEB1-4211-8CE7-48BA05A0A36A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A36746DD-CEB1-4211-8CE7-48BA05A0A36A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A36746DD-CEB1-4211-8CE7-48BA05A0A36A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A36746DD-CEB1-4211-8CE7-48BA05A0A36A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,12 +1,16 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
 using DeakingAdmin.Abstractions;
 using DeakingAdmin.Abstractions.Models;
 using DotNetCoreDecorators;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Http;
 using Serilog.Core;
 using SimpleTrading.Abstraction.Candles;
 using SimpleTrading.Abstraction.Trading.Settings;
@@ -17,7 +21,7 @@ using SimpleTrading.CandlesHistory.Grpc.Models;
 using SimpleTrading.GrpcTemplate;
 using SimpleTrading.ServiceBus.Contracts;
 
-namespace DeakingAdmin.Services
+namespace DealingAdmin.Services
 {
     public class CandlesServiceSettings
     {

@@ -5,18 +5,18 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="AntDesign" Version="0.9.4" />
+        <PackageReference Include="AntDesign" Version="0.10.2" />
         <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
         <PackageReference Include="MyNoSqlServer.DataReader" Version="1.4.2" />
         <PackageReference Include="SimpleTrading.SettingsReader" Version="1.1.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
-		<PackageReference Include="Serilog.Sinks.Seq" Version="5.0.1" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="5.1.0" />
 		<PackageReference Include="SerilogWeb.Classic" Version="5.1.66" />
-		<PackageReference Include="SimpleTrading.ServiceBus" Version="4.0.13" />
+		<PackageReference Include="SimpleTrading.ServiceBus" Version="4.0.16" />
         <PackageReference Include="SimpleTrading.GrpcTemplate" Version="1.0.4" />
 		<PackageReference Include="SimpleTrading.CandlesHistory.AzureStorage" Version="1.0.20" />
 		<PackageReference Include="SimpleTrading.CandlesHistory.Grpc" Version="1.0.17" />
-		<PackageReference Include="SimpleTrading.MyNoSqlRepositories" Version="2.0.40" />
+		<PackageReference Include="SimpleTrading.MyNoSqlRepositories" Version="2.0.41" />
     </ItemGroup>
     
     <ItemGroup>

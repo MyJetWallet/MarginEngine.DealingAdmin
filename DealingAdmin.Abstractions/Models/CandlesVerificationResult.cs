@@ -1,4 +1,4 @@
-﻿namespace DeakingAdmin.Abstractions.Models
+﻿namespace DealingAdmin.Abstractions.Models
 {
     public class CandlesVerificationResult
     {

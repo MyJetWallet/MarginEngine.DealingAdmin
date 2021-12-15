@@ -1,7 +1,7 @@
 ﻿@using AntDesign
-@using DeakingAdmin.Abstractions
-@using DeakingAdmin.Abstractions.Models
 @using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.Trading.Settings
 @using SimpleTrading.Abstraction.Candles
@@ -264,7 +264,11 @@
             minutesList.Add(mm);
         }
 
-        instrumentId = instrumentIds.First();
+        if (instrumentIds.Any())
+        {
+            instrumentId = instrumentIds.First();
+        }
+
         candleTimeHour = hoursList.First();
         candleTimeMinute = hoursList.First();
     }

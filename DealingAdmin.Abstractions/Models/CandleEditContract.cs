@@ -1,7 +1,7 @@
 ﻿using SimpleTrading.Abstraction.Candles;
 using System;
 
-namespace DeakingAdmin.Abstractions.Models
+namespace DealingAdmin.Abstractions.Models
 {
     public class CandleEditContract : ICandleModel
     {

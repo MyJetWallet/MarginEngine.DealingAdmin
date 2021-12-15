@@ -20,7 +20,7 @@
     </ItemGroup>
     
     <ItemGroup>
-      <ProjectReference Include="..\DeakingAdmin.Services\DeakingAdmin.Services.csproj" />
+      <ProjectReference Include="..\DealingAdmin.Services\DealingAdmin.Services.csproj" />
       <ProjectReference Include="..\DealingAdmin.Abstractions\DealingAdmin.Abstractions.csproj" />
       <ProjectReference Include="..\DealingAdmin.MyNoSql\DealingAdmin.MyNoSql.csproj" />
       <ProjectReference Include="..\DealingAdmin.Services\DealingAdmin.Services.csproj" />

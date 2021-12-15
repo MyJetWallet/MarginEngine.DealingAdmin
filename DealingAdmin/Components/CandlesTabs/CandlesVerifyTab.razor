@@ -1,7 +1,6 @@
 ﻿@using AntDesign
-@using DeakingAdmin.Abstractions
-@using DeakingAdmin.Abstractions.Models
 @using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.Trading.Settings
 @using SimpleTrading.Abstraction.Candles
@@ -71,7 +70,7 @@
     </Col>
     <Col Xs="6" Sm="6" Md="4" Lg="4" Xl="4" class="mx-3">
         <br/>
-        <Button Icon="upload" OnClick="@VerifyCandles">
+        <Button Icon="upload" OnClick="@VerifyCandles" Disabled="@(candlesFile == null)">
             <span>Verify</span>
         </Button>
     </Col>
@@ -128,7 +127,11 @@
     protected override async Task OnInitializedAsync()
     {
         instrumentIds = InstrumentsCache.GetAll().Select(x => x.Id).ToList();
-        instrumentId = instrumentIds.First();
+
+        if (instrumentIds.Any())
+        {
+            instrumentId = instrumentIds.First();
+        }
     }
 
     private void FileChanged(InputFileChangeEventArgs e)
@@ -143,6 +146,12 @@
         {
             var maxFileSizeInMb = 15;
             var fileSizeInBytes = maxFileSizeInMb * 1024 * 1024;
+
+            if (candlesFile == null)
+            {
+                await MessageService.WarningAsync($"Choose a file to upload");
+                return;
+            }
 
             if (candlesFile.Size > fileSizeInBytes)
             {

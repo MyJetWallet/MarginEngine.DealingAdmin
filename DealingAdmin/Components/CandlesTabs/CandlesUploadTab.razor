@@ -1,5 +1,4 @@
 ﻿@using AntDesign
-@using DeakingAdmin.Abstractions
 @using DealingAdmin.Abstractions
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.Trading.Settings
@@ -52,7 +51,7 @@
     </Col>
     <Col Xs="6" Sm="6" Md="4" Lg="4" Xl="4" class="mx-3">
         <br/>
-        <Button Icon="upload" OnClick="@UploadCandles">
+        <Button Icon="upload" OnClick="@UploadCandles" Disabled="@(candlesFile == null)">
             <span>Upload</span>
         </Button>
     </Col>
@@ -91,7 +90,11 @@
     protected override async Task OnInitializedAsync()
     {
         instrumentIds = InstrumentsCache.GetAll().Select(x => x.Id).ToList();
-        instrumentId = instrumentIds.First();
+
+        if (instrumentIds.Any())
+        {
+            instrumentId = instrumentIds.First();
+        }
     }
 
     private void FileChanged(InputFileChangeEventArgs e)
@@ -107,13 +110,19 @@
             var maxFileSizeInMb = 15;
             var fileSizeInBytes = maxFileSizeInMb * 1024 * 1024;
 
+            if (candlesFile == null)
+            {
+                await MessageService.WarningAsync($"Choose a file to upload");
+                return;
+            }
+
             if (candlesFile.Size > fileSizeInBytes)
             {
                 await MessageService.WarningAsync($"Max file size is {maxFileSizeInMb} MB");
                 return;
             }
 
-            if (candlesFile.ContentType != "text/csv")
+            if (!candlesFile.Name.EndsWith(".csv"))
             {
                 await MessageService.WarningAsync("You can only upload CSV file!");
                 return;

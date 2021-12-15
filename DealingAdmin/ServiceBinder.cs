@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using DeakingAdmin.Abstractions;
+using DealingAdmin.Abstractions;
 using DealingAdmin.Abstractions;
 using DealingAdmin.MyNoSql;
 using DealingAdmin.Services;
@@ -61,8 +61,8 @@ namespace DealingAdmin
             });
 
             services.AddSingleton<ICandlesService, CandlesService>();
+            services.AddSingleton<IPriceAggregator, PriceAggregator>();
 
-            
         }
 
         public static void InitLiveDemoManager(this IServiceCollection services, LiveDemoServiceMapper mapper)

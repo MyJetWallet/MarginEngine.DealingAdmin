@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using DealingAdmin.Abstractions;
-using DealingAdmin.Abstractions;
 using DealingAdmin.MyNoSql;
 using DealingAdmin.Services;
 using DealingAdmin.Shared.Services;
@@ -12,6 +11,7 @@ using MyServiceBus.TcpClient;
 using ProtoBuf.Grpc.Client;
 using Serilog;
 using SimpleTrading.Abstraction.Candles;
+using SimpleTrading.Abstraction.Trading.Settings;
 using SimpleTrading.CandlesHistory.AzureStorage;
 using SimpleTrading.CandlesHistory.Grpc;
 using SimpleTrading.MyNoSqlRepositories;
@@ -85,7 +85,7 @@ namespace DealingAdmin
             services.AddSingleton(MyNoSqlFactory.CreateInstrumentSubGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
             services.AddSingleton(MyNoSqlFactory.CreateInstrumentGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
             services.AddSingleton(MyNoSqlFactory.CreateInstrumentGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
-            services.AddSingleton(tcpConnection.CreateInstrumentsMyNoSqlReadCache());
+            services.AddSingleton<IInstrumentsCache>(tcpConnection.CreateInstrumentsMyNoSqlReadCache());
 
             var liveTradingProfileRepository =
                 MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, true);

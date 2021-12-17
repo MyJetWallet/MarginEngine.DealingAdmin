@@ -75,7 +75,7 @@ namespace DealingAdmin
             SettingsModel settingsModel
             , LiveDemoServiceMapper liveDemoServicesMapper)
         {
-            var tcpConnection = new MyNoSqlTcpClient(() => settingsModel.MyNoSqlTcpUrl, AppName);
+            var tcpConnection = new MyNoSqlTcpClient(() => settingsModel.PricesMyNoSqlServerReader, AppName);
 
 
             services.AddSingleton(tcpConnection.CreateTickerMyNoSqlReader());

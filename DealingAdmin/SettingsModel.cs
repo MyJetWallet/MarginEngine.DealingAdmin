@@ -14,6 +14,9 @@ namespace DealingAdmin
         [YamlProperty("DealingAdmin.PricesMyServiceBusReader")]
         public string PricesMyServiceBusReader { get; set; }
 
+        [YamlProperty("DealingAdmin.PricesMyNoSqlServerReader")]
+        public string PricesMyNoSqlServerReader { get; set; }
+
         [YamlProperty("DealingAdmin.CandlesHistoryServiceUrl")]
         public string CandlesHistoryServiceUrl { get; set; }
 

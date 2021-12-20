@@ -11,6 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 var liveDemoManager = new LiveDemoServiceMapper();
 var settingsModel = SettingsReader.ReadSettings<SettingsModel>();
 
+Console.WriteLine("------------------------------");
+Console.WriteLine($"PricesMyNoSqlServerReader port: '{settingsModel.PricesMyNoSqlServerReader}'");
+Console.WriteLine("------------------------------");
 // Add services to the container.
 
 builder.Services.AddRazorPages();

@@ -8,9 +8,8 @@
 @using System.Diagnostics
 @using SimpleTrading.CandlesHistory.Grpc
 @using SimpleTrading.CandlesHistory.Grpc.Contracts
-@using SimpleTrading.MyNoSqlRepositories.Trading.Instruments
 
-@inject InstrumentsMyNoSqlReadCache InstrumentsCache
+@inject IInstrumentsCache InstrumentsCache
 @inject ICandlesService CandlesService
 @inject ISimpleTradingCandlesHistoryGrpc CandlesHistoryGrpc
 @inject IUserMessageService MessageService

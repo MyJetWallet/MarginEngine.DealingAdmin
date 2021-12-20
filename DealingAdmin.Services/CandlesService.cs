@@ -13,6 +13,7 @@ using SimpleTrading.CandlesHistory.AzureStorage;
 using SimpleTrading.CandlesHistory.Grpc;
 using SimpleTrading.CandlesHistory.Grpc.Contracts;
 using SimpleTrading.CandlesHistory.Grpc.Models;
+using SimpleTrading.MyNoSqlRepositories.Trading.Instruments;
 using SimpleTrading.ServiceBus.Contracts;
 using SimpleTrading.ServiceBus.PublisherSubscriber.BidAsk;
 
@@ -39,14 +40,14 @@ namespace DealingAdmin.Services
 
         public static CandlesHistoryMyServiceBusPublisher _candlesHistoryPublisher;
 
-        private readonly IInstrumentsCache _instrumentsCache;
+        private readonly InstrumentsMyNoSqlReadCache _instrumentsCache; // IInstrumentsCache
 
         private readonly Logger _logger;
 
         public CandlesService(
             ISimpleTradingCandlesHistoryGrpc candlesHistoryGrpc,
             ICandlesPersistentStorage candlesPersistentStorage,
-            IInstrumentsCache instrumentsCache, //InstrumentsMyNoSqlReadCache
+            InstrumentsMyNoSqlReadCache instrumentsCache, //InstrumentsMyNoSqlReadCache
             CandlesHistoryMyServiceBusPublisher candlesHistoryPublisher,
             CandlesServiceSettings serviceSettings,
             Logger logger)

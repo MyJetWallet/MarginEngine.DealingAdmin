@@ -7,9 +7,10 @@
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.Caches.ActiveOrders
 @using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.MyNoSqlRepositories.Trading.Instruments
 
 @inject LiveDemoServiceMapper LiveDemoServices
-@inject IInstrumentsCache InstrumentsCache
+@inject InstrumentsMyNoSqlReadCache InstrumentsCache
 @inject IUserMessageService MessageService
 
 <div id="ActivePositionsRegion">

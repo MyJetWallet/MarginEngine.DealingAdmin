@@ -18,6 +18,7 @@ using SimpleTrading.Abstraction.Trading.Settings;
 using SimpleTrading.CandlesHistory.AzureStorage;
 using SimpleTrading.CandlesHistory.Grpc;
 using SimpleTrading.MyNoSqlRepositories;
+using SimpleTrading.MyNoSqlRepositories.Cache.ActiveOrders;
 using SimpleTrading.ServiceBus.PublisherSubscriber.BidAsk;
 using SimpleTrading.ServiceBus.PublisherSubscriber.UnfilteredBidAsk;
 
@@ -29,7 +30,7 @@ namespace DealingAdmin
 
         public IStDataReader StReader { get; set; }
 
-        public IActiveOrdersCacheReader ActiveOrdersReader { get; set; }
+        public ActiveOrdersCacheNoSqlReader ActiveOrdersReader { get; set; }
 }
 
     public class LiveDemoServiceMapper
@@ -95,7 +96,7 @@ namespace DealingAdmin
             services.AddSingleton(MyNoSqlFactory.CreateInstrumentGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
 
             services.AddSingleton<IBidAskCache>(tcpConnection.CreateBidAskMyNoSqlCache());
-            services.AddSingleton<IInstrumentsCache>(tcpConnection.CreateInstrumentsMyNoSqlReadCache());
+            services.AddSingleton(tcpConnection.CreateInstrumentsMyNoSqlReadCache());
 
             liveDemoServicesMapper.InitService(true,
                services => services.ActiveOrdersReader = MyNoSqlServerFactory.CreateActiveOrdersCacheReader(tcpConnection, true));

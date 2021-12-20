@@ -1,0 +1,28 @@
+﻿@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.BidAsk
+
+<div style="font-family:courier">
+    <div>Ask: @ask.ToString($"F{Digits}")</div>
+    <div>Bid: @bid.ToString($"F{Digits}")</div>
+    <div>Spread: @spread.ToString("F0")</div>
+</div>
+
+@code {
+    [Parameter]
+    public BidAskModel BidAsk { get; set; }
+
+    [Parameter]
+    public int Digits { get; set; }
+
+    private double ask;
+    private double bid;
+    private double spread;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ask = BidAsk.Ask;
+        bid = BidAsk.Bid;
+        spread = FxUtils.CalcSpread(BidAsk, Digits);
+    }
+}

@@ -9,8 +9,12 @@ namespace DealingAdmin.Abstractions
         
         public void UpdateBidAsk(IBidAsk bidAsk);
 
+        public void UpdateUnfilteredBidAsk(IUnfilteredBidAsk bidAsk);
+
         public IBidAsk GetBidAsk(string instrumentId);
 
         public IEnumerable<IBidAsk> GetBidAskCache();
+
+        public IEnumerable<IUnfilteredBidAsk> GetUnfilteredBidAskCache();
     }
 }

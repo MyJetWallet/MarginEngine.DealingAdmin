@@ -1,19 +1,95 @@
 ﻿@inherits LayoutComponentBase
+@using AntDesign
 
 <PageTitle>DealingAdmin</PageTitle>
-
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+<Layout>
+    <Sider Class="site-sidebar" Collapsible Collapsed=@_sidebarCollapsed OnCollapse="OnCollapse"
+            Style="overflow: auto;">
+        <a class="logo" href="">
+            @if (_sidebarCollapsed)
+            {
+                <Icon Type="home" Theme="outline" />
+            }
+            @($"{(_sidebarCollapsed ? "" : "Dashboard")}")
+        </a>
+        <Sidebar />
+    </Sider>
+    <Layout Class="site-layout" Style="@($"margin-left: {(_sidebarCollapsed ? "80px" : "200px")}; transition: 0.2s;")">
+        <AntDesign.Content Class="site-content">
             @Body
-        </article>
-    </main>
-</div>
+        </AntDesign.Content>
+    </Layout>
+</Layout>
+
+@code {
+    void OnCollapse(bool isCollapsed)
+    {
+        _sidebarCollapsed = isCollapsed;
+    }
+
+    bool _sidebarCollapsed;
+
+    void SidebarToggle()
+    {
+        _sidebarCollapsed = !_sidebarCollapsed;
+    }
+}
+
+<style>
+    .trigger {
+        font-size: 22px;
+        padding: 0 24px;
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+
+    .trigger:hover {
+        color: #1890ff;
+    }
+
+    .logo {
+        font-weight: bold;
+        font-size: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        height: 50px;
+        background: #002140;
+    }
+
+    .site-sidebar::-webkit-scrollbar-track {
+        background-color: #001529 !important;
+    }
+
+    .site-sidebar::-webkit-scrollbar-thumb {
+        background-color: transparent !important;
+    }
+
+    .site-sidebar:hover::-webkit-scrollbar-thumb {
+        background-color: #2f414f !important;
+    }
+
+    .site-header {
+        overflow: auto;
+        padding: 0;
+        z-index: 1;
+        width: 100%;
+        background: #f0f2f5;
+        height: 50px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .site-content {
+        padding-left: 10px;
+        background: white;
+        min-height: calc(100vh - 40px);
+    }
+
+    .site-sidebar {
+        height: calc(100vh - 48px);
+        position: fixed;
+        left: 0;
+        z-index: 2;
+    }
+</style>

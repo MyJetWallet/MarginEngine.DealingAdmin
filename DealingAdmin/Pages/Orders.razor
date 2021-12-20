@@ -1,0 +1,34 @@
+﻿@page "/Orders"
+
+@using AntDesign
+@using DealingAdmin.Components.OrdersTabs
+
+<PageTitle>Positions &amp; Orders</PageTitle>
+
+<Tabs TabBarStyle="" OnChange="@OnTabSelect" DefaultActiveKey="@SelectedTabKey" Animated="@false">
+    <TabPane Tab="ACTIVE POSITIONS" Key="ActivePositions" ForceRender="true">
+        <ActivePositionsTab/>
+	</TabPane>
+    <TabPane Tab="PENDING ORDERS" Key="PendingOrders" ForceRender="true">
+         <PendingOrdersTab/>
+    </TabPane>
+    <TabPane Tab="HISTORY" Key="ClosedOrders" ForceRender="true">
+         <ClosedOrdersTab/>
+    </TabPane>
+</Tabs>
+
+@code {
+    private string SelectedTabKey { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        SelectedTabKey = "ActivePositionss";
+        await base.OnInitializedAsync();
+    }
+
+    private void OnTabSelect(string tab)
+    {
+        SelectedTabKey = tab;
+        StateHasChanged();
+    }
+}

@@ -89,7 +89,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        instrumentIds = InstrumentsCache.GetAll().Select(x => x.Id).ToList();
+        var instList = InstrumentsCache.GetAll().ToList();
+        instrumentIds = instList.Select(x => x.Id).ToList();
 
         if (instrumentIds.Any())
         {

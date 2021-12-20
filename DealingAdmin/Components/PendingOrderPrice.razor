@@ -1,0 +1,62 @@
+﻿@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.BidAsk
+
+@inject IPriceRetriever priceRetriever
+
+<div>
+    <div style="@($"font-weight: {(openPriceBoldFont ? "bold": "normal")}")">Open: @openPrice.ToString($"F{Digits}")</div>
+    <div style="@($"font-weight: {(openPriceBoldFont ?  "normal": "bold")}")">Now: @nowPrice.ToString($"F{Digits}")</div>
+    <div>Ticks: <span style="@($"font-weight: bold; color: {(@positionTicks > 0 ? "SeaGreen" : "DarkRed")}")">@positionTicks</span></div>
+</div>
+
+@code {
+    [Parameter]
+    public PendingOrderViewModel Order { get; set; }
+
+    [Parameter]
+    public int Digits { get; set; }
+
+    private bool openPriceBoldFont;
+    private double openPrice;
+    private double nowPrice;
+    private int positionTicks;
+
+    private bool isUpdating = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        openPrice = Order.DesiredPrice;
+        RefreshData();
+        AppJobService.PriceUpdateEvent += async () => await InvokeAsync(() => RefreshData());
+    }
+
+    private void RefreshData()
+    {
+        if (isUpdating)
+        {
+            return;
+        }
+
+        isUpdating = true;
+
+        var currentBidAsk = priceRetriever.GetBidAsk(Order.Instrument);
+
+        if (currentBidAsk != null)
+        {
+            SetData(currentBidAsk);
+        }
+
+        isUpdating = false;      
+    }
+
+    public void SetData(BidAskModel bidAsk)
+    {
+        nowPrice = FxUtils.GetOrderPrice(Order.Operation, bidAsk);
+        positionTicks = FxUtils.CalcTicks(openPrice, nowPrice, Digits);
+        openPriceBoldFont = nowPrice <= openPrice;
+        this.StateHasChanged();
+    }
+}

@@ -1,0 +1,149 @@
+﻿@using System.ComponentModel
+@using AntDesign.TableModels
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
+@using DealingAdmin.Shared.Services
+
+@inject LiveDemoServiceMapper LiveDemoServices
+
+<div id="PendingOrdersRegion">
+    <Table DataSource="@GridData"
+           TItem="PendingOrderViewModel"
+           Loading="@isLoading"
+           Bordered="@true"
+           Total="_total"
+           ScrollY="calc(100vh - 260px)"
+           @bind-PageIndex="_pageIndex"
+           @bind-PageSize="_pageSize">
+        <RowTemplate> 
+            <Column Ellipsis
+                    TData="long"
+                    Title="Id"
+                    @bind-Field="@context.Id"
+                    Width="100"
+                    Sortable
+                    Filterable>
+            </Column>
+            <Column Title="Account"
+                    TData="string"
+                    @bind-Field="@context.AccountId"
+                    Width="140"
+                    Sortable
+                    Filterable/>
+            <Column Title="Open Date"
+                    TData="DateTime"
+                    @bind-Field="@context.Created"
+                    Format="yyyy-MM-dd"
+                    Sortable>
+                <div style="font-family: Nunito Sans,-apple-system,BlinkMacSystemFont,Helvetica Neue,sans-serif;">
+                    <div><Icon Type="plus-circle" Theme="outline"  /> @FormatUtils.DateTimeNamedWithMsFormat(context.Created)</div>
+                </div>
+            </Column>
+            <Column Title="Price"
+                    @bind-Field="@context.Id"
+                    Width="280">
+                    <PendingOrderPrice Order="context" Digits="context.InstrumentDigits"></PendingOrderPrice>
+            </Column>
+            <Column Title="Now BidAsk"
+                    @bind-Field="@context.Id">
+                <OrderBidAsk BidAsk="@(new BidAskModel { Id = context.Instrument })" Digits="context.InstrumentDigits"></OrderBidAsk>
+            </Column>
+            <Column Title="Operation"
+                    @bind-Field="@context.Operation"
+                    Width="100">
+                    <OrderOperation Operation="context.Operation" OrderType="context.OpenOrderType"></OrderOperation>
+            </Column>
+            <Column Title="Instrument"
+                    TData="string"
+                    @bind-Field="@context.Instrument"
+                    Sortable
+                    Filterable/>
+            <Column Title="Investment"
+                    TData="double"
+                    @bind-Field="@context.InvestmentAmount"
+                    Sortable>
+                <div>@($"{context.InvestmentAmount.ToString("F0")} x 1:{context.Leverage }")</div>
+                <div>@($"V: {(context.InvestmentAmount * context.Leverage).ToString("F0")}")</div>
+            </Column>
+            <Column Title="Take Profit"
+                    TData="double?"
+                    @bind-Field="@context.TakeProfitInCurrency">
+                <div>@($"{GetOrderTakeProfit(context)}")</div>
+            </Column>
+            <Column Title="Stop Loss"
+                    TData="double?"
+                    @bind-Field="@context.StopLossInCurrency">
+                <div>@($"{GetOrderStopLoss(context)}")</div>
+            </Column>
+            <Column Title="Refill %"
+                    TData="double"
+                    @bind-Field="@context.ToppingUpPercent"
+                    Sortable>
+                <div>@((context.ToppingUpPercent > 0 ? $"{context.ToppingUpPercent.ToString("F0")}%" : "-"))</div>
+            </Column>
+        </RowTemplate>
+    </Table>
+</div>
+
+<style>
+.ant-table td {
+    padding: 5px 10px !important
+}
+</style>
+
+@code
+{
+    public List<PendingOrderViewModel> GridData
+        = new List<PendingOrderViewModel>();
+
+    int _pageIndex = 1;
+    int _pageSize = 200;
+    int _total = 0;
+
+    private bool isLoading { get; set; } = true;
+
+    private bool stopPriceRefresh { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
+
+        GridData = (await LiveDemoServices.GetContext(true).StReader.GetPendingOrdersAsync())
+            .Select(x => PendingOrderViewModel.Create(x, 4)).ToList();
+
+        isLoading = false;
+    }
+
+    private string GetOrderTakeProfit(PendingOrderViewModel order)
+    {
+        if (order.TakeProfitInCurrency.HasValue) {
+            return order.TakeProfitInCurrency.Value.ToString("F2");
+        }
+
+        if (order.TakeProfitRate.HasValue) {
+            return $"rate: ${order.TakeProfitRate.Value.ToString("F2")}";
+        }
+
+        return "-";
+    }
+
+    private string GetOrderStopLoss(PendingOrderViewModel order)
+    {
+        if (order.StopLossInCurrency.HasValue) {
+            return order.StopLossInCurrency.Value.ToString("F2");
+        }
+
+        if (order.StopLossRate.HasValue) {
+             return $"rate: ${order.StopLossRate.Value.ToString("F2")}";
+        }
+
+        return "-";
+    }
+}

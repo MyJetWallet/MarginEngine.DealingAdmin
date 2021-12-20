@@ -7,9 +7,12 @@ using DealingAdmin.Shared.Services;
 using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
 using MyNoSqlServer.DataReader;
+using MyPostgreSQL;
 using MyServiceBus.TcpClient;
 using ProtoBuf.Grpc.Client;
 using Serilog;
+using SimpleTrading.Abstraction.BidAsk;
+using SimpleTrading.Abstraction.Caches.ActiveOrders;
 using SimpleTrading.Abstraction.Candles;
 using SimpleTrading.Abstraction.Trading.Settings;
 using SimpleTrading.CandlesHistory.AzureStorage;
@@ -23,7 +26,11 @@ namespace DealingAdmin
     public class LiveDemoServices
     {
         public ITradingProfileRepository TradingProfileRepository { get; set; }
-    }
+
+        public IStDataReader StReader { get; set; }
+
+        public IActiveOrdersCacheReader ActiveOrdersReader { get; set; }
+}
 
     public class LiveDemoServiceMapper
     {
@@ -60,8 +67,9 @@ namespace DealingAdmin
                 CandlesExpiresHours = settingsModel.CandlesExpiresHours
             });
 
-            services.AddSingleton<ICandlesService, CandlesService>();
+            services.AddScoped<ICandlesService, CandlesService>();
             services.AddSingleton<IPriceAggregator, PriceAggregator>();
+            services.AddSingleton<IPriceRetriever, PriceRetriever>();
 
         }
 
@@ -69,14 +77,15 @@ namespace DealingAdmin
         {
             services.AddSingleton(mapper);
         }
-        
+
         public static MyNoSqlTcpClient BindMyNoSql(
             this IServiceCollection services,
-            SettingsModel settingsModel
-            , LiveDemoServiceMapper liveDemoServicesMapper)
+            SettingsModel settingsModel,
+            LiveDemoServiceMapper liveDemoServicesMapper)
         {
-            var tcpConnection = new MyNoSqlTcpClient(() => settingsModel.PricesMyNoSqlServerReader, AppName);
-
+            var tcpConnection = new MyNoSqlTcpClient(
+                () => SimpleTrading.SettingsReader.SettingsReader.ReadSettings<SettingsModel>().PricesMyNoSqlServerReader,
+                AppName);
 
             services.AddSingleton(tcpConnection.CreateTickerMyNoSqlReader());
             services.AddSingleton(MyNoSqlFactory.CreateTickerMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
@@ -84,22 +93,54 @@ namespace DealingAdmin
             services.AddSingleton(MyNoSqlFactory.CreateCrossTickerMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
             services.AddSingleton(MyNoSqlFactory.CreateInstrumentSubGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
             services.AddSingleton(MyNoSqlFactory.CreateInstrumentGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
-            services.AddSingleton(MyNoSqlFactory.CreateInstrumentGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
+
+            services.AddSingleton<IBidAskCache>(tcpConnection.CreateBidAskMyNoSqlCache());
             services.AddSingleton<IInstrumentsCache>(tcpConnection.CreateInstrumentsMyNoSqlReadCache());
 
+            liveDemoServicesMapper.InitService(true,
+               services => services.ActiveOrdersReader = MyNoSqlServerFactory.CreateActiveOrdersCacheReader(tcpConnection, true));
+
+            liveDemoServicesMapper.InitService(false,
+               services => services.ActiveOrdersReader = MyNoSqlServerFactory.CreateActiveOrdersCacheReader(tcpConnection, false));
+
             var liveTradingProfileRepository =
-                MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, true);
+                 MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, true);
 
             var demoTradingProfileRepository =
                 MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, false);
-            
+
             liveDemoServicesMapper.InitService(true,
                 services => services.TradingProfileRepository = liveTradingProfileRepository);
-            
+
             liveDemoServicesMapper.InitService(false,
                 services => services.TradingProfileRepository = demoTradingProfileRepository);
-            
+
             return tcpConnection;
+        }
+
+        public static void BindPostgresRepositories(
+            this SettingsModel settingsModel,
+            LiveDemoServiceMapper liveDemoServicesMapper)
+        {
+            var livePostgresConnection = new PostgresConnection(
+                settingsModel.PostgresLiveConnectionString,
+                AppName,
+                settingsModel.PostgresLiveSchema);
+
+            var demoPostgresConnection = new PostgresConnection(
+                settingsModel.PostgresDemoConnectionString,
+                AppName,
+                settingsModel.PostgresDemoSchema);
+
+            //var crmDataConnection = new PostgresConnection(
+            //    settingsModel.CrmDataPostgresConnString,
+            //    AppName,
+            //    settingsModel.CrmPostgresSchema);
+
+            //ServiceLocator.CrmReader = new CrmDataReader(crmDataConnection);
+
+            liveDemoServicesMapper.InitService(true, services => services.StReader = new StDataReader(livePostgresConnection));
+            liveDemoServicesMapper.InitService(false, services => services.StReader = new StDataReader(demoPostgresConnection));
         }
 
         public static void BindRestClients(this IServiceCollection services)
@@ -122,7 +163,7 @@ namespace DealingAdmin
                 .CreateGrpcService<ISimpleTradingCandlesHistoryGrpc>());
         }
 
-        public static MyServiceBusTcpClient BindServiceBus(this IServiceCollection services,  SettingsModel settingsModel)
+        public static MyServiceBusTcpClient BindServiceBus(this IServiceCollection services, SettingsModel settingsModel)
         {
             var serviceBusTcpClient = new MyServiceBusTcpClient(
                 () => settingsModel.PricesMyServiceBusReader,

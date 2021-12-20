@@ -8,6 +8,9 @@ namespace DealingAdmin.Services
     {
         private ConcurrentDictionary<string, IBidAsk> bidAskCache = new ConcurrentDictionary<string, IBidAsk>();
 
+        private ConcurrentDictionary<string, Dictionary<string, IUnfilteredBidAsk>> unfilteredBidAskCache
+          = new ConcurrentDictionary<string, Dictionary<string, IUnfilteredBidAsk>>();
+
         public PriceAggregator()
         {
             bidAskCache = new ConcurrentDictionary<string, IBidAsk>();
@@ -33,6 +36,22 @@ namespace DealingAdmin.Services
             }
         }
 
+        public void UpdateUnfilteredBidAsk(IUnfilteredBidAsk bidAsk)
+        {
+            try
+            {
+                if (!unfilteredBidAskCache.ContainsKey(bidAsk.Id))
+                    unfilteredBidAskCache[bidAsk.Id] = new Dictionary<string, IUnfilteredBidAsk>();
+
+                unfilteredBidAskCache[bidAsk.Id][bidAsk.LiquidityProvider] = bidAsk;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"ERROR UpdateUnfilteredBidAsk: {e}");
+            }
+        }
+
+
         public IBidAsk GetBidAsk(string instrumentId)
         {
             if (bidAskCache.TryGetValue(instrumentId, out IBidAsk bidAsk))
@@ -46,5 +65,11 @@ namespace DealingAdmin.Services
         }
 
         public IEnumerable<IBidAsk> GetBidAskCache() => bidAskCache.Values;
+
+        public IEnumerable<IUnfilteredBidAsk> GetUnfilteredBidAskCache() =>
+            from instrumentPrices in unfilteredBidAskCache.Values
+            from providerPrice in instrumentPrices.Values
+            select providerPrice;
+
     }
 }

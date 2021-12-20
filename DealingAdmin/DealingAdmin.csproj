@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+		<Version>0.5.2</Version>
     </PropertyGroup>
     
     <ItemGroup>
@@ -17,6 +18,7 @@
 		<PackageReference Include="SimpleTrading.CandlesHistory.AzureStorage" Version="1.0.20" />
 		<PackageReference Include="SimpleTrading.CandlesHistory.Grpc" Version="1.0.17" />
 		<PackageReference Include="SimpleTrading.MyNoSqlRepositories" Version="2.0.41" />
+		<PackageReference Include="SimpleTrading.Postgres" Version="1.0.83" />
     </ItemGroup>
     
     <ItemGroup>

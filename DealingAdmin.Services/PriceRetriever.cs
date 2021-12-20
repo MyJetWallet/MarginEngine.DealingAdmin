@@ -1,31 +1,43 @@
-﻿using DealingAdmin.Abstractions.Models;
-using DotNetCoreDecorators;
+﻿using DealingAdmin.Abstractions;
+using DealingAdmin.Abstractions.Models;
 using SimpleTrading.Abstraction.BidAsk;
+using SimpleTrading.ServiceBus.PublisherSubscriber.BidAsk;
+using SimpleTrading.ServiceBus.PublisherSubscriber.UnfilteredBidAsk;
 
 namespace DealingAdmin.Services
 {
-    public class PriceRetriever
+    public class PriceRetriever : IPriceRetriever
     {
         private readonly IBidAskCache _bidAskCache;
-        private readonly ISubscriber<IBidAsk> _bidAskSubscriber;
+        private readonly BidAskMyServiceBusSubscriber _bidAskSubscriber;
+        private readonly UnfilteredBidAskMyServiceBusSubscriber _unfilteredBidAskSubscriber;
 
         private readonly PriceAggregator priceAggregator = new PriceAggregator();
 
-        public PriceRetriever(IBidAskCache bidAskCache, ISubscriber<IBidAsk> bidAskSubscriber)
+        public PriceRetriever(
+            IBidAskCache bidAskCache,
+            BidAskMyServiceBusSubscriber bidAskSubscriber,
+            UnfilteredBidAskMyServiceBusSubscriber unfilteredBidAskSubscriber)
         {
             _bidAskCache = bidAskCache;
             _bidAskSubscriber = bidAskSubscriber;
-            Init();
-        }
+            _unfilteredBidAskSubscriber = unfilteredBidAskSubscriber;
 
-        public void Init()
-        {
             var bidAsks = _bidAskCache.Get();
+
             priceAggregator.UpdateBidAskCache(bidAsks);
 
             _bidAskSubscriber.Subscribe(bidAsk =>
             {
                 priceAggregator.UpdateBidAsk(bidAsk);
+                return new ValueTask();
+            });
+
+            _unfilteredBidAskSubscriber.Subscribe(bidAsk =>
+            {
+                var now = DateTime.UtcNow;
+                var timeDelay = now.Subtract(bidAsk.DateTime);
+                priceAggregator.UpdateUnfilteredBidAsk(bidAsk);
                 return new ValueTask();
             });
         }

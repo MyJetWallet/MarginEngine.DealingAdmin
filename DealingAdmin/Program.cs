@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SimpleTrading.SettingsReader;
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +19,7 @@ builder.Services.BindLogger(settingsModel);
 var serviceBusTcpClient = builder.Services.BindServiceBus(settingsModel);
 builder.Services.BindGrpcServices(settingsModel);
 
-builder.Services.BindMyNoSql(settingsModel, liveDemoManager);
+var myNoSqlTcpClient = builder.Services.BindMyNoSql(settingsModel, liveDemoManager);
 builder.Services.BindPostgresRepositories(settingsModel, liveDemoManager);
 builder.Services.BindAzureStorage(settingsModel);
 builder.Services.InitLiveDemoManager(liveDemoManager);
@@ -45,6 +44,7 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 serviceBusTcpClient.Start();
+myNoSqlTcpClient.Start();
 
 AppJobService.Init();
 AppJobService.Start();

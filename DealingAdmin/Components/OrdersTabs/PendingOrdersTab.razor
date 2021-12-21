@@ -152,11 +152,11 @@
     {
         isLoading = true;
 
-        var pendingOrders = (await LiveDemoServices.GetContext(true).StReader.GetPendingOrdersAsync());
+        var pendingOrders = (await LiveDemoServices.GetContext(AppState.IsLive).StReader.GetPendingOrdersAsync());
 
         GridData =  (await AccTypeFilter.FilterPositions(pendingOrders, AccountsTypeFilter))
             .Select(x => PendingOrderViewModel.Create(x,
-                InstrumentsCache.Get(x.Instrument)?.Digits ?? 4)).ToList();
+                InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
 
         isLoading = false;
 

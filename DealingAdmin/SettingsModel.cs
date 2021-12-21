@@ -44,6 +44,12 @@ namespace DealingAdmin
         [YamlProperty("DealingAdmin.PostgresDemoSchema")]
         public string PostgresDemoSchema { get; set; }
 
+        [YamlProperty("DealingAdmin.CrmDataPostgresConnectionString")]
+        public string CrmDataPostgresConnString { get; set; }
+
+        [YamlProperty("DealingAdmin.CrmPostgresSchema")]
+        public string CrmPostgresSchema { get; set; }
+
         [YamlProperty("DealingAdmin.SeqServiceUrl")]
         public string SeqServiceUrl { get; set; }
     }

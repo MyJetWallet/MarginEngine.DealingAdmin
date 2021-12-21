@@ -136,7 +136,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        RefreshData();
+        await RefreshData();
     }
 
     private Task Close(long positionId)
@@ -145,11 +145,11 @@
         return Task.CompletedTask;
     }
 
-    private void RefreshData()
+    private async Task RefreshData()
     {
         isLoading = true;
 
-        GridData = LiveDemoServices.GetContext(true).ActiveOrdersReader.GetAllPendingOrders()
+        GridData = (await LiveDemoServices.GetContext(true).StReader.GetActivePositionsAsync())
             .Select(x => ActivePositionViewModel.Create(x, 
                 InstrumentsCache.Get(x.Instrument)?.Digits ?? 4)).ToList();
 

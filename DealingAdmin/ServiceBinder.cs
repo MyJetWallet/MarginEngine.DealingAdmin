@@ -70,7 +70,6 @@ namespace DealingAdmin
             services.AddScoped<ICandlesService, CandlesService>();
             services.AddSingleton<IPriceAggregator, PriceAggregator>();
             services.AddSingleton<IPriceRetriever, PriceRetriever>();
-
         }
 
         public static void InitLiveDemoManager(this IServiceCollection services, LiveDemoServiceMapper mapper)
@@ -119,7 +118,8 @@ namespace DealingAdmin
         }
 
         public static void BindPostgresRepositories(
-            this SettingsModel settingsModel,
+            this IServiceCollection services,
+            SettingsModel settingsModel,
             LiveDemoServiceMapper liveDemoServicesMapper)
         {
             var livePostgresConnection = new PostgresConnection(
@@ -132,12 +132,12 @@ namespace DealingAdmin
                 AppName,
                 settingsModel.PostgresDemoSchema);
 
-            //var crmDataConnection = new PostgresConnection(
-            //    settingsModel.CrmDataPostgresConnString,
-            //    AppName,
-            //    settingsModel.CrmPostgresSchema);
+            var crmDataConnection = new PostgresConnection(
+                settingsModel.CrmDataPostgresConnString,
+                AppName,
+                settingsModel.CrmPostgresSchema);
 
-            //ServiceLocator.CrmReader = new CrmDataReader(crmDataConnection);
+            services.AddSingleton<ICrmDataReader>(new CrmDataReader(crmDataConnection));
 
             liveDemoServicesMapper.InitService(true, services => services.StReader = new StDataReader(livePostgresConnection));
             liveDemoServicesMapper.InitService(false, services => services.StReader = new StDataReader(demoPostgresConnection));

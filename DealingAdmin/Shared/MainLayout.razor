@@ -10,8 +10,10 @@
             {
                 <Icon Type="home" Theme="outline" />
             }
-            @($"{(_sidebarCollapsed ? "" : "Dashboard")}")
+            @($"{(_sidebarCollapsed ? "" : "Admin")}")
         </a>
+        <LiveDemoSwitch OnSwitchChange="LiveDemoSwitchChange" />
+        <hr>
         <Sidebar />
     </Sider>
     <Layout Class="site-layout" Style="@($"margin-left: {(_sidebarCollapsed ? "80px" : "200px")}; transition: 0.2s;")">
@@ -22,6 +24,19 @@
 </Layout>
 
 @code {
+    private bool isLiveMode = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    void LiveDemoSwitchChange(bool isLive)
+    {
+        Console.WriteLine("LiveDemoSwitchChange");
+        isLiveMode = isLive;
+    }
+
     void OnCollapse(bool isCollapsed)
     {
         _sidebarCollapsed = isCollapsed;

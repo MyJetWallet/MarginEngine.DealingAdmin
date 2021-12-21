@@ -11,11 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 var liveDemoManager = new LiveDemoServiceMapper();
 var settingsModel = SettingsReader.ReadSettings<SettingsModel>();
 
-Console.WriteLine("------------------------------");
-Console.WriteLine($"PricesMyNoSqlServerReader port: '{settingsModel.PricesMyNoSqlServerReader}'");
-Console.WriteLine("------------------------------");
 // Add services to the container.
-
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddAntDesign();
@@ -25,8 +21,7 @@ var serviceBusTcpClient = builder.Services.BindServiceBus(settingsModel);
 builder.Services.BindGrpcServices(settingsModel);
 
 builder.Services.BindMyNoSql(settingsModel, liveDemoManager);
-
-settingsModel.BindPostgresRepositories(liveDemoManager);
+builder.Services.BindPostgresRepositories(settingsModel, liveDemoManager);
 builder.Services.BindAzureStorage(settingsModel);
 builder.Services.InitLiveDemoManager(liveDemoManager);
 builder.Services.BindServices(settingsModel);

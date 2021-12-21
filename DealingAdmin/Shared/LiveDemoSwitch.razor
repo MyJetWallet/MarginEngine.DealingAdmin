@@ -1,0 +1,77 @@
+﻿@using DealingAdmin.Shared.Services
+
+<div id="live-demo-switch" class="text-center switch-box">
+    <button @onclick="SetLive" class="@($"switch-btn {(IsLive ? "live-btn-active" : "switch-btn-inactive")}")">LIVE</button>
+    <button @onclick="SetDemo" class="@($"switch-btn {(IsLive ? "switch-btn-inactive" : "demo-btn-active")}")">DEMO</button>
+</div>
+
+<style>
+.switch-box {
+    vertical-align: central;
+    margin-top: 1rem
+}
+
+.switch-btn {
+    width: 60px;
+    border-radius: 10px;
+    display: inline-block;
+    vertical-align: baseline;
+    padding-right: .6em;
+    padding-left: .6em;
+    font-family: Roboto,sans-serif;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .1em !important;
+    text-transform: uppercase;
+    text-align: center;
+    text-indent: 0;
+    letter-spacing: 0;
+    white-space: nowrap
+}
+
+.switch-btn:hover {
+  box-shadow: 0 0 11px rgba(33,33,33,.2); 
+}
+
+.live-btn-active {
+    background-color: #81c784 !important
+}
+
+.demo-btn-active {
+    background-color: #ffd54f !important
+}
+
+.switch-btn-inactive {
+    background-color: #eee !important
+}
+</style>
+ 
+@code {
+    [CascadingParameter(Name = "IsLiveMode")]
+    public bool IsLive { get; set; }
+
+    [Parameter]
+    public Action<bool> OnSwitchChange { get; set; }
+
+    void SetLive()
+    {
+        if (IsLive)
+        {
+            return;
+        }
+
+        IsLive = true;
+        OnSwitchChange?.Invoke(true);
+    }
+
+    void SetDemo()
+    {
+        if (!IsLive)
+        {
+            return;
+        }
+
+        IsLive = false;
+        OnSwitchChange?.Invoke(false);
+    }
+}

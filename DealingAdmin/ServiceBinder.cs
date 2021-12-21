@@ -67,9 +67,11 @@ namespace DealingAdmin
                 CandlesExpiresHours = settingsModel.CandlesExpiresHours
             });
 
+            services.AddScoped<StateManager>();
             services.AddScoped<ICandlesService, CandlesService>();
             services.AddSingleton<IPriceAggregator, PriceAggregator>();
             services.AddSingleton<IPriceRetriever, PriceRetriever>();
+            services.AddSingleton<IAccountTypeFilter, AccountTypeFilter>();
         }
 
         public static void InitLiveDemoManager(this IServiceCollection services, LiveDemoServiceMapper mapper)

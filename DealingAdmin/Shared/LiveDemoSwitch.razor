@@ -1,5 +1,7 @@
 ﻿@using DealingAdmin.Shared.Services
 
+@inject StateManager AppState
+
 <div id="live-demo-switch" class="text-center switch-box">
     <button @onclick="SetLive" class="@($"switch-btn {(IsLive ? "live-btn-active" : "switch-btn-inactive")}")">LIVE</button>
     <button @onclick="SetDemo" class="@($"switch-btn {(IsLive ? "switch-btn-inactive" : "demo-btn-active")}")">DEMO</button>
@@ -47,11 +49,12 @@
 </style>
  
 @code {
-    [CascadingParameter(Name = "IsLiveMode")]
-    public bool IsLive { get; set; }
+    private bool IsLive { get; set; }
 
-    [Parameter]
-    public Action<bool> OnSwitchChange { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        IsLive = AppState.IsLive;
+    }
 
     void SetLive()
     {
@@ -61,7 +64,7 @@
         }
 
         IsLive = true;
-        OnSwitchChange?.Invoke(true);
+        AppState.SetLive();
     }
 
     void SetDemo()
@@ -72,6 +75,6 @@
         }
 
         IsLive = false;
-        OnSwitchChange?.Invoke(false);
+        AppState.SetDemo();
     }
 }

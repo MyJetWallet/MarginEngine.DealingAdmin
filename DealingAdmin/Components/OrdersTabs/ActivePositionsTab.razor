@@ -8,11 +8,36 @@
 @using SimpleTrading.Abstraction.Caches.ActiveOrders
 @using SimpleTrading.Abstraction.Trading.Settings
 
+@inject StateManager AppState
 @inject LiveDemoServiceMapper LiveDemoServices
+@inject IAccountTypeFilter AccTypeFilter
 @inject IInstrumentsCache InstrumentsCache
 @inject IUserMessageService MessageService
 
 <div id="ActivePositionsRegion">
+    <div class="mb-2">
+        <Row>
+            <Col Span="4" Class="text-nowrap">
+                <span class="text-bold mx-2">Accounts:</span>
+                <Select Mode="default"
+                        Value="AccountsTypeFilter"
+                        TItemValue="AccountType"
+                        TItem="AccountType"
+                        OnSelectedItemChanged="AccountsTypeFilterChanged">
+                    <SelectOptions>
+                        @foreach (var item in Enum.GetValues<AccountType>())
+                        {
+                            <SelectOption
+                                TItemValue="AccountType"
+                                TItem="AccountType"
+                                Value=@item
+                                Label="@item.ToString()"/>
+                        }
+                    </SelectOptions>
+                </Select>
+            </Col>
+        </Row>       
+    </div>
     <Table DataSource="@GridData"
            TItem="ActivePositionViewModel"
            Loading="@isLoading"
@@ -126,6 +151,8 @@
     public List<ActivePositionViewModel> GridData
         = new List<ActivePositionViewModel>();
 
+    private AccountType AccountsTypeFilter = AccountType.Real;
+
     int _pageIndex = 1;
     int _pageSize = 200;
     int _total = 0;
@@ -136,6 +163,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await RefreshData();
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+    }
+
+    private async void AccountsTypeFilterChanged(AccountType selectedAccType)
+    {
+        AccountsTypeFilter = selectedAccType;
         await RefreshData();
     }
 
@@ -149,11 +183,15 @@
     {
         isLoading = true;
 
-        GridData = (await LiveDemoServices.GetContext(true).StReader.GetActivePositionsAsync())
+        var activePositions = LiveDemoServices.GetContext(AppState.IsLive).ActiveOrdersReader.GetAllPendingOrders();
+
+        GridData = (await AccTypeFilter.FilterPositions(activePositions, AccountsTypeFilter))
             .Select(x => ActivePositionViewModel.Create(x, 
                 InstrumentsCache.Get(x.Instrument)?.Digits ?? 4)).ToList();
 
         isLoading = false;
+
+        this.StateHasChanged();
     }
 
     private string GetOrderTakeProfit(ActivePositionViewModel order)

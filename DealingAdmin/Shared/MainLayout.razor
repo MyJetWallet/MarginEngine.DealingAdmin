@@ -2,26 +2,28 @@
 @using AntDesign
 
 <PageTitle>DealingAdmin</PageTitle>
-<Layout>
-    <Sider Class="site-sidebar" Collapsible Collapsed=@_sidebarCollapsed OnCollapse="OnCollapse"
-            Style="overflow: auto;">
-        <a class="logo" href="">
-            @if (_sidebarCollapsed)
-            {
-                <Icon Type="home" Theme="outline" />
-            }
-            @($"{(_sidebarCollapsed ? "" : "Admin")}")
-        </a>
-        <LiveDemoSwitch OnSwitchChange="LiveDemoSwitchChange" />
-        <hr>
-        <Sidebar />
-    </Sider>
-    <Layout Class="site-layout" Style="@($"margin-left: {(_sidebarCollapsed ? "80px" : "200px")}; transition: 0.2s;")">
-        <AntDesign.Content Class="site-content">
-            @Body
-        </AntDesign.Content>
+<CascadingValue Name="IsLiveMode" Value="@isLiveMode">
+    <Layout>
+        <Sider Class="site-sidebar" Collapsible Collapsed=@_sidebarCollapsed OnCollapse="OnCollapse"
+                Style="overflow: auto;">
+            <a class="logo" href="">
+                @if (_sidebarCollapsed)
+                {
+                    <Icon Type="home" Theme="outline" />
+                }
+                @($"{(_sidebarCollapsed ? "" : "Dashboard")}")
+            </a>
+            <LiveDemoSwitch />
+            <hr>
+            <Sidebar />
+        </Sider>
+        <Layout Class="site-layout" Style="@($"margin-left: {(_sidebarCollapsed ? "80px" : "200px")}; transition: 0.2s;")">
+            <AntDesign.Content Class="site-content">
+                @Body
+            </AntDesign.Content>
+        </Layout>
     </Layout>
-</Layout>
+</CascadingValue>
 
 @code {
     private bool isLiveMode = true;
@@ -29,12 +31,6 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-    }
-
-    void LiveDemoSwitchChange(bool isLive)
-    {
-        Console.WriteLine("LiveDemoSwitchChange");
-        isLiveMode = isLive;
     }
 
     void OnCollapse(bool isCollapsed)

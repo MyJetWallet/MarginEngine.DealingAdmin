@@ -6,7 +6,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="AntDesign" Version="0.10.3" />
+        <PackageReference Include="AntDesign" Version="0.10.3.1" />
         <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
         <PackageReference Include="MyNoSqlServer.DataReader" Version="1.4.2" />
         <PackageReference Include="SimpleTrading.SettingsReader" Version="1.1.0" />

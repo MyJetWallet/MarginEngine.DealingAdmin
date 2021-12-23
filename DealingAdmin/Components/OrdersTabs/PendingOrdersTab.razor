@@ -76,7 +76,7 @@
             </Column>
             <Column Title="Now BidAsk"
                     @bind-Field="@context.Id">
-                <OrderBidAsk BidAsk="@(new BidAskModel { Id = context.Instrument })" Digits="context.InstrumentDigits"></OrderBidAsk>
+                <OrderNowBidAsk BidAsk="@(new BidAskModel { Id = context.Instrument })" Digits="context.InstrumentDigits"></OrderNowBidAsk>
             </Column>
             <Column Title="Operation"
                     @bind-Field="@context.Operation"

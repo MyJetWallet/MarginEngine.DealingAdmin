@@ -1,9 +1,6 @@
-﻿@using DealingAdmin.Abstractions
-@using DealingAdmin.Abstractions.Models
+﻿@using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.BidAsk
-
-@inject IPriceRetriever priceRetriever
 
 <div style="font-family:courier">
     <div>Ask: @ask.ToString($"F{Digits}")</div>
@@ -22,41 +19,10 @@
     private double bid;
     private double spread;
 
-    private bool isUpdating = false;
-
     protected override async Task OnInitializedAsync()
     {
         ask = BidAsk.Ask;
         bid = BidAsk.Bid;
         spread = FxUtils.CalcSpread(BidAsk, Digits);
-
-        AppJobService.PriceUpdateEvent += async () => await InvokeAsync(() => UpdateBidAsk());
-    }
-
-    private void UpdateBidAsk()
-    {
-        if (isUpdating)
-        {
-            return;
-        }
-
-        isUpdating = true;
-
-        var currentBidAsk = priceRetriever.GetBidAsk(BidAsk.Id);
-
-        if (currentBidAsk != null)
-        {
-            SetBidAsk(currentBidAsk);
-        }
-
-        isUpdating = false;      
-    }
-
-    public void SetBidAsk(BidAskModel bidAsk)
-    {
-        ask = bidAsk.Ask;
-        bid = bidAsk.Bid;
-        spread = FxUtils.CalcSpread(bidAsk, Digits);
-        this.StateHasChanged();
     }
 }

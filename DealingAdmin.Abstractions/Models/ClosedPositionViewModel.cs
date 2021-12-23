@@ -71,6 +71,7 @@ namespace DealingAdmin.Abstractions.Models
                 TraderId = src.TraderId,
                 AccountId = src.AccountId,
                 Instrument = src.Instrument,
+                InstrumentDigits = instrumentDigits,
                 Leverage = src.Leverage,
                 Operation = src.Operation,
                 InvestmentAmount = src.InvestmentAmount,

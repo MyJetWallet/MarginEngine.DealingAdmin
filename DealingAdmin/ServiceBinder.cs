@@ -21,6 +21,7 @@ using SimpleTrading.MyNoSqlRepositories;
 using SimpleTrading.ServiceBus.PublisherSubscriber.BidAsk;
 using SimpleTrading.ServiceBus.PublisherSubscriber.UnfilteredBidAsk;
 using SimpleTrading.Common.MyNoSql;
+using SimpleTrading.QuotesFeedRouter.Abstractions;
 
 namespace DealingAdmin
 {

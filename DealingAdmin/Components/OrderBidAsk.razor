@@ -5,7 +5,7 @@
 <div style="font-family:courier">
     <div>Ask: @ask.ToString($"F{Digits}")</div>
     <div>Bid: @bid.ToString($"F{Digits}")</div>
-    <div>Spread: @spread.ToString("F0")</div>
+    <div>Spread: @spread)</div>
 </div>
 
 @code {
@@ -17,7 +17,7 @@
 
     private double ask;
     private double bid;
-    private double spread;
+    private int spread;
 
     protected override async Task OnInitializedAsync()
     {

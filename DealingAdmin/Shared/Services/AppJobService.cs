@@ -9,6 +9,9 @@ namespace DealingAdmin.Shared.Services
         private static readonly TaskTimer PriceUpdateTaskTimer
             = new TaskTimer(TimeSpan.FromSeconds(3));
 
+        private static readonly TaskTimer QuotesUpdateTaskTimer
+            = new TaskTimer(TimeSpan.FromMilliseconds(400));
+
         public static void Init()
         {
             Console.WriteLine($"{DateTime.Now} AppJobService Init");
@@ -16,6 +19,12 @@ namespace DealingAdmin.Shared.Services
             PriceUpdateTaskTimer.Register("Price Update", () =>
             {
                 PriceUpdateEvent?.Invoke();
+                return new ValueTask();
+            });
+
+            QuotesUpdateTaskTimer.Register("Quotes Update", () =>
+            {
+                QuotesUpdateEvent?.Invoke();
                 return new ValueTask();
             });
         }
@@ -27,5 +36,7 @@ namespace DealingAdmin.Shared.Services
         }
 
         public static event Action PriceUpdateEvent;
+
+        public static event Action QuotesUpdateEvent;
     }
 }

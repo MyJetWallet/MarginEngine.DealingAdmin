@@ -1,4 +1,5 @@
 ﻿using SimpleTrading.Abstraction.BidAsk;
+using System;
 
 namespace DealingAdmin.Abstractions.Models
 {
@@ -11,6 +12,8 @@ namespace DealingAdmin.Abstractions.Models
         public double Bid { get; set; }
 
         public double Ask { get; set; }
+
+        public bool TimeWarning { get; set; }
     }
 
 
@@ -25,6 +28,8 @@ namespace DealingAdmin.Abstractions.Models
         public double Ask { get; set; }
 
         public string Provider { get; set; }
+
+        public bool TimeWarning { get; set; }
     }
 
     public static class PriceModels
@@ -37,7 +42,8 @@ namespace DealingAdmin.Abstractions.Models
                 Date = bidAsk.DateTime.ToString("s"),
                 Bid = bidAsk.Bid,
                 Ask = bidAsk.Ask,
-                Provider = bidAsk.LiquidityProvider
+                Provider = bidAsk.LiquidityProvider,
+                TimeWarning = DateTime.UtcNow - bidAsk.DateTime > TimeSpan.FromSeconds(20),
             };
         }
 
@@ -48,7 +54,8 @@ namespace DealingAdmin.Abstractions.Models
                 Id = bidAsk.Id,
                 Date = bidAsk.DateTime.ToString("s"),
                 Bid = bidAsk.Bid,
-                Ask = bidAsk.Ask
+                Ask = bidAsk.Ask,
+                TimeWarning = DateTime.UtcNow - bidAsk.DateTime > TimeSpan.FromSeconds(20),
             };
         }
     }

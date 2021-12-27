@@ -8,5 +8,7 @@ namespace DealingAdmin.Abstractions
         IEnumerable<BidAskModel> GetAllBidAsks();
 
         BidAskModel GetBidAsk(string instrumentId);
+
+        UnfilteredBidAskModel GetUnfilteredBidAsk(string instrumentId, string providerId);
     }
 }

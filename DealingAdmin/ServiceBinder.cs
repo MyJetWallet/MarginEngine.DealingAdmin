@@ -20,6 +20,7 @@ using SimpleTrading.CandlesHistory.Grpc;
 using SimpleTrading.MyNoSqlRepositories;
 using SimpleTrading.ServiceBus.PublisherSubscriber.BidAsk;
 using SimpleTrading.ServiceBus.PublisherSubscriber.UnfilteredBidAsk;
+using SimpleTrading.Common.MyNoSql;
 
 namespace DealingAdmin
 {
@@ -72,6 +73,7 @@ namespace DealingAdmin
             services.AddSingleton<IPriceAggregator, PriceAggregator>();
             services.AddSingleton<IPriceRetriever, PriceRetriever>();
             services.AddSingleton<IAccountTypeFilter, AccountTypeFilter>();
+            services.AddSingleton<IQuoteSourceService, QuoteSourceService>();
         }
 
         public static void InitLiveDemoManager(this IServiceCollection services, LiveDemoServiceMapper mapper)
@@ -95,8 +97,14 @@ namespace DealingAdmin
             services.AddSingleton(MyNoSqlFactory.CreateInstrumentSubGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
             services.AddSingleton(MyNoSqlFactory.CreateInstrumentGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
 
+            // ST Services (to be replaced in the future)
             services.AddSingleton<IBidAskCache>(tcpConnection.CreateBidAskMyNoSqlCache());
             services.AddSingleton<IInstrumentsCache>(tcpConnection.CreateInstrumentsMyNoSqlReadCache());
+            services.AddSingleton<ILiquidityProviderReader>(new LiquidityProviderReader(settingsModel.QuoteFeedRouterUrl));
+            services.AddSingleton(MyNoSqlServerFactory.CreateInstrumentSourcesMapsNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton((IDefaultLiquidityProviderWriter)CommonMyNoSqlServerFactory.CreateDefaultValueMyNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
 
             liveDemoServicesMapper.InitService(true,
                services => services.ActiveOrdersReader = MyNoSqlServerFactory.CreateActiveOrdersCacheReader(tcpConnection, true));

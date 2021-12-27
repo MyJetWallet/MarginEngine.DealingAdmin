@@ -64,6 +64,19 @@ namespace DealingAdmin.Services
             }
         }
 
+        public IUnfilteredBidAsk GetUnfilteredBidAsk(string instrumentId, string liquidityProviderId)
+        {
+            if (unfilteredBidAskCache.ContainsKey(instrumentId)
+                && unfilteredBidAskCache[instrumentId].ContainsKey(liquidityProviderId))
+            {
+                return unfilteredBidAskCache[instrumentId][liquidityProviderId];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public IEnumerable<IBidAsk> GetBidAskCache() => bidAskCache.Values;
 
         public IEnumerable<IUnfilteredBidAsk> GetUnfilteredBidAskCache() =>

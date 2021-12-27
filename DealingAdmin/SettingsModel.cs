@@ -11,6 +11,9 @@ namespace DealingAdmin
         [YamlProperty("DealingAdmin.MyNoSqlTcpUrl")]
         public string MyNoSqlTcpUrl { get; set; }
 
+        [YamlProperty("DealingAdmin.DictionariesMyNoSqlServerWriter")]
+        public string DictionariesMyNoSqlServerWriter { get; set; }
+
         [YamlProperty("DealingAdmin.PricesMyServiceBusReader")]
         public string PricesMyServiceBusReader { get; set; }
 
@@ -49,6 +52,9 @@ namespace DealingAdmin
 
         [YamlProperty("DealingAdmin.CrmPostgresSchema")]
         public string CrmPostgresSchema { get; set; }
+
+        [YamlProperty("DealingAdmin.QuoteFeedRouterUrl")]
+        public string QuoteFeedRouterUrl { get; set; }
 
         [YamlProperty("DealingAdmin.SeqServiceUrl")]
         public string SeqServiceUrl { get; set; }

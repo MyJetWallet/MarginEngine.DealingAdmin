@@ -9,10 +9,16 @@ namespace DealingAdmin
 {
     public static class FxUtils
     {
-        public static double CalcSpread(BidAskModel bidAsk, int instrumentDigits)
+        public static int CalcSpread(BidAskModel bidAsk, int instrumentDigits)
         {
             var multiplier = Math.Pow(10, instrumentDigits);
-            return (bidAsk.Ask * multiplier - bidAsk.Bid * multiplier);
+            return (int)(bidAsk.Ask * multiplier - bidAsk.Bid * multiplier);
+        }
+
+        public static int CalcSpread(UnfilteredBidAskModel bidAsk, int instrumentDigits)
+        {
+            var multiplier = Math.Pow(10, instrumentDigits);
+            return (int)(bidAsk.Ask * multiplier - bidAsk.Bid * multiplier);
         }
 
         public static double CalcSpread(IBidAsk bidAsk, int instrumentDigits)

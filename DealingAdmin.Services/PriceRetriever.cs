@@ -47,5 +47,8 @@ namespace DealingAdmin.Services
 
         public BidAskModel GetBidAsk(string instrumentId) =>
             priceAggregator.GetBidAsk(instrumentId)?.ToBidAskModel();
+
+        public UnfilteredBidAskModel GetUnfilteredBidAsk(string instrumentId, string providerId) =>
+            priceAggregator.GetUnfilteredBidAsk(instrumentId, providerId)?.ToUnfilteredBidAskModel();
     }
 }

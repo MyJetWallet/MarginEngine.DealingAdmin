@@ -1,19 +1,15 @@
-﻿@page "/Candles"
+﻿@page "/EmergencyTools"
 
 @using AntDesign
-@using DealingAdmin.Components.CandlesTabs
+@using DealingAdmin.Components.OrdersTabs
 
-<PageTitle>Candles</PageTitle>
+<PageTitle>Positions &amp; Orders</PageTitle>
 
 <Tabs TabBarStyle="" OnChange="@OnTabSelect" DefaultActiveKey="@SelectedTabKey" Animated="@false">
-    <TabPane Tab="UPLOAD" Key="CandlesUpload">
-        <CandlesUploadTab/>
+    <TabPane Tab="ALL QUOTES" Key="AllQuotes">
+        <AllQuotesTab/>
 	</TabPane>
-    <TabPane Tab="VERIFY" Key="CandlesVerify">
-        <CandlesVerifyTab/>
-    </TabPane>
-    <TabPane Tab="EDIT" Key="CandlesEdit">
-        <CandlesEditTab/>
+    <TabPane Tab="ACTIVE QUOTES" Key="ActiveQuotes">
     </TabPane>
 </Tabs>
 
@@ -22,7 +18,7 @@
     
     protected override async Task OnInitializedAsync()
     {
-        SelectedTabKey = "CandlesUpload";
+        SelectedTabKey = "ActivePositionss";
         await base.OnInitializedAsync();
     }
 

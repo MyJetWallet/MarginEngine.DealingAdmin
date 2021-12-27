@@ -1,0 +1,67 @@
+﻿@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.BidAsk
+@using StAbstractionInstruments = SimpleTrading.Abstraction.Trading.Instruments
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Common.MyNoSql.DefaultValues
+
+@inject IInstrumentsCache InstrumentsCache
+@inject ILiquidityProviderReader LpReader
+@inject IQuoteSourceService QuoteSourceService
+@inject IDefaultLiquidityProviderWriter DefaultLpWriter
+
+<div id="AllQuotesRegion">    
+  <Table DataSource="@GridData"
+           TItem="StAbstractionInstruments.ITradingInstrument"
+           Bordered="@true"
+           ScrollY="calc(100vh - 260px)">
+        <RowTemplate> 
+            <Column Data="string"
+                    Title="Instrument"
+                    Field="@context.Name"
+                    Width="100"
+                    Sortable
+                    Filterable/>
+            <Column Title="Quotes"  
+                    Field="@context.Id">
+                <InstrumentAllQuotes
+                    Instrument="context"
+                    ProvidersList="@liquidityProvidersList"
+                    ActiveProviderId="@dictInstrumentProviderMaps[context.Id]"/>
+            </Column>
+        </RowTemplate>
+    </Table>
+</div>
+ 
+@code {
+
+    public List<StAbstractionInstruments.ITradingInstrument> GridData
+        = new List<StAbstractionInstruments.ITradingInstrument>();
+
+    private List<string> liquidityProvidersList;
+
+    private Dictionary<string, string> dictInstrumentProviderMaps
+        = new Dictionary<string, string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var liquidityProvidersList = (await LpReader.GetLiquidityProviders()).ToList();
+
+        GridData = InstrumentsCache.GetAll().ToList();
+
+        var sourceMaps = (await QuoteSourceService.GetInstrumentSourcesMaps()).ToList();
+
+        foreach(var instr in GridData)
+        {
+            var overwrittenProviderId = sourceMaps.FirstOrDefault(x => x.InstrumentId == instr.Id);
+
+            var providerId =  overwrittenProviderId != null
+                ? overwrittenProviderId.SourceId
+                : await DefaultLpWriter.GetAsync();
+
+            dictInstrumentProviderMaps.Add(instr.Id, providerId);
+        }
+    }
+}

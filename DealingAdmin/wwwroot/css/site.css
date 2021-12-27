@@ -24,6 +24,12 @@ a, .btn-link {
     grid-gap: 5px
 }
 
+.grid-container-lp-quote-line {
+    display: grid !important;
+    grid-template-columns: 1fr 4fr 4fr 4fr 4fr 4fr 4fr 4fr 5fr;
+    /*grid-gap: 5px*/
+}
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
@@ -34,6 +40,10 @@ a, .btn-link {
 
 .validation-message {
     color: red;
+}
+
+.display-none {
+    display: none !important;
 }
 
 .simple-badge {
@@ -65,6 +75,10 @@ a, .btn-link {
     color: DarkRed !important
 }
 
+.text-teal {
+    color: teal !important
+}
+
 .badge-primary {
     color: #fff !important;
     background-color: #004daa !important
@@ -83,6 +97,14 @@ a, .btn-link {
 .badge-orange {
     color: #fff !important;
     background-color: #cc5700 !important
+}
+
+.open-icon-yellow {
+    fill: yellow;
+}
+
+.open-icon-red {
+    fill: darkred;
 }
 
 #blazor-error-ui {

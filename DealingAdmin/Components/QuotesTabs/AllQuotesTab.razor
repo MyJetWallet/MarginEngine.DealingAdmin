@@ -4,7 +4,6 @@
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.BidAsk
 @using SimpleTrading.QuotesFeedRouter.Abstractions
-@using StAbstractionInstruments = SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.Settings
 @using SimpleTrading.Common.MyNoSql.DefaultValues
 
@@ -15,7 +14,7 @@
 
 <div id="AllQuotesRegion">    
   <Table DataSource="@GridData"
-           TItem="StAbstractionInstruments.ITradingInstrument"
+           TItem="InstrumentQuoteModel"
            Bordered="@true"
            ScrollY="calc(100vh - 260px)">
         <RowTemplate> 
@@ -38,8 +37,8 @@
  
 @code {
 
-    public List<StAbstractionInstruments.ITradingInstrument> GridData
-        = new List<StAbstractionInstruments.ITradingInstrument>();
+    public List<InstrumentQuoteModel> GridData
+        = new List<InstrumentQuoteModel>();
 
     private List<string> liquidityProvidersList;
 
@@ -50,7 +49,7 @@
     {
         var liquidityProvidersList = (await LpReader.GetLiquidityProviders()).ToList();
 
-        GridData = InstrumentsCache.GetAll().ToList();
+        GridData = InstrumentsCache.GetAll().Select(x => InstrumentQuoteModel.Create(x)).ToList();
 
         var sourceMaps = (await QuoteSourceService.GetInstrumentSourcesMaps()).ToList();
 

@@ -3,9 +3,10 @@
 @using DealingAdmin.Services
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.BidAsk
-@using StAbstractionInstruments = SimpleTrading.Abstraction.Trading.Instruments
+
 
 @inject IPriceRetriever priceRetriever
+
 
 <div class="grid-container-lp-quote-line">
     <div><span class="oi oi-warning open-icon-red"></span></div>
@@ -21,7 +22,7 @@
 
 @code {
     [Parameter]
-    public StAbstractionInstruments.ITradingInstrument Instrument { get; set; }
+    public InstrumentQuoteModel Instrument { get; set; }
 
     [Parameter]
     public string ProviderId { get; set; }
@@ -42,6 +43,7 @@
     {
         digits = Instrument.Digits;
         providerTextClass = IsDefaultProvider ? " text-teal" : "";
+
         AppJobService.QuotesUpdateEvent += async () => await InvokeAsync(() => UpdateBidAsk());
     } 
 

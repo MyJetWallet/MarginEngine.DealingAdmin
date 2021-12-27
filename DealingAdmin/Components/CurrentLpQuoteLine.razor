@@ -3,8 +3,8 @@
 @using DealingAdmin.Services
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.BidAsk
-@using StAbstractionInstruments = SimpleTrading.Abstraction.Trading.Instruments
 
+@inject IBidAskCache bidAskCache
 @inject IPriceRetriever priceRetriever
 
 <div class="grid-container-lp-quote-line">
@@ -21,7 +21,7 @@
 
 @code {
     [Parameter]
-    public StAbstractionInstruments.ITradingInstrument Instrument { get; set; }
+    public InstrumentQuoteModel Instrument { get; set; }
 
     [Parameter]
     public string ProviderId { get; set; }
@@ -34,6 +34,9 @@
     protected override async Task OnInitializedAsync()
     {
         digits = Instrument.Digits;
+        bidAsk = bidAskCache.Get(Instrument.Id).ToBidAskModel();
+        spread = FxUtils.CalcSpread(bidAsk, digits);
+
         AppJobService.QuotesUpdateEvent += async () => await InvokeAsync(() => UpdateBidAsk());
     } 
 

@@ -23,9 +23,6 @@
     [Parameter]
     public InstrumentQuoteModel Instrument { get; set; }
 
-    [Parameter]
-    public string ProviderId { get; set; }
-
     private BidAskModel bidAsk { get; set; }
     private bool isUpdating = false;
     private int digits = 2;

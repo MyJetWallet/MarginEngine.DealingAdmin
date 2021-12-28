@@ -21,13 +21,11 @@ a, .btn-link {
 .grid-container-price-profit {
     display: grid !important;
     grid-template-columns: 150px 80px;
-    grid-gap: 5px
 }
 
 .grid-container-lp-quote-line {
     display: grid !important;
-    grid-template-columns: 1fr 4fr 4fr 4fr 4fr 4fr 4fr 4fr 5fr;
-    /*grid-gap: 5px*/
+    grid-template-columns: 2fr 3fr 4fr 3fr 4fr 3fr 4fr 3fr 4fr;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -67,15 +65,19 @@ a, .btn-link {
     font-weight: bold
 }
 
-.text-green {
+.color-green {
     color: SeaGreen !important
 }
 
-.text-red {
+.color-red {
     color: DarkRed !important
 }
 
-.text-teal {
+.color-orange {
+    color: orange !important
+}
+
+.color-teal {
     color: teal !important
 }
 
@@ -97,14 +99,6 @@ a, .btn-link {
 .badge-orange {
     color: #fff !important;
     background-color: #cc5700 !important
-}
-
-.open-icon-yellow {
-    fill: #FFFF00; /*Yellow*/
-}
-
-.open-icon-red {
-    fill: #8B0000; /*DarkRed*/
 }
 
 #blazor-error-ui {

@@ -33,6 +33,7 @@ namespace DealingAdmin.Shared.Services
         {
             Console.WriteLine($"{DateTime.Now} AppJobService Start");
             PriceUpdateTaskTimer.Start();
+            QuotesUpdateTaskTimer.Start();
         }
 
         public static event Action PriceUpdateEvent;

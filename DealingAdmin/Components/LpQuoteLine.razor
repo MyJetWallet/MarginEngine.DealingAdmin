@@ -9,7 +9,12 @@
 
 
 <div class="grid-container-lp-quote-line">
-    <div><span class="@($"oi oi-warning open-icon-red {(bidAsk != null ? "display-none" : "")}")"></span></div>
+    <div>
+        @if (bidAsk != null)
+        {
+            <span class="material-icons icon-red">warning</span>
+        }
+    </div>
     <div><span class="@(providerTextClass)">@ProviderId</span></div>
     <div>@bidAsk?.Bid.ToString($"F{digits}")</div>
     <div><span class="@(providerTextClass)">@ProviderId</span></div>
@@ -17,7 +22,12 @@
     <div><span class="@(providerTextClass)">@ProviderId</span></div>
     <div>@spread</div>
     <div><span class="@(providerTextClass)">@ProviderId</span></div>
-    <div>@bidAsk?.Date <span class="@($"oi oi-warning open-icon-yellow {(bidAsk != null && bidAsk.TimeWarning ? "" : "display-none")}")"></span></div>
+    <div>@bidAsk?.Date 
+        @if (bidAsk != null && bidAsk.TimeWarning)
+        {
+            <span class="material-icons icon-yellow">warning</span>
+        }
+    </div>
 </div>
 
 @code {
@@ -42,7 +52,7 @@
     protected override async Task OnInitializedAsync()
     {
         digits = Instrument.Digits;
-        providerTextClass = IsDefaultProvider ? " text-teal" : "";
+        providerTextClass = IsDefaultProvider ? "color-teal" : "";
 
         AppJobService.QuotesUpdateEvent += async () => await InvokeAsync(() => UpdateBidAsk());
     } 

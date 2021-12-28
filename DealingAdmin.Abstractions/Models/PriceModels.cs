@@ -39,11 +39,11 @@ namespace DealingAdmin.Abstractions.Models
             return new UnfilteredBidAskModel
             {
                 Id = bidAsk.Id,
-                Date = bidAsk.DateTime.ToString("s"),
+                Date = bidAsk.DateTime.ToString("yyyy-MM-dd HH:mm:ss"),
                 Bid = bidAsk.Bid,
                 Ask = bidAsk.Ask,
                 Provider = bidAsk.LiquidityProvider,
-                TimeWarning = DateTime.UtcNow - bidAsk.DateTime > TimeSpan.FromSeconds(20),
+                TimeWarning = DateTime.Now - bidAsk.DateTime > TimeSpan.FromSeconds(20),
             };
         }
 
@@ -52,10 +52,10 @@ namespace DealingAdmin.Abstractions.Models
             return new BidAskModel
             {
                 Id = bidAsk.Id,
-                Date = bidAsk.DateTime.ToString("s"),
+                Date = bidAsk.DateTime.ToString("yyyy-MM-dd HH:mm:ss"),
                 Bid = bidAsk.Bid,
                 Ask = bidAsk.Ask,
-                TimeWarning = DateTime.UtcNow - bidAsk.DateTime > TimeSpan.FromSeconds(20),
+                TimeWarning = DateTime.Now - bidAsk.DateTime > TimeSpan.FromSeconds(20),
             };
         }
     }

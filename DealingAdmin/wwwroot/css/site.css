@@ -100,11 +100,11 @@ a, .btn-link {
 }
 
 .open-icon-yellow {
-    fill: yellow;
+    fill: #FFFF00; /*Yellow*/
 }
 
 .open-icon-red {
-    fill: darkred;
+    fill: #8B0000; /*DarkRed*/
 }
 
 #blazor-error-ui {

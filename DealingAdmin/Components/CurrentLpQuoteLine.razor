@@ -16,7 +16,12 @@
     <div><span class="text-bold">Current</span></div>
     <div>@spread</div>
     <div><span class="text-bold">Current</span></div>
-    <div>@bidAsk?.Date <span class="@($"oi oi-warning open-icon-yellow {(bidAsk != null && bidAsk.TimeWarning ? "" : "display-none")}")"></span></div>
+    <div>@bidAsk?.Date 
+        @if (bidAsk != null && bidAsk.TimeWarning)
+        {
+            <span class="material-icons color-orange">warning</span>
+        }
+    </div>
 </div>
 
 @code {

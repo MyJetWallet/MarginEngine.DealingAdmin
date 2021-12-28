@@ -16,6 +16,7 @@
   <Table DataSource="@GridData"
            TItem="InstrumentQuoteModel"
            Bordered="@true"
+           PageSize="999999"
            HidePagination="@true"
            ScrollY="calc(100vh - 260px)">
         <RowTemplate> 
@@ -27,10 +28,25 @@
                     Filterable/>
             <Column Title="Quotes"  
                     Field="@context.Id">
-                <InstrumentAllQuotes
-                    Instrument="context"
-                    ProvidersList="@liquidityProvidersList"
-                    ActiveProviderId="@dictInstrumentProviderMaps[context.Id]"/>
+                <TitleTemplate>
+                    <div class="grid-container-lp-quote-line">
+                        <div></div>
+                        <div>Bid</div>
+                        <div></div>
+                        <div>Ask</div>
+                        <div></div>
+                        <div>Spread</div>
+                        <div></div>
+                        <div>DateTime</div>
+                        <div></div>
+                    </div>
+                </TitleTemplate>
+                <ChildContent>
+                    <InstrumentAllQuotes
+                        Instrument="context"
+                        ProvidersList="@liquidityProvidersList"
+                        ActiveProviderId="@dictInstrumentProviderMaps[context.Id]"/>
+                </ChildContent>               
             </Column>
         </RowTemplate>
     </Table>

@@ -9,7 +9,7 @@ namespace DealingAdmin.Shared.Services
         {
             NavMenuItem.Create("Orders", "Orders", "list"),
             NavMenuItem.Create("Candles", "Candles", "bar-chart"),
-            NavMenuItem.Create("EmergencyTools", "Emergency Tools", "tool"),
+            NavMenuItem.Create("EmergencyTools", "Emergency Tools", "warning"),
         };
 
         public static IEnumerable<NavMenuItem> GenerateNavMenuItems()

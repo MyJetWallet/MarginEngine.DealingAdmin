@@ -40,14 +40,14 @@
     public List<InstrumentQuoteModel> GridData
         = new List<InstrumentQuoteModel>();
 
-    private List<string> liquidityProvidersList;
+    private List<string> liquidityProvidersList = new List<string>();
 
     private Dictionary<string, string> dictInstrumentProviderMaps
         = new Dictionary<string, string>();
 
     protected override async Task OnInitializedAsync()
     {
-        var liquidityProvidersList = (await LpReader.GetLiquidityProviders()).ToList();
+        liquidityProvidersList = (await LpReader.GetLiquidityProviders()).ToList();
 
         GridData = InstrumentsCache.GetAll().Select(x => InstrumentQuoteModel.Create(x)).ToList();
 

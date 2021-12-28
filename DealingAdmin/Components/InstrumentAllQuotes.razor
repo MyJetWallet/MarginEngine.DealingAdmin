@@ -7,7 +7,7 @@
 <div style="font-family:courier">
     @foreach (var provider in ProvidersList)
     {
-        <LpQuoteLine Instrument="@Instrument" ProviderId="provider" IsDefaultProvider="@(provider == ActiveProviderId)"  />
+        <LpQuoteLine Instrument="@Instrument" ProviderId="@provider" IsDefaultProvider="@(provider == ActiveProviderId)"  />
     }
     <CurrentLpQuoteLine Instrument="@Instrument"/>
 </div>

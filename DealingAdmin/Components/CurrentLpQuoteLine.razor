@@ -7,16 +7,16 @@
 @inject IBidAskCache bidAskCache
 @inject IPriceRetriever priceRetriever
 
-<div class="grid-container-lp-quote-line">
-    <div><span class="oi oi-warning open-icon-red"></span></div>
+<div class="grid-container-lp-quote-line">    
+    <div><span class="@($"oi oi-warning open-icon-red {(bidAsk != null ? "display-none" : "")}")"></span></div>
     <div><span class="text-bold">Current</span></div>
-    <div>@bidAsk.Bid.ToString($"F{digits}")</div>
+    <div>@bidAsk?.Bid.ToString($"F{digits}")</div>
     <div><span class="text-bold">Current</span></div>
-    <div>@bidAsk.Ask.ToString($"F{digits}")</div>
+    <div>@bidAsk?.Ask.ToString($"F{digits}")</div>
     <div><span class="text-bold">Current</span></div>
     <div>@spread</div>
     <div><span class="text-bold">Current</span></div>
-    <div>@bidAsk.Date <span class="@($"oi oi-warning open-icon-yellow {(bidAsk.TimeWarning ? "" : "display-none")}")"></span></div>
+    <div>@bidAsk?.Date <span class="@($"oi oi-warning open-icon-yellow {(bidAsk != null && bidAsk.TimeWarning ? "" : "display-none")}")"></span></div>
 </div>
 
 @code {
@@ -31,8 +31,17 @@
     protected override async Task OnInitializedAsync()
     {
         digits = Instrument.Digits;
-        bidAsk = bidAskCache.Get(Instrument.Id).ToBidAskModel();
-        spread = FxUtils.CalcSpread(bidAsk, digits);
+        var nowBidAsk = bidAskCache.Get(Instrument.Id);
+
+        if (nowBidAsk != null)
+        {
+            bidAsk = nowBidAsk.ToBidAskModel();
+            spread = FxUtils.CalcSpread(bidAsk, digits);
+        }
+        else
+        {
+            bidAsk = null;
+        }
 
         AppJobService.QuotesUpdateEvent += async () => await InvokeAsync(() => UpdateBidAsk());
     } 

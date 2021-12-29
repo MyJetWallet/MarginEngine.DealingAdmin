@@ -8,7 +8,12 @@
 @inject IPriceRetriever priceRetriever
 
 <div class="grid-container-lp-quote-line">    
-    <div><span class="@($"oi oi-warning open-icon-red {(bidAsk != null ? "display-none" : "")}")"></span></div>
+    <div>
+        @if (bidAsk != null)
+        {
+            <span class="material-icons color-red md-18 vertical-baseline">warning</span>
+        }
+    </div>
     <div><span class="text-bold">Current</span></div>
     <div>@bidAsk?.Bid.ToString($"F{digits}")</div>
     <div><span class="text-bold">Current</span></div>
@@ -19,7 +24,7 @@
     <div>@bidAsk?.Date 
         @if (bidAsk != null && bidAsk.TimeWarning)
         {
-            <span class="material-icons color-orange">warning</span>
+            <span class="material-icons color-orange md-18 vertical-baseline">warning</span>
         }
     </div>
 </div>

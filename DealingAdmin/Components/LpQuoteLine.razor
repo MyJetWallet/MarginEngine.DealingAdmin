@@ -12,7 +12,7 @@
     <div>
         @if (bidAsk != null)
         {
-            <span class="material-icons color-red">warning</span>
+            <span class="material-icons color-red md-18 vertical-baseline">warning</span>
         }
     </div>
     <div><span class="@(providerTextClass)">@ProviderId</span></div>
@@ -25,7 +25,7 @@
     <div>@bidAsk?.Date 
         @if (bidAsk != null && bidAsk.TimeWarning)
         {
-            <span class="material-icons color-orange">warning</span>
+            <span class="material-icons color-orange md-18 vertical-baseline">warning</span>
         }
     </div>
 </div>

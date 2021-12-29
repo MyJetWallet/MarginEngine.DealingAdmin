@@ -1,3 +1,4 @@
+using SimpleTrading.Abstraction.Trading.Instruments;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -12,6 +12,9 @@ namespace DealingAdmin.Shared.Services
         private static readonly TaskTimer QuotesUpdateTaskTimer
             = new TaskTimer(TimeSpan.FromMilliseconds(400));
 
+        private static readonly TaskTimer CommonUpdateTaskTimer
+            = new TaskTimer(TimeSpan.FromMinutes(10));
+
         public static void Init()
         {
             Console.WriteLine($"{DateTime.Now} AppJobService Init");
@@ -27,6 +30,13 @@ namespace DealingAdmin.Shared.Services
                 QuotesUpdateEvent?.Invoke();
                 return new ValueTask();
             });
+
+
+            CommonUpdateTaskTimer.Register("Common Update", () =>
+            {
+                CommonUpdateEvent?.Invoke();
+                return new ValueTask();
+            });
         }
 
         public static void Start()
@@ -39,5 +49,7 @@ namespace DealingAdmin.Shared.Services
         public static event Action PriceUpdateEvent;
 
         public static event Action QuotesUpdateEvent;
+
+        public static event Action CommonUpdateEvent;
     }
 }

@@ -3,6 +3,7 @@
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.BidAsk
+@using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.QuotesFeedRouter.Abstractions
 @using SimpleTrading.Abstraction.Trading.Settings
 @using SimpleTrading.Common.MyNoSql.DefaultValues
@@ -12,10 +13,11 @@
 @inject IQuoteSourceService QuoteSourceService
 @inject IDefaultLiquidityProviderWriter DefaultLpWriter
 
-<div id="AllQuotesRegion">    
+<div id="ActiveQuotesRegion">    
   <Table DataSource="@GridData"
-           TItem="InstrumentQuoteModel"
+           TItem="TradingInstrumentAssetGroupModel"
            Bordered="@true"
+           Loading="@isLoading"
            PageSize="999999"
            HidePagination="@true"
            ScrollY="calc(100vh - 260px)">
@@ -26,6 +28,14 @@
                     Width="120"
                     Sortable
                     Filterable/>
+            <Column Title="Asset Group"
+                    Field="@context.AssetGroup"
+                    TData="InstrumentAssetGroup"
+                    Width="120"
+                    Sortable
+                    Filterable>
+                    <span>@context.AssetGroupName</span>
+            </Column>
             <Column Title="Quotes"  
                     Field="@context.Id">
                 <TitleTemplate>
@@ -54,19 +64,35 @@
  
 @code {
 
-    public List<InstrumentQuoteModel> GridData
-        = new List<InstrumentQuoteModel>();
+    public List<TradingInstrumentAssetGroupModel> GridData
+    = new List<TradingInstrumentAssetGroupModel>();
 
     private List<string> liquidityProvidersList = new List<string>();
 
     private Dictionary<string, string> dictInstrumentProviderMaps
         = new Dictionary<string, string>();
 
+    private bool isLoading = false;
+
     protected override async Task OnInitializedAsync()
     {
+        await RefreshData();
+        AppJobService.CommonUpdateEvent += async () => await InvokeAsync(() => RefreshData());
+    }
+
+    private async Task RefreshData()
+    {
+        if (isLoading)
+        {
+            return;
+        }
+
+        isLoading = true;
+
         liquidityProvidersList = (await LpReader.GetLiquidityProviders()).ToList();
 
-        GridData = InstrumentsCache.GetAll().Select(x => InstrumentQuoteModel.Create(x)).ToList();
+        GridData = GetActiveInstruments(InstrumentsCache.GetAll())
+            .Select(x => TradingInstrumentAssetGroupModel.Create(x)).ToList();
 
         var sourceMaps = (await QuoteSourceService.GetInstrumentSourcesMaps()).ToList();
 
@@ -80,5 +106,41 @@
 
             dictInstrumentProviderMaps.Add(instr.Id, providerId);
         }
+
+        this.StateHasChanged();
+
+        isLoading = false;
+    }
+
+    private List<ITradingInstrument> GetActiveInstruments(IEnumerable<ITradingInstrument> instruments)
+    {
+        var activeInstruments = new List<ITradingInstrument>();
+        var dtNow = DateTime.UtcNow;
+
+        // filter out the non-trading instruments by day-offs
+        foreach (var inst in instruments)
+        {
+            if (inst.TradingDisabled)
+            {
+                continue;
+            }
+
+            if (inst.DaysOff == null || !inst.DaysOff.Any()) {
+                activeInstruments.Add(inst);
+                continue;
+            }
+
+            foreach (var dayOff in inst.DaysOff)
+            {
+                if (CommonUtils.IsDateBelongToDayOff(dtNow, dayOff))
+                {
+                    continue;
+                }
+            }
+
+            activeInstruments.Add(inst);
+        }
+
+        return activeInstruments;
     }
 }

@@ -2,6 +2,8 @@ using System.Collections.Generic;
 
 namespace DealingAdmin.Abstractions
 {
+    /* DISABLED BECAUSE OF USING ST LIBRARIES
+     * 
     public interface ITradingInstrument
     {
         string Id { get; }
@@ -32,4 +34,5 @@ namespace DealingAdmin.Abstractions
 
         bool TradingDisabled { get; set; }
     }
+    */
 }

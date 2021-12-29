@@ -157,9 +157,9 @@
     int _pageSize = 200;
     int _total = 0;
 
-    private bool isLoading { get; set; } = true;
+    private bool isLoading = false;
 
-    private bool stopPriceRefresh { get; set; } = false;
+    private bool stopPriceRefresh = false;
 
     protected override async Task OnInitializedAsync()
     {

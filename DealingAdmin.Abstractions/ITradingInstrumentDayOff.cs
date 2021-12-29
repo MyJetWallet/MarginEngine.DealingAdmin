@@ -2,6 +2,8 @@ using System;
 
 namespace DealingAdmin.Abstractions
 {
+    /* DISABLED BECAUSE OF USING ST LIBRARIES
+     * 
     public interface ITradingInstrumentDayOff
     {
         DayOfWeek DowFrom { get; }
@@ -12,4 +14,5 @@ namespace DealingAdmin.Abstractions
 
         TimeSpan TimeTo { get; }
     }
+    */
 }

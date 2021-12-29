@@ -9,7 +9,7 @@
 
 <div class="grid-container-lp-quote-line">    
     <div>
-        @if (bidAsk != null)
+        @if (bidAsk == null)
         {
             <span class="material-icons color-red md-18 vertical-baseline">warning</span>
         }
@@ -21,7 +21,7 @@
     <div><span class="text-bold">Current</span></div>
     <div>@spread</div>
     <div><span class="text-bold">Current</span></div>
-    <div>@bidAsk?.Date 
+    <div><span>@bidAsk?.Date</span>
         @if (bidAsk != null && bidAsk.TimeWarning)
         {
             <span class="material-icons color-orange md-18 vertical-baseline">warning</span>

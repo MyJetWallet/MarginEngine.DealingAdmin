@@ -25,6 +25,7 @@ using SimpleTrading.QuotesFeedRouter.Abstractions;
 using SimpleTrading.Auth.Grpc;
 using SimpleTrading.Engine.Grpc;
 using SimpleTrading.Abstraction.Trading;
+using SimpleTrading.PersonalData.Grpc;
 
 namespace DealingAdmin
 {
@@ -198,13 +199,17 @@ namespace DealingAdmin
                 .ForAddress(settings.AuthGrpcServiceUrl)
                 .CreateGrpcService<IAuthGrpcService>());
 
+            app.AddSingleton(GrpcChannel
+                .ForAddress(settings.PersonalDataGrpcServiceUrl)
+                .CreateGrpcService<IPersonalDataServiceGrpc>());
+
             liveDemoServicesMapper.InitService(true, services => services.EngineApi = GrpcChannel
                 .ForAddress(settings.TradingEngineLiveGrpcServerUrl)
                 .CreateGrpcService<ISimpleTradingEngineApi>());
 
             liveDemoServicesMapper.InitService(false, services => services.EngineApi = GrpcChannel
                 .ForAddress(settings.TradingEngineDemoGrpcServerUrl)
-                .CreateGrpcService<ISimpleTradingEngineApi>());
+                .CreateGrpcService<ISimpleTradingEngineApi>());          
         }
 
         public static MyServiceBusTcpClient BindServiceBus(this IServiceCollection services, SettingsModel settingsModel)

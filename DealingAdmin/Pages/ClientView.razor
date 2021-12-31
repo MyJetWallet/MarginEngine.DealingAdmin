@@ -1,0 +1,153 @@
+﻿@page "/ClientView"
+
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.ClientView
+@using DealingAdmin.Components.OrdersTabs
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Engine.Grpc.Contracts
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper LiveDemoServices
+@inject ITraderSearchService traderSearchService
+
+<PageTitle>Client View</PageTitle>
+
+<div>
+    <span class="text-bold">Search by TraderId / AccountId / E-mail:</span>
+    <Input @bind-Value="@searchPhrase" class="mx-3" width="360" />
+    <Button Icon="search" OnClick="@OnSearch" Disabled="@(String.IsNullOrEmpty(searchPhrase))">
+        <span>Search</span>
+    </Button>
+</div>
+
+@if (traderMultiBrands)
+{
+    <Tabs OnChange="@OnBrandTabSelect" DefaultActiveKey="@SelectedBrandTabKey" Animated="@false">
+        @foreach(var brand in traderBrands)
+        {
+            <TabPane Tab="@brand.Brand.ToUpper()" Key="@brand.Brand">
+	        </TabPane>
+        }
+    </Tabs>
+    <Divider />
+}
+@if (traderNotFound.HasValue && traderNotFound.Value)
+{
+     <div class="text-red px-2">@($"Trader with data {searchPhrase} was not found")</div>
+}
+else if (traderNotFound.HasValue && !traderNotFound.Value)
+{
+    <Tabs OnChange="@OnTabSelect" DefaultActiveKey="@SelectedTabKey" Animated="@false">
+        <TabPane Tab="ACCOUNTS" Key="Accounts">
+            <ClientViewAccountsTab TraderId="@activeBrandTab?.TraderId"/>
+	    </TabPane>
+        <TabPane Tab="CLIENT PROFILE" Key="ClientProfile">
+             <ClientViewProfileTab/>
+        </TabPane>
+    </Tabs>
+}
+
+@code {
+    private string SelectedBrandTabKey { get; set; }
+    private string SelectedTabKey { get; set; }
+
+    private string searchPhrase = String.Empty;
+
+    private bool? traderNotFound = null;
+    private bool traderMultiBrands = false;
+
+    private List<TraderBrandSearchModel> traderBrands = new List<TraderBrandSearchModel>();
+
+    private TraderBrandSearchModel activeBrandTab { get; set; }
+
+    string updateBalanceApiKey = String.Empty;
+    string updateTradingGroupApiKey = String.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SelectedTabKey = "Accounts";
+        await base.OnInitializedAsync();
+    }
+
+    private async Task OnSearch()
+    {
+        if (string.IsNullOrEmpty(searchPhrase))
+        {
+            return;
+        }
+
+        traderBrands = new List<TraderBrandSearchModel>();
+        activeBrandTab = null;
+
+        if (IsEmail(searchPhrase))
+        {
+            var tradersData = await traderSearchService.GetTraderDataByEmail(searchPhrase);
+
+            if (tradersData.Count > 0)
+            {
+                traderBrands = tradersData.Select(x => TraderBrandSearchModel.FromTraderBrand(x, false)).ToList();
+            }
+        }
+        else
+        {
+            traderBrands = await traderSearchService.GetTraderDataByAnyId(searchPhrase);
+        }
+
+        if (traderBrands.Any())
+        {
+            traderNotFound = false;
+
+            if (traderBrands.Count > 1)
+            {
+                traderMultiBrands = true;
+
+                activeBrandTab = traderBrands.FirstOrDefault(x => x.SearchMatch);
+
+                if (activeBrandTab != null)
+                {
+                    activeBrandTab = traderBrands.First();
+                }
+
+                SelectedBrandTabKey = activeBrandTab.Brand;
+            }
+
+            RefreshData();
+        }
+        else
+        {
+            traderNotFound = true;
+            StateHasChanged();
+        }
+    }
+
+    private bool IsEmail(string str)
+    {
+        return str.Contains("@");
+    }
+
+    private bool IsAccountId(string str)
+    {
+        return str.Length == 15;
+    }
+
+    private void OnBrandTabSelect(string brandTab)
+    {
+        SelectedBrandTabKey = brandTab;
+        RefreshData();
+    }
+
+    private void OnTabSelect(string tab)
+    {
+        SelectedTabKey = tab;
+        StateHasChanged();
+    }
+
+    private void RefreshData()
+    {
+        string updateBalanceApiKey = String.Empty;
+        string updateTradingGroupApiKey = String.Empty;
+        StateHasChanged();
+    }
+}

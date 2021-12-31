@@ -1,0 +1,104 @@
+﻿@using System.ComponentModel
+@using AntDesign.TableModels
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.Caches.ActiveOrders
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Engine.Grpc.Contracts
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper LiveDemoServices
+@inject IUserMessageService MessageService
+
+<Table  DataSource="@GridData"
+        TItem="TradingAccountModel"
+        Loading="@isLoading"
+        Bordered="@true"
+        Total="0"
+        HidePagination="@true"
+        ScrollY="calc(100vh - 260px)"
+        PageSize="999">
+    <RowTemplate> 
+        <Column Title="Account"
+                TData="string"
+                @bind-Field="@context.AccountId"
+                Width="130"
+                Sortable
+                Filterable/>
+        <Column Title="Internal"
+                TData="bool"
+                @bind-Field="@context.IsInternal"/>
+        <Column Title="Currency"
+                TData="string"
+                @bind-Field="@context.Currency"
+                Width="60"/>
+        <Column Title="Balance"
+                TData="double"
+                @bind-Field="@context.Balance"
+                Width="120"/>
+        <Column Title="Real Funds"
+                @bind-Field="@context.Balance"
+                Width="120"/>
+        <Column Title="Bonus"
+                @bind-Field="@context.Bonus"
+                Width="120"/>
+        <Column Title="Real Funds"
+                @bind-Field="@context.Balance"
+                Width="120"/>                
+        <Column Title="Trading Group"
+                TData="string"
+                @bind-Field="@context.TradingGroup"
+                Width="120"/>
+    </RowTemplate>
+</Table>
+
+<style>
+.ant-table td {
+    padding: 5px 10px !important
+}
+</style>
+
+@code
+{
+    [Parameter]
+    public string TraderId { get; set; }
+
+    List<TradingAccountModel> GridData = new List<TradingAccountModel>();
+
+    List<TradingGroupModel> tradingGroups = new List<TradingGroupModel>();
+
+    int _pageSize = 999;
+
+    private bool isLoading = false;
+
+    private bool stopPriceRefresh = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
+
+        tradingGroups = (await LiveDemoServices.GetContext(AppState.IsLive)
+            .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
+
+        var grpcAccounts = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.GetAccountsAsync(
+            new GetAccountsGrpcRequestContract
+            {
+                TraderId = this.TraderId
+            });
+
+        GridData = grpcAccounts.Select(TradingAccountModel.Create).ToList();
+
+        isLoading = false;
+
+        this.StateHasChanged();
+    } 
+}

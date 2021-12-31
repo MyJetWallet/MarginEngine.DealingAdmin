@@ -16,11 +16,13 @@
 		<PackageReference Include="Serilog.Sinks.Seq" Version="5.1.0" />
 		<PackageReference Include="SerilogWeb.Classic" Version="5.1.66" />
 		<PackageReference Include="SimpleTrading.Common.MyNoSql" Version="1.0.45" />
+		<PackageReference Include="SimpleTrading.Engine.Grpc" Version="1.0.54" />
 		<PackageReference Include="SimpleTrading.ServiceBus" Version="4.0.16" />
 		<PackageReference Include="SimpleTrading.GrpcTemplate" Version="1.0.4" />
 		<PackageReference Include="SimpleTrading.CandlesHistory.AzureStorage" Version="1.0.20" />
 		<PackageReference Include="SimpleTrading.CandlesHistory.Grpc" Version="1.0.17" />
 		<PackageReference Include="SimpleTrading.MyNoSqlRepositories" Version="2.0.41" />
+		<PackageReference Include="SimpleTrading.PersonalData.Grpc" Version="1.0.50" />
 		<PackageReference Include="SimpleTrading.Postgres" Version="1.0.83" />
     </ItemGroup>
     

@@ -22,6 +22,9 @@ using SimpleTrading.ServiceBus.PublisherSubscriber.BidAsk;
 using SimpleTrading.ServiceBus.PublisherSubscriber.UnfilteredBidAsk;
 using SimpleTrading.Common.MyNoSql;
 using SimpleTrading.QuotesFeedRouter.Abstractions;
+using SimpleTrading.Auth.Grpc;
+using SimpleTrading.Engine.Grpc;
+using SimpleTrading.Abstraction.Trading;
 
 namespace DealingAdmin
 {
@@ -32,7 +35,11 @@ namespace DealingAdmin
         public IStDataReader StReader { get; set; }
 
         public IActiveOrdersCacheReader ActiveOrdersReader { get; set; }
-}
+
+        public ISimpleTradingEngineApi EngineApi { get; set; }
+
+        public ITradingGroupsRepository TradingGroupsRepository { get; internal set; }
+    }
 
     public class LiveDemoServiceMapper
     {
@@ -84,8 +91,8 @@ namespace DealingAdmin
 
         public static MyNoSqlTcpClient BindMyNoSql(
             this IServiceCollection services,
-            SettingsModel settingsModel,
-            LiveDemoServiceMapper liveDemoServicesMapper)
+            LiveDemoServiceMapper liveDemoServicesMapper,
+            SettingsModel settingsModel)
         {
             var tcpConnection = new MyNoSqlTcpClient(
                 () => SimpleTrading.SettingsReader.SettingsReader.ReadSettings<SettingsModel>().PricesMyNoSqlServerReader,
@@ -125,13 +132,23 @@ namespace DealingAdmin
             liveDemoServicesMapper.InitService(false,
                 services => services.TradingProfileRepository = demoTradingProfileRepository);
 
+            var liveTradingGroupsRepository = 
+                MyNoSqlServerFactory.CreateTradingGroupsMyNoSqlRepository(() => settingsModel.DictionariesMyNoSqlServerWriter, true);
+
+            var demoTradingGroupsRepository =
+                MyNoSqlServerFactory.CreateTradingGroupsMyNoSqlRepository(() => settingsModel.DictionariesMyNoSqlServerWriter, true);
+
+            liveDemoServicesMapper.InitService(true, services => services.TradingGroupsRepository = liveTradingGroupsRepository);
+
+            liveDemoServicesMapper.InitService(false, services => services.TradingGroupsRepository = demoTradingGroupsRepository);
+
             return tcpConnection;
         }
 
         public static void BindPostgresRepositories(
             this IServiceCollection services,
-            SettingsModel settingsModel,
-            LiveDemoServiceMapper liveDemoServicesMapper)
+            LiveDemoServiceMapper liveDemoServicesMapper,
+            SettingsModel settingsModel)
         {
             var livePostgresConnection = new PostgresConnection(
                 settingsModel.PostgresLiveConnectionString,
@@ -165,13 +182,28 @@ namespace DealingAdmin
                 settingsModel.AzureStorageCandlesConnection, () => settingsModel.AzureStorageCandlesConnection));
         }
 
-        public static void BindGrpcServices(this IServiceCollection app, SettingsModel settings)
+        public static void BindGrpcServices(
+            this IServiceCollection app,
+            LiveDemoServiceMapper liveDemoServicesMapper,
+            SettingsModel settings)
         {
             GrpcClientFactory.AllowUnencryptedHttp2 = true;
 
             app.AddSingleton(GrpcChannel
                 .ForAddress(settings.CandlesHistoryServiceUrl)
                 .CreateGrpcService<ISimpleTradingCandlesHistoryGrpc>());
+
+            app.AddSingleton(GrpcChannel
+                .ForAddress(settings.AuthGrpcServiceUrl)
+                .CreateGrpcService<IAuthGrpcService>());
+
+            liveDemoServicesMapper.InitService(true, services => services.EngineApi = GrpcChannel
+                .ForAddress(settings.TradingEngineLiveGrpcServerUrl)
+                .CreateGrpcService<ISimpleTradingEngineApi>());
+
+            liveDemoServicesMapper.InitService(false, services => services.EngineApi = GrpcChannel
+                .ForAddress(settings.TradingEngineDemoGrpcServerUrl)
+                .CreateGrpcService<ISimpleTradingEngineApi>());
         }
 
         public static MyServiceBusTcpClient BindServiceBus(this IServiceCollection services, SettingsModel settingsModel)

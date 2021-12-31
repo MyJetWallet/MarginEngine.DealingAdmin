@@ -5,6 +5,7 @@ namespace DealingAdmin
     [YamlAttributesOnly]
     public class SettingsModel
     {
+
         [YamlProperty("DealingAdmin.MyNoSqlRestUrl")]
         public string MyNoSqlRestUrl { get; set; }
 
@@ -19,6 +20,18 @@ namespace DealingAdmin
 
         [YamlProperty("DealingAdmin.PricesMyNoSqlServerReader")]
         public string PricesMyNoSqlServerReader { get; set; }
+
+        [YamlProperty("DealingAdmin.AuthGrpcServiceUrl")]
+        public string AuthGrpcServiceUrl { get; set; }
+
+        [YamlProperty("DealingAdmin.TradingEngineLiveGrpcServerUrl")]
+        public string TradingEngineLiveGrpcServerUrl { get; set; }
+
+        [YamlProperty("DealingAdmin.TradingEngineDemoGrpcServerUrl")]
+        public string TradingEngineDemoGrpcServerUrl { get; set; }
+
+        [YamlProperty("DealingAdmin.PersonalDataGrpcServiceUrl")]
+        public string PersonalDataGrpcServiceUrl { get; set; }
 
         [YamlProperty("DealingAdmin.CandlesHistoryServiceUrl")]
         public string CandlesHistoryServiceUrl { get; set; }

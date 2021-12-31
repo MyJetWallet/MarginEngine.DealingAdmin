@@ -17,10 +17,10 @@ builder.Services.AddAntDesign();
 
 builder.Services.BindLogger(settingsModel);
 var serviceBusTcpClient = builder.Services.BindServiceBus(settingsModel);
-builder.Services.BindGrpcServices(settingsModel);
+builder.Services.BindGrpcServices(liveDemoManager, settingsModel);
 
-var myNoSqlTcpClient = builder.Services.BindMyNoSql(settingsModel, liveDemoManager);
-builder.Services.BindPostgresRepositories(settingsModel, liveDemoManager);
+var myNoSqlTcpClient = builder.Services.BindMyNoSql(liveDemoManager, settingsModel);
+builder.Services.BindPostgresRepositories(liveDemoManager, settingsModel);
 builder.Services.BindAzureStorage(settingsModel);
 builder.Services.InitLiveDemoManager(liveDemoManager);
 builder.Services.BindServices(settingsModel);

@@ -82,6 +82,7 @@ namespace DealingAdmin
             services.AddSingleton<IPriceRetriever, PriceRetriever>();
             services.AddSingleton<IAccountTypeFilter, AccountTypeFilter>();
             services.AddSingleton<IQuoteSourceService, QuoteSourceService>();
+            services.AddSingleton<ITraderSearchService, TraderSearchService>();            
         }
 
         public static void InitLiveDemoManager(this IServiceCollection services, LiveDemoServiceMapper mapper)

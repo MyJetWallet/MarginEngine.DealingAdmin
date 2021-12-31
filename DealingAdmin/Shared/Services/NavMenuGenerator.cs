@@ -7,6 +7,7 @@ namespace DealingAdmin.Shared.Services
         //oi pack
         private static readonly List<NavMenuItem> MenuItems = new()
         {
+            NavMenuItem.Create("ClientView", "Client View", "people"),
             NavMenuItem.Create("Orders", "Orders", "list_alt"),
             NavMenuItem.Create("Candles", "Candles", "candlestick_chart"),
             NavMenuItem.Create("EmergencyTools", "Emergency Tools", "warning_amber"),

@@ -78,16 +78,20 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine($"Acc Tab -> OnInitializedAsync:  TraderId: '{TraderId}'"); /// REMOVE AFTER TEST!!!!
         await RefreshData();
         AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
     }
 
     private async Task RefreshData()
     {
+        Console.WriteLine("Acc Tab -> RefreshData"); /// REMOVE AFTER TEST!!!!
         isLoading = true;
 
         tradingGroups = (await LiveDemoServices.GetContext(AppState.IsLive)
             .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
+
+        Console.WriteLine($"Acc Tab -> RefreshData ->  GRPC call"); /// REMOVE AFTER TEST!!!!
 
         var grpcAccounts = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.GetAccountsAsync(
             new GetAccountsGrpcRequestContract
@@ -95,10 +99,15 @@
                 TraderId = this.TraderId
             });
 
+        Console.WriteLine($"Acc Tab -> RefreshData ->  grpcAccounts.Count = {grpcAccounts.Count()}"); /// REMOVE AFTER TEST!!!!
         GridData = grpcAccounts.Select(TradingAccountModel.Create).ToList();
 
         isLoading = false;
 
+        Console.WriteLine($"Acc Tab -> RefreshData -> StateHasChanged"); /// REMOVE AFTER TEST!!!!
+
         this.StateHasChanged();
+
+        Console.WriteLine($"Acc Tab -> RefreshData -> DONE"); /// REMOVE AFTER TEST!!!!
     } 
 }

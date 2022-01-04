@@ -86,18 +86,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
         await RefreshData();
-
-        AppState.LiveDemoModeChanged += async () =>
-        {
-            await InvokeAsync(() => RefreshData());
-            this.StateHasChanged();
-        };
     }
 
     private async Task RefreshData()
     {
         personalData = (await PersonalDataService.GetByIdAsync(TraderId)).PersonalData;
+        this.StateHasChanged();
     }
 
     private string GetKycText() 

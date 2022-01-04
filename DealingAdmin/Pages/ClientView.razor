@@ -14,16 +14,25 @@
 
 <PageTitle>Client View</PageTitle>
 
-<div>
-    <span class="text-bold">Search by TraderId / AccountId / E-mail:</span>
-    <Input @bind-Value="@searchPhrase" class="mx-3" width="360" />
-    <Button Icon="search" OnClick="@OnSearch" Disabled="@(String.IsNullOrEmpty(searchPhrase))">
-        <span>Search</span>
-    </Button>
-</div>
+<Row>
+    <Col Xs="24" Sm="24" Md="18" Lg="14" Xl="6" class="m-3">
+        <span class="text-bold m-1">Search by TraderId / AccountId / E-mail:</span>
+    </Col>    
+    <Col Xs="16" Sm="12" Md="6" Lg="6" Xl="4" class="m-3">
+        <Input @bind-Value="@searchPhrase" />
+    </Col>
+    <Col Xs="12" Sm="12" Md="6" Lg="2" Xl="2" class="m-3">
+        <Button Icon="search" OnClick="@OnSearch" Disabled="@(String.IsNullOrEmpty(searchPhrase))">
+            <span>Search</span>
+        </Button>
+    </Col>   
+</Row>
 
 @if (traderMultiBrands)
 {
+    <div class="text-bold m-1">
+        Trader's Email is registered in a few brands:
+    </div>
     <Tabs OnChange="@OnBrandTabSelect" DefaultActiveKey="@SelectedBrandTabKey" Animated="@false">
         @foreach(var brand in traderBrands)
         {
@@ -113,16 +122,16 @@ else if (traderNotFound.HasValue && !traderNotFound.Value)
                 Console.WriteLine("OnSearch -> traderMultiBrands"); /// REMOVE AFTER TEST!!!!
 
                 activeBrandTab = traderBrands.FirstOrDefault(x => x.SearchMatch);
-
-                if (activeBrandTab == null)
-                {
-                    Console.WriteLine("OnSearch -> activeBrandTab == null)"); /// REMOVE AFTER TEST!!!!
-                    activeBrandTab = traderBrands.First();
-                }
-
-                Console.WriteLine($"OnSearch -> SelectedBrandTabKey (activeBrandTab.Brand = '{activeBrandTab?.Brand}')"); /// REMOVE AFTER TEST!!!!
-                SelectedBrandTabKey = activeBrandTab.Brand;
             }
+
+            if (activeBrandTab == null)
+            {
+                Console.WriteLine("OnSearch -> activeBrandTab == null)"); /// REMOVE AFTER TEST!!!!
+                activeBrandTab = traderBrands.First();
+            }
+
+            Console.WriteLine($"OnSearch -> SelectedBrandTabKey (activeBrandTab.Brand = '{activeBrandTab?.Brand}')"); /// REMOVE AFTER TEST!!!!
+            SelectedBrandTabKey = activeBrandTab.Brand;
 
             Console.WriteLine("OnSearch -> RefreshData"); /// REMOVE AFTER TEST!!!!
             RefreshData();

@@ -74,6 +74,7 @@
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine($"Acc Tab -> OnInitializedAsync:  TraderId: '{TraderId}'"); /// REMOVE AFTER TEST!!!!
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
         await RefreshData();
     }
 

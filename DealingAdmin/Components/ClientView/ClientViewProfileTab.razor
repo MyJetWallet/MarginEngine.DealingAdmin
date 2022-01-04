@@ -8,7 +8,7 @@
 @using SimpleTrading.PersonalData.Grpc
 @using SimpleTrading.PersonalData.Grpc.Models
  
- 
+@inject StateManager AppState
 @inject IPersonalDataServiceGrpc PersonalDataService
 
 <Title Level="4">Client profile</Title>
@@ -21,7 +21,6 @@
        <span>@TraderId</span>
     </Col>
 </Row>
-<Divider/>
 <Row>
     <Col Span="2" class="m-3">
        <span>Email</span>
@@ -30,7 +29,6 @@
        <span>@personalData?.Email</span>
     </Col>
 </Row>
-<Divider/>
 <Row>
     <Col Span="2" class="m-3">
        <span>Full Name</span>
@@ -39,7 +37,6 @@
        <span>@($"{personalData?.FirstName} {personalData?.LastName}")</span>
     </Col>
 </Row>
-<Divider/>
 <Row>
     <Col Span="2" class="m-3">
        <span>Phone</span>
@@ -48,38 +45,35 @@
        <span>@personalData?.Phone</span>
     </Col>
 </Row>
-<Divider/>
 <Row>
-    <Col Span="4" class="m-3">
+    <Col Span="2" class="m-3">
        <span>Date of Birth</span>
     </Col>
-    <Col Span="6" class="m-3">
+    <Col Span="4" class="m-3">
        <span>@personalData?.DateOfBirth</span>
     </Col>
 </Row>
-<Divider/>
 <Row>
-    <Col class="m-3">
+    <Col Span="2" class="m-3">
        <span>KYC</span>
     </Col>
-    <Col class="m-3">
+    <Col Span="4" class="m-3">
        <span>@GetKycText()</span>
     </Col>
 </Row>
 <Row>
-    <Col class="m-3">
+    <Col Span="2" class="m-3">
        <span>Brand</span>
     </Col>
     <Col class="m-3">
        <span>@personalData?.BrandId</span>
     </Col>
 </Row>
-<Divider/>
 <Row>
-    <Col class="m-3">
+    <Col Span="2" class="m-3">
        <span> Platform Type</span>
     </Col>
-    <Col class="m-3">
+    <Col Span="4" class="m-3">
        <span>@personalData?.PlatformType</span>
     </Col>
 </Row>
@@ -91,6 +85,17 @@
     PersonalDataGrpcModel personalData { get; set; }
 
     protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+
+        AppState.LiveDemoModeChanged += async () =>
+        {
+            await InvokeAsync(() => RefreshData());
+            this.StateHasChanged();
+        };
+    }
+
+    private async Task RefreshData()
     {
         personalData = (await PersonalDataService.GetByIdAsync(TraderId)).PersonalData;
     }

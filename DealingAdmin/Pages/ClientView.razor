@@ -7,7 +7,6 @@
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Engine.Grpc.Contracts
 
-@inject StateManager AppState
 @inject LiveDemoServiceMapper LiveDemoServices
 @inject ITraderSearchService traderSearchService
 
@@ -76,8 +75,6 @@ else if (traderNotFound.HasValue && !traderNotFound.Value)
     protected override async Task OnInitializedAsync()
     {
         SelectedTabKey = "Accounts";
-        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
-        await base.OnInitializedAsync();        
     }
 
     private async Task OnSearch()

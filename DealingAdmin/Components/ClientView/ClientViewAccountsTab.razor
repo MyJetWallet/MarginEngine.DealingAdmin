@@ -37,8 +37,7 @@
                 Width="120"/>
         <Column Title="Balance"
                 TData="double"
-                @bind-Field="@context.Balance"
-                Width="120"/>
+                @bind-Field="@context.Balance"/>
         <Column Title="Real Funds"
                 @bind-Field="@context.Balance"/>
         <Column Title="Bonus"
@@ -76,7 +75,6 @@
     {
         Console.WriteLine($"Acc Tab -> OnInitializedAsync:  TraderId: '{TraderId}'"); /// REMOVE AFTER TEST!!!!
         await RefreshData();
-        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
     }
 
     private async Task RefreshData()

@@ -14,66 +14,72 @@
 <Title Level="4">Client profile</Title>
 
 <Row>
-    <Col Span="12" class="m-3">
+    <Col Span="2" class="m-3">
        <span>Trader ID</span>
     </Col>
-    <Col Span="24" class="m-3">
+    <Col Span="4" class="m-3">
        <span>@TraderId</span>
     </Col>
 </Row>
+<Divider/>
 <Row>
-    <Col Span="12" class="m-3">
+    <Col Span="2" class="m-3">
        <span>Email</span>
     </Col>
-    <Col Span="24" class="m-3">
+    <Col Span="4" class="m-3">
        <span>@personalData?.Email</span>
     </Col>
 </Row>
+<Divider/>
 <Row>
-    <Col Span="12" class="m-3">
+    <Col Span="2" class="m-3">
        <span>Full Name</span>
     </Col>
-    <Col Span="24" class="m-3">
+    <Col Span="4" class="m-3">
        <span>@($"{personalData?.FirstName} {personalData?.LastName}")</span>
     </Col>
 </Row>
+<Divider/>
 <Row>
-    <Col Span="12" class="m-3">
+    <Col Span="2" class="m-3">
        <span>Phone</span>
     </Col>
-    <Col Span="24" class="m-3">
+    <Col Span="4" class="m-3">
        <span>@personalData?.Phone</span>
     </Col>
 </Row>
+<Divider/>
 <Row>
-    <Col Span="12" class="m-3">
+    <Col Span="4" class="m-3">
        <span>Date of Birth</span>
     </Col>
-    <Col Span="24" class="m-3">
+    <Col Span="6" class="m-3">
        <span>@personalData?.DateOfBirth</span>
     </Col>
 </Row>
+<Divider/>
 <Row>
-    <Col Span="12" class="m-3">
+    <Col class="m-3">
        <span>KYC</span>
     </Col>
-    <Col Span="24" class="m-3">
+    <Col class="m-3">
        <span>@GetKycText()</span>
     </Col>
 </Row>
 <Row>
-    <Col Span="12" class="m-3">
+    <Col class="m-3">
        <span>Brand</span>
     </Col>
-    <Col Span="24" class="m-3">
+    <Col class="m-3">
        <span>@personalData?.BrandId</span>
     </Col>
 </Row>
+<Divider/>
 <Row>
-    <Col Span="12" class="m-3">
+    <Col class="m-3">
        <span> Platform Type</span>
     </Col>
-    <Col Span="24" class="m-3">
+    <Col class="m-3">
        <span>@personalData?.PlatformType</span>
     </Col>
 </Row>

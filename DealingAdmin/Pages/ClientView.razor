@@ -14,10 +14,10 @@
 <PageTitle>Client View</PageTitle>
 
 <Row>
-    <Col Xs="24" Sm="24" Md="18" Lg="14" Xl="6" class="m-3">
+    <Col Xs="16" Sm="12" Md="6" Lg="6" Xl="4" class="m-3">    
         <span class="text-bold m-1">Search by TraderId / AccountId / E-mail:</span>
     </Col>    
-    <Col Xs="16" Sm="12" Md="6" Lg="6" Xl="4" class="m-3">
+    <Col Xs="24" Sm="24" Md="18" Lg="14" Xl="6" class="m-3">
         <Input @bind-Value="@searchPhrase" />
     </Col>
     <Col Xs="12" Sm="12" Md="6" Lg="2" Xl="2" class="m-3">
@@ -76,7 +76,8 @@ else if (traderNotFound.HasValue && !traderNotFound.Value)
     protected override async Task OnInitializedAsync()
     {
         SelectedTabKey = "Accounts";
-        await base.OnInitializedAsync();
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+        await base.OnInitializedAsync();        
     }
 
     private async Task OnSearch()

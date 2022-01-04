@@ -4,7 +4,6 @@
 @using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Components.ClientView
-@using DealingAdmin.Components.OrdersTabs
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Engine.Grpc.Contracts
 
@@ -53,7 +52,7 @@ else if (traderNotFound.HasValue && !traderNotFound.Value)
             <ClientViewAccountsTab TraderId="@activeBrandTab?.TraderId"/>
 	    </TabPane>
         <TabPane Tab="CLIENT PROFILE" Key="ClientProfile">
-             <ClientViewProfileTab/>
+             <ClientViewProfileTab TraderId="@activeBrandTab?.TraderId" />
         </TabPane>
     </Tabs>
 }

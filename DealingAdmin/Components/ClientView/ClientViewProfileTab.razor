@@ -4,15 +4,106 @@
 @using DealingAdmin.Shared.Services 
 @using System.IO
 @using System.Diagnostics 
+@using SimpleTrading.PersonalData.Abstractions.PersonalData
+@using SimpleTrading.PersonalData.Grpc
+@using SimpleTrading.PersonalData.Grpc.Models
  
  
+@inject IPersonalDataServiceGrpc PersonalDataService
+
+<Title Level="4">Client profile</Title>
+
+<Row>
+    <Col Span="12" class="m-3">
+       <span>Trader ID</span>
+    </Col>
+    <Col Span="24" class="m-3">
+       <span>@TraderId</span>
+    </Col>
+</Row>
+<Row>
+    <Col Span="12" class="m-3">
+       <span>Email</span>
+    </Col>
+    <Col Span="24" class="m-3">
+       <span>@personalData?.Email</span>
+    </Col>
+</Row>
+<Row>
+    <Col Span="12" class="m-3">
+       <span>Full Name</span>
+    </Col>
+    <Col Span="24" class="m-3">
+       <span>@($"{personalData?.FirstName} {personalData?.LastName}")</span>
+    </Col>
+</Row>
+<Row>
+    <Col Span="12" class="m-3">
+       <span>Phone</span>
+    </Col>
+    <Col Span="24" class="m-3">
+       <span>@personalData?.Phone</span>
+    </Col>
+</Row>
+<Row>
+    <Col Span="12" class="m-3">
+       <span>Date of Birth</span>
+    </Col>
+    <Col Span="24" class="m-3">
+       <span>@personalData?.DateOfBirth</span>
+    </Col>
+</Row>
+<Row>
+    <Col Span="12" class="m-3">
+       <span>KYC</span>
+    </Col>
+    <Col Span="24" class="m-3">
+       <span>@GetKycText()</span>
+    </Col>
+</Row>
+<Row>
+    <Col Span="12" class="m-3">
+       <span>Brand</span>
+    </Col>
+    <Col Span="24" class="m-3">
+       <span>@personalData?.BrandId</span>
+    </Col>
+</Row>
+<Row>
+    <Col Span="12" class="m-3">
+       <span> Platform Type</span>
+    </Col>
+    <Col Span="24" class="m-3">
+       <span>@personalData?.PlatformType</span>
+    </Col>
+</Row>
 
 @code {
     [Parameter]
     public string TraderId { get; set; }
 
+    PersonalDataGrpcModel personalData { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
+        personalData = (await PersonalDataService.GetByIdAsync(TraderId)).PersonalData;
+    }
+
+    private string GetKycText() 
+    {
+        if (personalData == null)
+        {
+            return String.Empty;
+        }
+
+        return personalData.KYC switch
+        {
+            PersonalDataKYCEnum.NotVerified => "Not Verified",
+            PersonalDataKYCEnum.OnVerification => "On Verification",
+            PersonalDataKYCEnum.Restricted => "Restricted",
+            PersonalDataKYCEnum.Verified => "Verified",
+            _ => String.Empty
+        };
     }
 }
 

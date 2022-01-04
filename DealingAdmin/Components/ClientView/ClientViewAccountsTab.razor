@@ -25,33 +25,29 @@
         <Column Title="Account"
                 TData="string"
                 @bind-Field="@context.AccountId"
-                Width="130"
                 Sortable
                 Filterable/>
         <Column Title="Internal"
                 TData="bool"
-                @bind-Field="@context.IsInternal"/>
+                @bind-Field="@context.IsInternal"
+                Width="120"/>
         <Column Title="Currency"
                 TData="string"
                 @bind-Field="@context.Currency"
-                Width="60"/>
+                Width="120"/>
         <Column Title="Balance"
                 TData="double"
                 @bind-Field="@context.Balance"
                 Width="120"/>
         <Column Title="Real Funds"
-                @bind-Field="@context.Balance"
-                Width="120"/>
+                @bind-Field="@context.Balance"/>
         <Column Title="Bonus"
-                @bind-Field="@context.Bonus"
-                Width="120"/>
+                @bind-Field="@context.Bonus"/>
         <Column Title="Real Funds"
-                @bind-Field="@context.Balance"
-                Width="120"/>                
+                @bind-Field="@context.Balance"/>                
         <Column Title="Trading Group"
                 TData="string"
-                @bind-Field="@context.TradingGroup"
-                Width="120"/>
+                @bind-Field="@context.TradingGroup"/>
     </RowTemplate>
 </Table>
 
@@ -107,7 +103,5 @@
         Console.WriteLine($"Acc Tab -> RefreshData -> StateHasChanged"); /// REMOVE AFTER TEST!!!!
 
         this.StateHasChanged();
-
-        Console.WriteLine($"Acc Tab -> RefreshData -> DONE"); /// REMOVE AFTER TEST!!!!
     } 
 }

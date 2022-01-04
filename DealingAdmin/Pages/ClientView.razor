@@ -38,7 +38,6 @@
 	        </TabPane>
         }
     </Tabs>
-    <Divider />
 }
 @if (traderNotFound.HasValue && traderNotFound.Value)
 {
@@ -152,7 +151,9 @@ else if (traderNotFound.HasValue && !traderNotFound.Value)
 
     private void OnBrandTabSelect(string brandTab)
     {
+        Console.WriteLine($"ClientView => OnBrandTabSelect -> brandTab = '{brandTab}')"); /// REMOVE AFTER TEST!!!!
         SelectedBrandTabKey = brandTab;
+        activeBrandTab = traderBrands.First(x => x.Brand == brandTab);
         RefreshData();
     }
 

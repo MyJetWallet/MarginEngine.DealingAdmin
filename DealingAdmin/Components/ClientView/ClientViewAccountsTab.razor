@@ -6,12 +6,16 @@
 @using DealingAdmin.Services
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.Caches.ActiveOrders
+@using SimpleTrading.Abstraction.Trading
+@using SimpleTrading.Abstraction.Trading.BalanceOperations
 @using SimpleTrading.Abstraction.Trading.Settings
 @using SimpleTrading.Engine.Grpc.Contracts
 
 @inject StateManager AppState
 @inject LiveDemoServiceMapper LiveDemoServices
 @inject IUserMessageService MessageService
+@inject Serilog.Core.Logger logger
+@inject ModalService modalService
 
 <Table  DataSource="@GridData"
         TItem="TradingAccountModel"
@@ -27,10 +31,6 @@
                 @bind-Field="@context.AccountId"
                 Sortable
                 Filterable/>
-        <Column Title="Internal"
-                TData="bool"
-                @bind-Field="@context.IsInternal"
-                Width="120"/>
         <Column Title="Currency"
                 TData="string"
                 @bind-Field="@context.Currency"
@@ -47,8 +47,60 @@
         <Column Title="Trading Group"
                 TData="string"
                 @bind-Field="@context.TradingGroup"/>
+        <ActionColumn Title="Actions" Width="120">
+                <Button Type="@ButtonType.Primary"
+                        OnClick="()=>ShowUpdateBalanceDialog(context.AccountId)">
+                    <span class="material-icons color-orange md-18 vertical-baseline">warning</span>
+                </Button>
+        </ActionColumn>
     </RowTemplate>
 </Table>
+
+<Modal Title="Update Balance"
+       Visible="@isUpdateBalanceDialogVisible"
+       OkText="@("Confirm")"
+       OnOk="()=>UpdateBalance()"
+       OnCancel="()=>CloseUpdateBalanceDialog()">
+    <Form Model="formUpdateBalance">
+        <FormItem Label="Trader Id" >
+            <Input @bind-Value="@context.TraderId" ReadOnly="@true" />
+        </FormItem>
+        <FormItem Label="Account Id" >
+            <Input @bind-Value="@context.AccountId" ReadOnly="@true" />
+        </FormItem>
+        <FormItem Label="Delta" Required="@true">
+            <AntDesign.InputNumber @bind-Value="@context.Delta" />
+        </FormItem>
+        <FormItem Label="Comment" Required="@true">
+            <Input @bind-Value="@context.Comment" />
+        </FormItem>
+        <FormItem Label="Comment" Required="@true">
+            <Input @bind-Value="@context.Comment" />
+        </FormItem>
+        <FormItem Label="Operation Type" Required="@true">
+             <Select Mode="default"
+                    @bind-Value="@context.OperationType"    
+                    TItemValue="BalanceUpdateOperationType"
+                    TItem="BalanceUpdateOperationType">
+                <SelectOptions>
+                    @foreach (var item in Enum.GetValues<BalanceUpdateOperationType>())
+                    {
+                        <SelectOption
+                            TItemValue="BalanceUpdateOperationType"
+                            TItem="BalanceUpdateOperationType"
+                            Value=@item
+                            Label="@item.ToString()"/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        
+        <FormItem Label="API Key" Required>
+            <InputPassword @bind-Value="@context.ChangeBalanceApiKey" />
+        </FormItem>
+    </Form>
+</Modal>
+
 
 <style>
 .ant-table td {
@@ -68,39 +120,100 @@
     int _pageSize = 999;
 
     private bool isLoading = false;
-
     private bool stopPriceRefresh = false;
+    private bool isUpdateBalanceDialogVisible = false;
+    private bool isUpdateTradingGroupDialogVisible = false;
+
+    UpdateBalanceModel formUpdateBalance = new UpdateBalanceModel();
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine($"Acc Tab -> OnInitializedAsync:  TraderId: '{TraderId}'"); /// REMOVE AFTER TEST!!!!
         AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
         await RefreshData();
     }
 
     private async Task RefreshData()
     {
-        Console.WriteLine("Acc Tab -> RefreshData"); /// REMOVE AFTER TEST!!!!
         isLoading = true;
 
-        tradingGroups = (await LiveDemoServices.GetContext(AppState.IsLive)
-            .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
+        try
+        {
+            tradingGroups = (await LiveDemoServices.GetContext(AppState.IsLive)
+                .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
 
-        Console.WriteLine($"Acc Tab -> RefreshData ->  GRPC call"); /// REMOVE AFTER TEST!!!!
+            Console.WriteLine($"Acc Tab -> RefreshData ->  GRPC call"); /// REMOVE AFTER TEST!!!!
 
-        var grpcAccounts = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.GetAccountsAsync(
-            new GetAccountsGrpcRequestContract
-            {
-                TraderId = this.TraderId
-            });
+            var grpcAccounts = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.GetAccountsAsync(
+                new GetAccountsGrpcRequestContract
+                    {
+                        TraderId = this.TraderId
+                    });
 
-        Console.WriteLine($"Acc Tab -> RefreshData ->  grpcAccounts.Count = {grpcAccounts.Count()}"); /// REMOVE AFTER TEST!!!!
-        GridData = grpcAccounts.Select(TradingAccountModel.Create).ToList();
-
-        isLoading = false;
+            Console.WriteLine($"Acc Tab -> RefreshData ->  grpcAccounts.Count = {grpcAccounts.Count()}"); /// REMOVE AFTER TEST!!!!
+            GridData = grpcAccounts.Select(TradingAccountModel.Create).ToList();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }        
 
         Console.WriteLine($"Acc Tab -> RefreshData -> StateHasChanged"); /// REMOVE AFTER TEST!!!!
 
         this.StateHasChanged();
-    } 
+    }
+
+    void ShowUpdateBalanceDialog(string accountId)
+    {
+        formUpdateBalance = new UpdateBalanceModel
+            {
+                TraderId = TraderId,
+                AccountId = accountId,
+                OperationType = BalanceUpdateOperationType.BalanceCorrection,
+            };
+
+        this.isUpdateBalanceDialogVisible = true;
+        
+        // this.StateHasChanged();
+    }
+
+    void CloseUpdateBalanceDialog()
+    {
+        this.isUpdateBalanceDialogVisible = false;
+        // this.StateHasChanged();
+    }
+
+    private async Task UpdateBalance()
+    {
+        if (Math.Abs(formUpdateBalance.Delta) < 0.001)
+        {
+            await MessageService.ErrorAsync("Delta can't be zero");
+            return;
+        }
+
+        var contract = new ChangeBalanceGrpcRequest
+            {
+                TraderId = formUpdateBalance.TraderId,
+                AccountId = formUpdateBalance.AccountId,
+                Delta = formUpdateBalance.Delta,
+                Comment = formUpdateBalance.Comment,
+                OperationType = formUpdateBalance.OperationType,
+                ProcessId = $"Dealing-Admin-{FormatUtils.DateTimeNamedWithMsFormat(DateTime.UtcNow)}"
+            };
+
+        var grpcResponse = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.ChangeBalanceAsync(contract);
+
+        if (grpcResponse.Result != TradingOperationResult.Ok)
+        {
+            await MessageService.ErrorAsync($"Result: {grpcResponse.Result.ToString()}");
+            return;
+        }
+
+        await MessageService.SuccessAsync($"Result: OK. Account updated balance: ${grpcResponse.Account.Balance}");
+        CloseUpdateBalanceDialog();
+    }
 }

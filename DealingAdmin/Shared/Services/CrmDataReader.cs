@@ -15,6 +15,7 @@ namespace DealingAdmin.Shared.Services
         {
             public const string Accounts = "mt5_accounts";
             public const string StInternalAccountsView = "st_internal_accounts_view";
+            public const string StInternalTraderAccountsView = "st_internal_trader_accounts_view";
         }
 
         private readonly IPostgresConnection _crmConnection;
@@ -34,6 +35,13 @@ namespace DealingAdmin.Shared.Services
             var sql = @$"SELECT * FROM {Tables.StInternalAccountsView}";
             var result = await _crmConnection.GetRecordsAsync<InternalAccountCrmModel>(sql);
             return result.Select(acc => acc.ToInternalAccountModel());
+        }
+
+        public async Task<InternalTraderModel> GetAccountType(string traderId)
+        {
+            var sql = @$"SELECT id AS TraderId, COALESCE(isinternal, true) AS isinternal FROM personaldata id = @traderId";
+            var result = await _crmConnection.GetFirstRecordOrNullAsync<InternalTraderModel>(sql, new { traderId = traderId });
+            return result;
         }
 
         public async Task<string> GetTraderIdBySearch(string phrase)

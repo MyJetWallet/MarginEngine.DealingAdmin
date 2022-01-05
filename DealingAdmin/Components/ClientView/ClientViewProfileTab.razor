@@ -10,6 +10,10 @@
  
 @inject StateManager AppState
 @inject IPersonalDataServiceGrpc PersonalDataService
+@inject ICrmDataReader CrmReader
+@inject IAccountTypeFilter AccTypeFilter
+@inject Serilog.Core.Logger logger
+
 
 <Title Level="4">Client profile</Title>
 
@@ -19,6 +23,14 @@
     </Col>
     <Col Span="4" class="m-3">
        <span>@TraderId</span>
+    </Col>
+</Row>
+<Row>
+    <Col Span="2" class="m-3">
+       <span>Internal</span>
+    </Col>
+    <Col Span="4" class="m-3">
+       <span>@isInternal</span>
     </Col>
 </Row>
 <Row>
@@ -84,6 +96,10 @@
 
     PersonalDataGrpcModel personalData { get; set; }
 
+    private bool? isInternal { get; set; }
+
+    private bool isLoading = false;
+
     protected override async Task OnInitializedAsync()
     {
         AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
@@ -92,8 +108,23 @@
 
     private async Task RefreshData()
     {
-        personalData = (await PersonalDataService.GetByIdAsync(TraderId)).PersonalData;
-        this.StateHasChanged();
+        isLoading = true;
+
+        try
+        {
+            personalData = (await PersonalDataService.GetByIdAsync(TraderId)).PersonalData;
+            isInternal = (await CrmReader.GetAccountType(this.TraderId))?.IsInternal;
+            this.StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private string GetKycText() 

@@ -34,8 +34,7 @@ namespace DealingAdmin.Abstractions.Models
                 Balance = src.Balance,
                 Bonus = src.Bonus,
                 TimeStamp = src.TimeStamp,
-                TradingDisabled = false,
-                IsInternal = false
+                TradingDisabled = false
             };
         }
     }    

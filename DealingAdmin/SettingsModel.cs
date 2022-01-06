@@ -5,7 +5,6 @@ namespace DealingAdmin
     [YamlAttributesOnly]
     public class SettingsModel
     {
-
         [YamlProperty("DealingAdmin.MyNoSqlRestUrl")]
         public string MyNoSqlRestUrl { get; set; }
 
@@ -71,5 +70,11 @@ namespace DealingAdmin
 
         [YamlProperty("DealingAdmin.SeqServiceUrl")]
         public string SeqServiceUrl { get; set; }
+
+        [YamlProperty("DealingAdmin.ChangeBalanceApiKey")]
+        public string ChangeBalanceApiKey { get; set; }
+
+        [YamlProperty("DealingAdmin.AdminCrudApiKey")]
+        public string AdminCrudApiKey { get; set; }
     }
 }

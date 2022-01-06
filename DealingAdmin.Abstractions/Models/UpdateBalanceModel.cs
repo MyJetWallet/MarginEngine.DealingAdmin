@@ -21,6 +21,12 @@ namespace DealingAdmin.Abstractions.Models
         public BalanceUpdateOperationType OperationType { get; set; }
         
         [Required]
+        public string ProcessId { get; set; }
+        
+        [Required]
+        public bool IsLive { get; set; }
+        
+        [Required]
         public string ChangeBalanceApiKey { get; set; }
     }
 }

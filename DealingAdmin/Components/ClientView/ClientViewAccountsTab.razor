@@ -14,8 +14,10 @@
 @inject StateManager AppState
 @inject LiveDemoServiceMapper LiveDemoServices
 @inject IUserMessageService MessageService
+@inject AdminAppSettings appSettings
 @inject Serilog.Core.Logger logger
 @inject ModalService modalService
+
 
 <Table  DataSource="@GridData"
         TItem="TradingAccountModel"
@@ -48,10 +50,16 @@
                 TData="string"
                 @bind-Field="@context.TradingGroup"/>
         <ActionColumn Title="Actions" Width="120">
-                <Button Type="@ButtonType.Primary"
-                        OnClick="()=>ShowUpdateBalanceDialog(context.AccountId)">
-                    <span class="material-icons color-orange md-18 vertical-baseline">warning</span>
-                </Button>
+            <div>
+                <span class="material-icons-outlined color-primary md-18 vertical-baseline"
+                      @onclick="()=>ShowUpdateBalanceDialog(context.AccountId)">
+                      account_balance_wallet
+                </span>
+                <span class="material-icons-outlined color-primary md-18 vertical-baseline"
+                      @onclick="()=>ShowUpdateTradingGroupDialog(context.AccountId)">
+                      list_alt
+                </span>
+            </div>
         </ActionColumn>
     </RowTemplate>
 </Table>
@@ -61,18 +69,17 @@
        OkText="@("Confirm")"
        OnOk="()=>UpdateBalance()"
        OnCancel="()=>CloseUpdateBalanceDialog()">
-    <Form Model="formUpdateBalance">
+    <Form Model="formUpdateBalance"
+          LabelColSpan="8"
+          WrapperColSpan="16">
         <FormItem Label="Trader Id" >
-            <Input @bind-Value="@context.TraderId" ReadOnly="@true" />
+            <Input @bind-Value="@context.TraderId" Disabled="@true" ReadOnly="@true" />
         </FormItem>
         <FormItem Label="Account Id" >
-            <Input @bind-Value="@context.AccountId" ReadOnly="@true" />
+            <Input @bind-Value="@context.AccountId" Disabled="@true" ReadOnly="@true" />
         </FormItem>
         <FormItem Label="Delta" Required="@true">
             <AntDesign.InputNumber @bind-Value="@context.Delta" />
-        </FormItem>
-        <FormItem Label="Comment" Required="@true">
-            <Input @bind-Value="@context.Comment" />
         </FormItem>
         <FormItem Label="Comment" Required="@true">
             <Input @bind-Value="@context.Comment" />
@@ -94,7 +101,6 @@
                 </SelectOptions>
             </Select>
         </FormItem>
-        
         <FormItem Label="API Key" Required>
             <InputPassword @bind-Value="@context.ChangeBalanceApiKey" />
         </FormItem>
@@ -177,8 +183,13 @@
             };
 
         this.isUpdateBalanceDialogVisible = true;
-        
+
         // this.StateHasChanged();
+    }
+
+    void ShowUpdateTradingGroupDialog(string accountId)
+    {
+        
     }
 
     void CloseUpdateBalanceDialog()
@@ -189,6 +200,14 @@
 
     private async Task UpdateBalance()
     {
+        Console.WriteLine($"UpdateBalance"); /// REMOVE AFTER TEST!!!!
+
+        if (formUpdateBalance.ChangeBalanceApiKey != appSettings.ChangeBalanceApiKey)
+        {
+            await MessageService.ErrorAsync("API Key is not valid");
+            return;
+        }
+
         if (Math.Abs(formUpdateBalance.Delta) < 0.001)
         {
             await MessageService.ErrorAsync("Delta can't be zero");
@@ -215,5 +234,9 @@
 
         await MessageService.SuccessAsync($"Result: OK. Account updated balance: ${grpcResponse.Account.Balance}");
         CloseUpdateBalanceDialog();
+
+        Console.WriteLine($"UpdateBalance Result: ${grpcResponse.Account.Balance}"); /// REMOVE AFTER TEST!!!!
+
+        await RefreshData();
     }
 }

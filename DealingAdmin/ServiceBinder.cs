@@ -26,6 +26,7 @@ using SimpleTrading.Auth.Grpc;
 using SimpleTrading.Engine.Grpc;
 using SimpleTrading.Abstraction.Trading;
 using SimpleTrading.PersonalData.Grpc;
+using AntDesign;
 
 namespace DealingAdmin
 {
@@ -60,6 +61,13 @@ namespace DealingAdmin
         }
     }
 
+    public class AdminAppSettings
+    {
+        public string ChangeBalanceApiKey { get; set; }
+        
+        public string AdminCrudApiKey { get; set; }
+    }
+
     public static class ServiceBinder
     {
         private const string AppName = "DealingAdmin";
@@ -68,6 +76,7 @@ namespace DealingAdmin
 
         public static void BindServices(this IServiceCollection services, SettingsModel settingsModel)
         {
+            services.AddScoped<MessageService>();            
             services.AddScoped<IUserMessageService, UserMessageService>();
 
             services.AddSingleton(new CandlesServiceSettings()
@@ -75,6 +84,12 @@ namespace DealingAdmin
                 CandlesSaveChunkSize = settingsModel.CandlesSaveChunkSize,
                 CandlesExpiresMinutes = settingsModel.CandlesExpiresMinutes,
                 CandlesExpiresHours = settingsModel.CandlesExpiresHours
+            });
+
+            services.AddSingleton(new AdminAppSettings()
+            {
+                ChangeBalanceApiKey = settingsModel.ChangeBalanceApiKey,
+                AdminCrudApiKey = settingsModel.AdminCrudApiKey,
             });
 
             services.AddScoped<StateManager>();

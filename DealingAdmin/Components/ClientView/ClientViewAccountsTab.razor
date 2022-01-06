@@ -51,13 +51,13 @@
                 @bind-Field="@context.TradingGroup"/>
         <ActionColumn Title="Actions" Width="120">
             <div>
-                <span class="material-icons-outlined color-primary md-18 vertical-baseline"
+                <i class="material-icons-outlined color-primary md-18 vertical-baseline"></i>
+                <i><span class="material-icons-outlined color-primary md-18 vertical-baseline"
                       @onclick="()=>ShowUpdateBalanceDialog(context.AccountId)">
                       account_balance_wallet
-                </span>
-                <span class="material-icons-outlined color-primary md-18 vertical-baseline"
-                      @onclick="()=>ShowUpdateTradingGroupDialog(context.AccountId)">
-                      list_alt
+                </span></i>
+                <span class="material-icons-outlined color-primary md-18 vertical-baseline">
+                    list_alt
                 </span>
             </div>
         </ActionColumn>

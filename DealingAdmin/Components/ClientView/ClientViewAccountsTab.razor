@@ -51,12 +51,12 @@
                 @bind-Field="@context.TradingGroup"/>
         <ActionColumn Title="Actions" Width="120">
             <div>
-                <button @onclick="()=>ShowUpdateBalanceDialog(context.AccountId)">
-                    <span class="material-icons-outlined color-primary md-18 vertical-baseline">account_balance_wallet</span>
-                </button>
-            </div>
-            <div>
-                <span class="material-icons-outlined color-primary md-18 vertical-baseline">list_alt</span>
+                <Tooltip Title="@("Update Balance")">
+                    <i @onclick="()=>ShowUpdateBalanceDialog(context.AccountId)" class="material-icons color-primary">account_balance_wallet</i>
+                </Tooltip>
+                <Tooltip Title="@("Update Group")">    
+                    <i @onclick="()=>ShowUpdateTradingGroupDialog(context.AccountId)" class="material-icons color-primary">list_alt</i>
+                </Tooltip>
             </div>
         </ActionColumn>
     </RowTemplate>

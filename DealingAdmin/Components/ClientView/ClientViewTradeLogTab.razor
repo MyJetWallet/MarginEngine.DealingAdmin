@@ -23,12 +23,13 @@
 
 <div class="mb-2">
     <Row>
-        <Col Span="6" Class="text-nowrap">
+        <Col Span="8" Class="text-nowrap">
             <span class="text-bold mx-2">Account:</span>               
             <Select DataSource="@AccountsList"
                     TItemValue="TradingAccountModel"
                     TItem="TradingAccountModel"
-                    OnSelectedItemChanged="SelectedAccountChanged">
+                    OnSelectedItemChanged="SelectedAccountChanged"
+                    Style="width: 300px;">
                 <SelectOptions>
                     @foreach (var acc in AccountsList)
                     {
@@ -41,7 +42,7 @@
                 </SelectOptions>
             </Select>
         </Col>
-        <Col Span="6" Class="text-nowrap align-content-end">
+        <Col Span="8" Class="text-nowrap align-content-end">
             <span class="text-bold mx-2">Date:</span>                 
             <DatePicker
                 @bind-Value="@tradeLogDate"
@@ -51,15 +52,15 @@
             <Button
                 Type="@ButtonType.Primary"
                 OnClick="()=>LoadDataForDay()"
-                Class="mx-4">
+                Class="mx-2">
                 Load
             </Button>
         </Col>
-        <Col Span="12" Class="align-content-end">
+        <Col Span="8" Class="align-items-end">
             <Button
                 Type="@ButtonType.Primary"
                 OnClick="()=>LoadLastData()"
-                Class="mx-4">
+                Class="mx-2">
                 Load Last
             </Button>
             <AntDesign.InputNumber @bind-Value="@tradeLogTimeUnits" />
@@ -88,7 +89,7 @@
         Loading="@isLoading"
         Bordered="@true"
         Total="_total"
-        ScrollY="calc(100vh - 260px)"
+        ScrollY="calc(100vh - 320px)"
         @bind-PageIndex="_pageIndex"
         @bind-PageSize="_pageSize">
     <RowTemplate> 

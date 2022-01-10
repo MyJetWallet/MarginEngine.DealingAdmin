@@ -19,7 +19,7 @@ namespace DealingAdmin
                 var checkFromSunday = IsDateBelongToDayOff(
                     dt,
                     DayOfWeek.Sunday,
-                    new TimeSpan(),
+                    new TimeSpan(0, 0, 0),
                     dayOff.DowTo,
                     dayOff.TimeTo);
 

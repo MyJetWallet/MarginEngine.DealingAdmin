@@ -119,7 +119,7 @@
                 </Tooltip>
                 @if (isCreatePositionEvent(context))
                 {
-                    <Tooltip Title="@("Restore Active Position<")">    
+                    <Tooltip Title="@("Restore Active Position")">    
                         <a><i @onclick="()=>RestoreActivePosition(context.Data)"
                               class="material-icons color-primary">restore_page</i></a>
                     </Tooltip>
@@ -146,7 +146,7 @@
 
     int _pageIndex = 1;
     int _pageSize = 200;
-    int _total = 2000;
+    int _total = 0;
 
     private bool isLoading = false;
 
@@ -188,6 +188,7 @@
             Console.WriteLine($"TradeLog Tab -> RefreshData ->  grpcAccounts.Count = {grpcAccounts.Count()}"); /// REMOVE AFTER TEST!!!!
 
             AccountsList = grpcAccounts.Select(TradingAccountModel.Create).ToList();
+            tradeLogAccount = AccountsList.First();
         }
         catch(Exception ex)
         {

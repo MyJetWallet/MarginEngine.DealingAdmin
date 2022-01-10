@@ -4,6 +4,10 @@ namespace DealingAdmin
 {
     public static class FormatUtils
     {
+        public const string DateTimeCommonFormat = "yyyy-MM-dd HH:mm:ss";
+
+        public const string FullDateTimeWithMsFormat = "ddd, dd MMM yyy HH:mm:ss.fff";
+
         public static string TimeSpanToString(TimeSpan ts)
         {
             return string.Format("{0} {1} {2} {3}",
@@ -15,12 +19,12 @@ namespace DealingAdmin
 
         public static string DateTimeFormat(DateTime dt)
         {
-            return dt.ToString("yyyy-MM-dd HH:mm:ss");
+            return dt.ToString(DateTimeCommonFormat);
         }
 
         public static string DateTimeNamedWithMsFormat(DateTime dt)
         {
-            return dt.ToString("ddd, dd MMM yyy HH:mm:ss.fff");
+            return dt.ToString(FullDateTimeWithMsFormat);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace DealingAdmin.Abstractions.Models
     {
         public object Data { get; set; }
         
-        public string DateTime { get; set; }
+        public DateTime DateTime { get; set; }
         
         public string ProcessId { get; set; }
         
@@ -35,7 +35,7 @@ namespace DealingAdmin.Abstractions.Models
         {
             return new TradeLogModel
             {
-                DateTime = src.DateTime.ToString("O"),
+                DateTime = src.DateTime,
                 ProcessId = src.ProcessId,
                 Component = src.Component,
                 Message = src.Message,

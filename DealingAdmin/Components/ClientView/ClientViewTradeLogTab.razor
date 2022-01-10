@@ -1,0 +1,288 @@
+﻿@using System.ComponentModel
+@using AntDesign.TableModels
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.Caches.ActiveOrders
+@using SimpleTrading.Abstraction.Trading
+@using SimpleTrading.Abstraction.Trading.BalanceOperations
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Engine.Grpc.Contracts
+@using SimpleTrading.TradeLog.Grpc
+@using SimpleTrading.TradeLog.Grpc.Contracts
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper LiveDemoServices
+@inject IUserMessageService MessageService
+@inject AdminAppSettings appSettings
+@inject Serilog.Core.Logger logger
+@inject ModalService modalService
+@inject ITradeLogGrpcService TradeLogGrpcService
+
+<div class="mb-2">
+    <Row>
+        <Col Span="6" Class="text-nowrap">
+            <span class="text-bold mx-2">Account:</span>               
+            <Select DataSource="@AccountsList"
+                    TItemValue="TradingAccountModel"
+                    TItem="TradingAccountModel"
+                    Style="width: 120px;"
+                    OnSelectedItemChanged="SelectedAccountChanged">
+                <SelectOptions>
+                    @foreach (var acc in AccountsList)
+                    {
+                        <SelectOption
+                            TItemValue="TradingAccountModel"
+                            TItem="TradingAccountModel"
+                            Value=@acc
+                            Label="@($"{acc.AccountId} | Balance: {acc.Balance.ToString("F2")}")"/>
+                    }
+                </SelectOptions>
+            </Select>
+        </Col>
+        <Col Span="4" Class="text-nowrap align-content-end">
+            <span class="text-bold mx-2">Date:</span>                 
+            <DatePicker
+                @bind-Value="@tradeLogDate"
+                TValue="DateTime"
+                AllowClear="false"
+                Picker="@DatePickerType.Date"/>
+            <Button
+                Type="@ButtonType.Primary"
+                OnClick="()=>LoadDataForDay()"
+                Class="mx-4">
+                Load
+            </Button>
+        </Col>
+        <Col Span="6">
+            <Button
+                Type="@ButtonType.Primary"
+                OnClick="()=>LoadLastData()"
+                Class="mx-4">
+                Load Last
+            </Button>
+            <AntDesign.InputNumber @bind-Value="@tradeLogTimeUnits" />
+            <Select Mode="default"
+                    @bind-Value="@timeUnitType"    
+                    TItemValue="TradeLogTimeUnitsType"
+                    TItem="TradeLogTimeUnitsType">
+                <SelectOptions>
+                    @foreach (var item in Enum.GetValues<TradeLogTimeUnitsType>())
+                    {
+                        <SelectOption
+                            TItemValue="TradeLogTimeUnitsType"
+                            TItem="TradeLogTimeUnitsType"
+                            Value=@item
+                            Label="@item.ToString()"/>
+                    }
+                </SelectOptions>
+            </Select>
+        </Col>
+    </Row>       
+</div>
+
+<Table DataSource="@GridData"
+        TItem="TradeLogModel"
+        Loading="@isLoading"
+        Bordered="@true"
+        Total="_total"
+        ScrollY="calc(100vh - 260px)"
+        @bind-PageIndex="_pageIndex"
+        @bind-PageSize="_pageSize">
+    <RowTemplate> 
+        <Column Title="DateTime"
+                TData="string"
+                @bind-Field="@context.DateTime"
+                Sortable
+                Filterable/>
+        <Column Title="Process Id"
+                TData="string"
+                @bind-Field="@context.ProcessId"
+                Width="120"/>
+        <Column Title="Component"
+                TData="string"
+                @bind-Field="@context.Component"/>
+        <Column Title="Message"
+                TData="string"
+                @bind-Field="@context.Message"/>
+        <ActionColumn Title="Actions" Width="120">
+            <div>
+                <Tooltip Title="@("Show Details")">
+                    <a><i @onclick="()=>ShowDetails(context.Data)"
+                          class="material-icons color-primary">manage_search</i></a>
+                </Tooltip>
+                @if (isCreatePositionEvent(context))
+                {
+                    <Tooltip Title="@("Restore Active Position<")">    
+                        <a><i @onclick="()=>RestoreActivePosition(context.Data)"
+                              class="material-icons color-primary">restore_page</i></a>
+                    </Tooltip>
+                }
+            </div>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+<style>
+.ant-table td {
+    padding: 5px 10px !important
+}
+</style>
+
+@code
+{
+    [Parameter]
+    public string TraderId { get; set; }
+
+    List<TradingAccountModel> AccountsList = new List<TradingAccountModel>();
+
+    List<TradeLogModel> GridData = new List<TradeLogModel>();
+
+    int _pageIndex = 1;
+    int _pageSize = 200;
+    int _total = 2000;
+
+    private bool isLoading = false;
+
+    DateTime tradeLogDate = DateTime.UtcNow.Date;
+    TradeLogTimeUnitsType timeUnitType = TradeLogTimeUnitsType.Minutes;
+    int tradeLogTimeUnits = 10;
+
+    UpdateBalanceModel formUpdateBalance = new UpdateBalanceModel();
+    TradingAccountModel tradeLogAccount; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        if (isLoading)
+        {
+            return;
+        }
+
+        isLoading = true;
+
+        try
+        {
+            AccountsList = new List<TradingAccountModel>();
+            GridData = new List<TradeLogModel>();
+
+            Console.WriteLine($"TradeLog Tab -> RefreshData ->  GRPC call"); /// REMOVE AFTER TEST!!!!
+
+            var grpcAccounts = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.GetAccountsAsync(
+                new GetAccountsGrpcRequestContract
+                    {
+                        TraderId = this.TraderId
+                    });
+
+            Console.WriteLine($"TradeLog Tab -> RefreshData ->  grpcAccounts.Count = {grpcAccounts.Count()}"); /// REMOVE AFTER TEST!!!!
+
+            AccountsList = grpcAccounts.Select(TradingAccountModel.Create).ToList();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }        
+
+        Console.WriteLine($"Acc Tab -> RefreshData -> StateHasChanged"); /// REMOVE AFTER TEST!!!!
+
+        this.StateHasChanged();
+    }
+
+    private async void SelectedAccountChanged(TradingAccountModel selectedAccount)
+    {
+        tradeLogAccount = selectedAccount;
+    }
+
+    private async Task LoadDataForDay()
+    {
+        var dateFrom = tradeLogDate.Date;
+        var dateTo = dateFrom.AddDays(1);
+
+        await LoadGridData(dateFrom, dateTo);
+    }
+
+    private async Task LoadLastData()
+    {
+        var dateTo = DateTime.UtcNow;
+
+        var dateFrom = timeUnitType == TradeLogTimeUnitsType.Minutes
+            ? dateTo.AddMinutes(-Math.Abs(tradeLogTimeUnits))
+            : dateTo.AddHours(-Math.Abs(tradeLogTimeUnits));
+
+        await LoadGridData(dateFrom, dateTo);
+    }
+
+    private async Task LoadGridData(DateTime dateFrom, DateTime dateTo)
+    {
+        if (isLoading)
+        {
+            return;
+        }
+
+        isLoading = true;
+
+        try
+        {
+            GridData = new List<TradeLogModel>();
+
+            var grpcResult = await TradeLogGrpcService.GetEventsAsync(new GetTradeLogGrpcRequest
+                {
+                    TraderId = this.TraderId,
+                    AccountId = tradeLogAccount.AccountId,
+                    DateTimeFrom = dateFrom,
+                    DateTimeTo = dateTo
+                });
+
+            if (grpcResult.Events == null)
+            {
+                return;
+            }
+
+            GridData = grpcResult.Events.Select(TradeLogModel.Create).ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }     
+
+        this.StateHasChanged();
+    }
+
+    private bool isCreatePositionEvent(TradeLogModel logLine)
+    {
+        return (logLine.Component == "DealService" && logLine.Message == "Position is created");
+    }
+
+    private enum TradeLogTimeUnitsType
+    {
+        Minutes,
+        Hours
+    }
+
+    private void ShowDetails(object jsonEventData)
+    {
+        //TODO: show JSON Viewer
+    }
+
+    private async Task RestoreActivePosition(object jsonEventData)
+    {
+        //TODO: Restore Active pos
+    }
+}

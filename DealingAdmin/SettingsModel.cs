@@ -23,6 +23,9 @@ namespace DealingAdmin
         [YamlProperty("DealingAdmin.AuthGrpcServiceUrl")]
         public string AuthGrpcServiceUrl { get; set; }
 
+        [YamlProperty("DealingAdmin.TradeLogGrpcServiceUrl")]
+        public string TradeLogGrpcServiceUrl { get; set; }
+
         [YamlProperty("DealingAdmin.TradingEngineLiveGrpcServerUrl")]
         public string TradingEngineLiveGrpcServerUrl { get; set; }
 

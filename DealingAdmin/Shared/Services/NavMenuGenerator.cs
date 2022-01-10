@@ -4,7 +4,7 @@ namespace DealingAdmin.Shared.Services
 {
     public static class NavMenuGenerator
     {
-        //oi pack
+        // Material Icons
         private static readonly List<NavMenuItem> MenuItems = new()
         {
             NavMenuItem.Create("ClientView", "Client View", "people"),
@@ -25,6 +25,9 @@ namespace DealingAdmin.Shared.Services
         
         public string Href { get; set; }
         
+        /// <summary>
+        /// Material Icon
+        /// </summary>
         public string Icon { get; set; }
         
         public string Key { get; set; }

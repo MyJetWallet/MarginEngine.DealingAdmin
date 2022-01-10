@@ -5,6 +5,7 @@
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Services
 @using DealingAdmin.Shared.Services
+@using Serilog.Core
 @using SimpleTrading.Abstraction.Caches.ActiveOrders
 @using SimpleTrading.Abstraction.Trading
 @using SimpleTrading.Abstraction.Trading.BalanceOperations
@@ -17,7 +18,8 @@
 @inject AdminAppSettings appSettings
 @inject Serilog.Core.Logger logger
 @inject ModalService modalService
-
+@inject IAccountNewTradingGroupValidator accountNewTradingGroupValidator
+@inject Logger logger
 
 <Table  DataSource="@GridData"
         TItem="TradingAccountModel"
@@ -52,10 +54,12 @@
         <ActionColumn Title="Actions" Width="120">
             <div>
                 <Tooltip Title="@("Update Balance")">
-                    <i @onclick="()=>ShowUpdateBalanceDialog(context.AccountId)" class="material-icons color-primary">account_balance_wallet</i>
+                    <a><i @onclick="()=>ShowUpdateBalanceDialog(context.AccountId)"
+                        class="material-icons color-primary">account_balance_wallet</i></a>
                 </Tooltip>
                 <Tooltip Title="@("Update Group")">    
-                    <i @onclick="()=>ShowUpdateTradingGroupDialog(context.AccountId)" class="material-icons color-primary">list_alt</i>
+                    <a><i @onclick="()=>ShowUpdateTradingGroupDialog(context.AccountId)"
+                        class="material-icons color-primary">list_alt</i></a>
                 </Tooltip>
             </div>
         </ActionColumn>
@@ -64,6 +68,7 @@
 
 <Modal Title="Update Balance"
        Visible="@isUpdateBalanceDialogVisible"
+       ConfirmLoading="@true"
        OkText="@("Confirm")"
        OnOk="()=>UpdateBalance()"
        OnCancel="()=>CloseUpdateBalanceDialog()">
@@ -105,6 +110,45 @@
     </Form>
 </Modal>
 
+<Modal Title="Update Trading Group"
+       Visible="@isUpdateTradingGroupDialogVisible"
+       ConfirmLoading="@true"
+       OkText="@("Confirm")"
+       OnOk="()=>UpdateTradingGroup()"
+       OnCancel="()=>CloseUpdateTradingGroupDialog()">
+    <Form Model="formUpdateTradingGroup"
+          LabelColSpan="8"
+          WrapperColSpan="16">
+        <FormItem Label="Trader Id" >
+            <Input @bind-Value="@context.TraderId" Disabled="@true" ReadOnly="@true" />
+        </FormItem>
+        <FormItem Label="Account Id" >
+            <Input @bind-Value="@context.AccountId" Disabled="@true" ReadOnly="@true" />
+        </FormItem>
+        <FormItem Label="Trading Group" Required="@true">
+             <Select Mode="default"
+                    @bind-Value="@context.TradingGroupToAssign"    
+                    TItemValue="string"
+                    TItem="string">
+                <SelectOptions>
+                    @foreach (var item in tradingGroups)
+                    {
+                        <SelectOption
+                            TItemValue="string"
+                            TItem="string"
+                            Value="@item.Id"
+                            Label="@item.Name.ToString()"/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        <FormItem Label="API Key" Required>
+            <InputPassword @bind-Value="@context.ApiKey" />
+        </FormItem>
+    </Form>
+</Modal>
+
+
 
 <style>
 .ant-table td {
@@ -129,6 +173,7 @@
     private bool isUpdateTradingGroupDialogVisible = false;
 
     UpdateBalanceModel formUpdateBalance = new UpdateBalanceModel();
+    UpdateAccountTradingGroupModel formUpdateTradingGroup = new UpdateAccountTradingGroupModel();
 
     protected override async Task OnInitializedAsync()
     {
@@ -181,19 +226,28 @@
             };
 
         this.isUpdateBalanceDialogVisible = true;
-
-        // this.StateHasChanged();
     }
 
     void ShowUpdateTradingGroupDialog(string accountId)
     {
-        
+        formUpdateTradingGroup = new UpdateAccountTradingGroupModel
+            {
+                TraderId = TraderId,
+                AccountId = accountId,
+                TradingGroupToAssign = GridData.First(x => x.AccountId == accountId).TradingGroup,
+            };
+
+        this.isUpdateBalanceDialogVisible = true;
     }
 
     void CloseUpdateBalanceDialog()
     {
         this.isUpdateBalanceDialogVisible = false;
-        // this.StateHasChanged();
+    }
+
+    void CloseUpdateTradingGroupDialog()
+    {
+        this.isUpdateTradingGroupDialogVisible = false;
     }
 
     private async Task UpdateBalance()
@@ -222,7 +276,8 @@
                 ProcessId = $"Dealing-Admin-{FormatUtils.DateTimeNamedWithMsFormat(DateTime.UtcNow)}"
             };
 
-        var grpcResponse = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.ChangeBalanceAsync(contract);
+        var grpcResponse = await LiveDemoServices.GetContext(AppState.IsLive)
+            .EngineApi.ChangeBalanceAsync(contract);
 
         if (grpcResponse.Result != TradingOperationResult.Ok)
         {
@@ -234,6 +289,49 @@
         CloseUpdateBalanceDialog();
 
         Console.WriteLine($"UpdateBalance Result: ${grpcResponse.Account.Balance}"); /// REMOVE AFTER TEST!!!!
+
+        await RefreshData();
+    }
+
+    private async Task UpdateTradingGroup()
+    {
+        Console.WriteLine($"UpdateTradingGroup"); /// REMOVE AFTER TEST!!!!
+
+        if (formUpdateTradingGroup.ApiKey != appSettings.AdminCrudApiKey)
+        {
+            await MessageService.ErrorAsync("API Key is not valid");
+            return;
+        }
+        
+        var newGroupValidatorErrorMessage = await accountNewTradingGroupValidator
+            .ValidateAccountNewTradingGroup(formUpdateTradingGroup);
+
+        if (!String.IsNullOrEmpty(newGroupValidatorErrorMessage))
+        {
+            await MessageService.ErrorAsync($"Error: {newGroupValidatorErrorMessage}");
+            return;
+        }
+
+        var tradingDisabledRequest = new UpdateTradingAccountGroupRequest
+        {
+            TraderId = formUpdateTradingGroup.TraderId,
+            AccountId = formUpdateTradingGroup.AccountId,
+            GroupToAssign = formUpdateTradingGroup.TradingGroupToAssign
+        };
+
+        try
+        {
+            var updateTradingAccountGroupResponse = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi
+                .UpdateTradingAccountGroupAsync(tradingDisabledRequest);
+
+            await MessageService.SuccessAsync($"Result: {updateTradingAccountGroupResponse.Result}");
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine(e);
+            logger.Error(e, e.Message);
+            await MessageService.ErrorAsync("Error occured during the EngineApi request execution");
+        }
 
         await RefreshData();
     }

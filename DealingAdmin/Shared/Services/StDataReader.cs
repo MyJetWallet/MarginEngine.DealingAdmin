@@ -57,5 +57,87 @@ namespace DealingAdmin.Shared.Services
             var sql = $"SELECT * FROM {Views.PendingOrders} WHERE traderid=@traderId AND accountid=@accountId";
             return await _postgresConnection.GetRecordsAsync<TradeOrderPostgresEntity>(sql, new { traderId, accountId });
         }
+
+        #region Instruments used
+
+        public async Task<IEnumerable<string>> GetActivePositionsInstruments()
+        {
+            var sql = $@"SELECT DISTINCT instrument FROM {Views.PositionsActive}";
+            return await _postgresConnection.GetRecordsAsync<string>(sql);
+        }
+
+        public async Task<IEnumerable<string>> GetActivePositionsInstrumentsByTradingGroup(string groupId)
+        {
+            var sql = $@"SELECT DISTINCT instrument FROM {Views.PositionsActive} WHERE accountid IN
+                        (SELECT id FROM {Tables.AccountsTableName} WHERE tradinggroup=@groupId)";
+            return await _postgresConnection.GetRecordsAsync<string>(sql, new { groupId });
+        }
+
+        public async Task<IEnumerable<string>> GetActivePositionsInstrumentsByTradingGroups(List<string> tradingGroups)
+        {
+            var sql = $@"SELECT DISTINCT instrument FROM {Views.PositionsActive} WHERE accountid IN
+                        (SELECT id FROM {Tables.AccountsTableName} WHERE tradinggroup = ANY(@groups))";
+            return await _postgresConnection.GetRecordsAsync<string>(sql, new { groups = tradingGroups.ToArray() });
+        }
+
+        public async Task<IEnumerable<string>> GetActivePositionsInstruments(string traderId, string accountId)
+        {
+            var sql = $"SELECT DISTINCT instrument FROM {Views.PositionsActive} WHERE traderid=@traderId AND accountid=@accountId";
+            return await _postgresConnection.GetRecordsAsync<string>(sql, new { traderId, accountId });
+        }
+
+        public async Task<IEnumerable<string>> GetPendingOrdersInstruments()
+        {
+            var sql = $@"SELECT DISTINCT instrument FROM  {Views.PendingOrders}";
+            return await _postgresConnection.GetRecordsAsync<string>(sql);
+        }
+
+        public async Task<IEnumerable<string>> GetPendingOrdersInstrumentsByTradingGroup(string groupId)
+        {
+            var sql = $@"SELECT DISTINCT instrument FROM {Views.PendingOrders} WHERE accountid IN
+                        (SELECT id FROM {Tables.AccountsTableName} WHERE tradinggroup=@groupId)";
+            return await _postgresConnection.GetRecordsAsync<string>(sql, new { groupId });
+        }
+
+        public async Task<IEnumerable<string>> GetPendingOrdersInstrumentsByTradingGroups(List<string> tradingGroups)
+        {
+            var sql = $@"SELECT DISTINCT instrument FROM {Views.PendingOrders} WHERE accountid IN
+                        (SELECT id FROM {Tables.AccountsTableName} WHERE tradinggroup = ANY(@groups))";
+            return await _postgresConnection.GetRecordsAsync<string>(sql, new { groups = tradingGroups.ToArray() });
+        }
+
+        public async Task<IEnumerable<string>> GetPendingOrdersInstruments(string traderId, string accountId)
+        {
+            var sql = $"SELECT DISTINCT instrument FROM {Views.PendingOrders} WHERE traderid=@traderId AND accountid=@accountId";
+            return await _postgresConnection.GetRecordsAsync<string>(sql, new { traderId, accountId });
+        }
+
+        public async Task<IEnumerable<string>> GetClosedPositionsInstruments()
+        {
+            var sql = $@"SELECT DISTINCT instrument FROM {Views.PositionsClosed}";
+            return await _postgresConnection.GetRecordsAsync<string>(sql);
+        }
+
+        public async Task<IEnumerable<string>> GetClosedPositionsInstrumentsByTradingGroup(string groupId)
+        {
+            var sql = $@"SELECT DISTINCT instrument FROM {Views.PositionsClosed} WHERE accountid IN
+                        (SELECT id FROM {Tables.AccountsTableName} WHERE tradinggroup=@groupId)";
+            return await _postgresConnection.GetRecordsAsync<string>(sql, new { groupId });
+        }
+
+        public async Task<IEnumerable<string>> GetClosedPositionsInstrumentsByTradingGroups(List<string> tradingGroups)
+        {
+            var sql = $@"SELECT DISTINCT instrument FROM {Views.PositionsClosed} WHERE accountid IN
+                        (SELECT id FROM {Tables.AccountsTableName} WHERE tradinggroup = ANY(@groups))";
+            return await _postgresConnection.GetRecordsAsync<string>(sql, new { groups = tradingGroups.ToArray() });
+        }
+
+        public async Task<IEnumerable<string>> GetClosedPositionsInstruments(string traderId, string accountId)
+        {
+            var sql = $"SELECT DISTINCT instrument FROM {Views.PositionsClosed} WHERE traderid=@traderId AND accountid=@accountId";
+            return await _postgresConnection.GetRecordsAsync<string>(sql, new { traderId, accountId });
+        }
+
+        #endregion
     }
 }

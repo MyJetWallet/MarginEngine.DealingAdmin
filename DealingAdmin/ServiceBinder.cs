@@ -27,6 +27,8 @@ using SimpleTrading.Engine.Grpc;
 using SimpleTrading.Abstraction.Trading;
 using SimpleTrading.PersonalData.Grpc;
 using AntDesign;
+using DealingAdmin.Validators;
+using SimpleTrading.TradeLog.Grpc;
 
 namespace DealingAdmin
 {
@@ -98,7 +100,8 @@ namespace DealingAdmin
             services.AddSingleton<IPriceRetriever, PriceRetriever>();
             services.AddSingleton<IAccountTypeFilter, AccountTypeFilter>();
             services.AddSingleton<IQuoteSourceService, QuoteSourceService>();
-            services.AddSingleton<ITraderSearchService, TraderSearchService>();            
+            services.AddSingleton<ITraderSearchService, TraderSearchService>();
+            services.AddSingleton<IAccountNewTradingGroupValidator, AccountNewTradingGroupValidator>();
         }
 
         public static void InitLiveDemoManager(this IServiceCollection services, LiveDemoServiceMapper mapper)
@@ -217,6 +220,10 @@ namespace DealingAdmin
             app.AddSingleton(GrpcChannel
                 .ForAddress(settings.PersonalDataGrpcServiceUrl)
                 .CreateGrpcService<IPersonalDataServiceGrpc>());
+
+            app.AddSingleton(GrpcChannel
+                .ForAddress(settings.TradeLogGrpcServiceUrl)
+                .CreateGrpcService<ITradeLogGrpcService>());
 
             liveDemoServicesMapper.InitService(true, services => services.EngineApi = GrpcChannel
                 .ForAddress(settings.TradingEngineLiveGrpcServerUrl)

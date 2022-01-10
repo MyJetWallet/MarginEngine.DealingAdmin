@@ -1,6 +1,6 @@
 namespace DealingAdmin.Abstractions.Models
 {
-    public class UpdateAccountTradingGroupRequest
+    public class UpdateAccountTradingGroupModel
     {
         public string TraderId { get; set; }
         
@@ -10,6 +10,6 @@ namespace DealingAdmin.Abstractions.Models
         
         public bool IsLive { get; set; }
 
-        public string TokenKey { get; set; }
+        public string ApiKey { get; set; }
     }
 }

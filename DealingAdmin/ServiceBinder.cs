@@ -139,8 +139,8 @@ namespace DealingAdmin
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton<IInstrumentSubGroupsRepository>(MyNoSqlServerFactory.CreateInstrumentSubGroupsMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
-            services.AddSingleton((ITradingInstrumentsAvatarRepository)CommonMyNoSqlServerFactory.CreateTradingInstrumentMyNoSqlRepository(
-                    () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton(CommonMyNoSqlServerFactory.CreateTradingInstrumentMyNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
 
             //var liveTradingProfileRepository =
             //     MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, true);

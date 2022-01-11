@@ -33,7 +33,6 @@
             <Column Title="Digits" DataIndex="Digits" TData="int"/>
             <Column Title="Swap" DataIndex="SwapScheduleId" TData="string"/>
             <Column Title="TickSize" DataIndex="TickSize" TData="double"/>
-            @* <Column Title="LP" DataIndex="MarginCallPercent" TData="int"/> *@
             <Column Title="Time off" TData="string">
                 @string.Join("\n", context.DaysOff
                     .Select(itm => $"{itm.DowFrom}:{itm.TimeFrom} - {itm.DowTo}:{itm.TimeTo}"))
@@ -41,7 +40,6 @@
             <Column Title="On/Off" Field="@context.TradingDisabled">
                 <Switch @bind-Value="@context.TradingDisabled"></Switch>
             </Column>
-            @* <Column Title="Current price" DataIndex="MarginCallPercent" TData="int"/> *@
             <Column Title="Timeout" TData="string">
                 Night: <Tag PresetColor="PresetColor.Purple">@context.NightTimeout</Tag>
                 Day: <Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>

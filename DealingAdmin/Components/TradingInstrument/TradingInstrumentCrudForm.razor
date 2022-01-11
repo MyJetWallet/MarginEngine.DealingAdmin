@@ -1,0 +1,222 @@
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using Microsoft.AspNetCore.Components
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Abstractions.Common.InstrumentsAvatar
+
+
+@inject ITradingInstrumentsAvatarRepository _imagesRepository
+
+<div>
+    <Drawer Closable="true" Width="720" Visible="true" Title="@("Add trading instrument")" OnClose="_ => OnClose.Invoke()">
+        <Template style="height:90%">
+            <Row Gutter="16">
+                <AntDesign.Col Span="12">
+                    <Text>Id</Text>
+                    <Input @bind-Value="Instrument.Id" Placeholder="Id" TValue="string"/>
+                </AntDesign.Col>
+                <AntDesign.Col Span="12">
+                    <Text>Weight</Text>
+                    <Input @bind-Value="Instrument.Weight" Placeholder="Weight" TValue="int?"/>
+                </AntDesign.Col>
+            </Row>
+            <br/>
+            <Row Gutter="16">
+                <AntDesign.Col>
+                    <Text>Name</Text>
+                    <Input @bind-Value="Instrument.Name" Placeholder="Name" TValue="string"/>
+                </AntDesign.Col>
+            </Row>
+            <br/>
+            <Row Gutter="16">
+                <AntDesign.Col Span="12">
+                    <Text>Base</Text>
+                    <Input @bind-Value="Instrument.Base" Placeholder="Base" TValue="string"/>
+                </AntDesign.Col>
+                <AntDesign.Col Span="12">
+                    <Text>Quote</Text>
+                    <Input @bind-Value="Instrument.Quote" Placeholder="Quote" TValue="string"/>
+                </AntDesign.Col>
+            </Row>
+            <br/>
+
+            <Row Gutter="16">
+                <AntDesign.Col Span="12">
+                    <Text>Digits</Text>
+                    <Input @bind-Value="Instrument.Digits" Placeholder="Digits" TValue="int"/>
+                </AntDesign.Col>
+                <AntDesign.Col Span="12">
+                    <Text>Tick Size</Text>
+                    <Input @bind-Value="Instrument.TickSize" Placeholder="TickSize" TValue="double"/>
+                </AntDesign.Col>
+            </Row>
+            <br/>
+
+            <Row Gutter="16">
+                <AntDesign.Col Span="12">
+                    <Text>Swap profile</Text>
+                    <Select @bind-Value="@Instrument.SwapScheduleId"
+                            TItemValue="string"
+                            TItem="string">
+                        <SelectOptions>
+                            @foreach (var item in SwapProfiles)
+                            {
+                                <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Id/>
+                            }
+                        </SelectOptions>
+                    </Select>
+                </AntDesign.Col>
+                <AntDesign.Col Span="12">
+                    <Text>Group</Text>
+                    <Select @bind-Value="@Instrument.GroupId"
+                            TItemValue="string"
+                            TItem="string">
+                        <SelectOptions>
+                            @foreach (var item in InstrumentGroups)
+                            {
+                                <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Name/>
+                            }
+                        </SelectOptions>
+                    </Select>
+                </AntDesign.Col>
+            </Row>
+            <br/>
+
+            <Row>
+                <AntDesign.Col>
+                    <Text>SubGroup</Text>
+                    <Select @bind-Value="@Instrument.SubGroupId"
+                            TItemValue="string"
+                            TItem="string">
+                        <SelectOptions>
+                            @foreach (var item in SubGroups)
+                            {
+                                <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Name/>
+                            }
+                        </SelectOptions>
+                    </Select>
+                </AntDesign.Col>
+            </Row>
+            <br/>
+
+            <Row Gutter="16">
+                <AntDesign.Col Span="12">
+                    <Text>Day timeout</Text>
+                    <Input @bind-Value="Instrument.DayTimeout" Placeholder="Day timeout" TValue="int?"/>
+                </AntDesign.Col>
+                <AntDesign.Col Span="12">
+                    <Text>Night timeout</Text>
+                    <Input @bind-Value="Instrument.NightTimeout" Placeholder="Night timeout" TValue="int?"/>
+                </AntDesign.Col>
+            </Row>
+            <br/>
+
+            <Row Gutter="16">
+                <AntList Bordered DataSource="@Instrument.DaysOff" Size="small">
+                    <ChildContent Context="item">
+                        <ListItem>
+                            <span>
+                                <Text Mark>@($"{item.DowFrom.ToString()}:{item.TimeFrom.ToString()} - {item.DowTo.ToString()}: {item.TimeTo.ToString()}")</Text>
+                            </span>
+                        </ListItem>
+                    </ChildContent>
+                </AntList>
+            </Row>
+
+            <Row Gutter="16">
+                <AntDesign.Col Span="6">
+                    <Text>Day from</Text>
+                    <Select DataSource="@DaysOfWeek()"
+                            @bind-Value="@DayFromToAdd"
+                            Style="width: 120px;"
+                            Placeholder="Choose">
+                    </Select>
+                </AntDesign.Col>
+                <AntDesign.Col Span="6">
+                    <Text>Time from</Text>
+                    <TimePicker @bind-Value="TimeFromToAdd" TValue="DateTime"/>
+                </AntDesign.Col>
+                <AntDesign.Col Span="6">
+                    <Text>Day to</Text>
+                    <Select DataSource="@DaysOfWeek()"
+                            @bind-Value="@DayToToAdd"
+                            Style="width: 120px;"
+                            Placeholder="Choose">
+                    </Select>
+                </AntDesign.Col>
+                <AntDesign.Col Span="6">
+                    <Text>Time to</Text>
+                    <TimePicker @bind-Value="TimeToToAdd" TValue="DateTime"/>
+                </AntDesign.Col>
+
+                <AntDesign.Col Span="6">
+                    <Button OnClick="HandleAddDayOff" Type="button" Color="Color.Green1" Block>Add</Button>
+                </AntDesign.Col>
+            </Row>
+        </Template>
+
+        <Button OnClick="@(() => OnSubmit(Instrument))" Type="primal" Color="Color.Green1" Block>Add</Button>
+    </Drawer>
+</div>
+
+@code {
+
+    private string DayFromToAdd { get; set; }
+    private string DayToToAdd { get; set; }
+    private DateTime TimeFromToAdd { get; set; }
+    private DateTime TimeToToAdd { get; set; }
+
+    [Parameter]
+    public TradingInstrumentModel Instrument { get; set; } = new();
+
+    [Parameter]
+    public IEnumerable<ISwapProfile> SwapProfiles { get; set; } = new List<ISwapProfile>();
+
+    [Parameter]
+    public IEnumerable<IInstrumentGroup> InstrumentGroups { get; set; }
+
+    [Parameter]
+    public IEnumerable<IInstrumentSubGroup> SubGroups { get; set; }
+
+    private static IEnumerable<string> DaysOfWeek()
+    {
+        return from object day in Enum.GetValues(typeof(DayOfWeek)) select day.ToString();
+    }
+
+    [Parameter]
+    public Action OnClose { get; set; }
+
+    [Parameter]
+    public Action<TradingInstrumentModel> OnSubmit { get; set; }
+
+    private void HandleAddDayOff()
+    {
+        var existsDayOffs = Instrument.DaysOff;
+        var list = new List<TradingInstrumentDayOffModel>();
+
+        if (existsDayOffs != null)
+            list.AddRange(existsDayOffs);
+
+        list.Add(new TradingInstrumentDayOffModel
+        {
+            DowFrom = Enum.Parse<DayOfWeek>(DayFromToAdd),
+            DowTo = Enum.Parse<DayOfWeek>(DayToToAdd),
+            TimeFrom = ToUnixTimestamp(TimeFromToAdd),
+            TimeTo = ToUnixTimestamp(TimeToToAdd)
+        });
+
+        Instrument.DaysOff = list;
+        DayFromToAdd = string.Empty;
+        DayToToAdd = string.Empty;
+        TimeFromToAdd = DateTime.MinValue;
+        TimeToToAdd = DateTime.MinValue;
+        StateHasChanged();
+    }
+
+    static TimeSpan ToUnixTimestamp(DateTime d)
+    {
+        return d - new DateTime(1970, 1, 1, 0, 0, 0);
+    }
+
+}

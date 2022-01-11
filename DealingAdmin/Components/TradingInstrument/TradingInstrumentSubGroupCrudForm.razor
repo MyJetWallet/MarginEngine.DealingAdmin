@@ -1,0 +1,62 @@
+@using Microsoft.AspNetCore.Components
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Abstractions
+@using SimpleTrading.Abstractions.Common.InstrumentsAvatar
+
+@inject ITradingInstrumentsAvatarRepository _imagesRepository
+
+<div>
+    <Drawer Closable="true" Width="720" Visible="true" Title="@("Add trading instrument sub group")" OnClose="_ => OnClose.Invoke()">
+        <Template style="height:90%">
+            <Row Gutter="16">
+                <AntDesign.Col Span="12">
+                    <Text>Id</Text>
+                    <Input @bind-Value="InstrumentSubGroup.Id" Placeholder="Id" TValue="string"/>
+                </AntDesign.Col>
+                <AntDesign.Col Span="12">
+                    <Text>Name</Text>
+                    <Input @bind-Value="InstrumentSubGroup.Name" Placeholder="Name" TValue="string"/>
+                </AntDesign.Col>
+            </Row>
+            <br/>
+            <Row Gutter="16">
+                <AntDesign.Col Span="12">
+                    <Text>Weight</Text>
+                    <Input @bind-Value="InstrumentSubGroup.Weight" Placeholder="Weight" TValue="int"/>
+                </AntDesign.Col>
+                <AntDesign.Col Span="12">
+                    <Text>Group</Text>
+                    <Select @bind-Value="@InstrumentSubGroup.GroupId"
+                            TItemValue="string"
+                            TItem="string">
+                        <SelectOptions>
+                            @foreach(var item in Groups)
+                            {
+                                <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Name />
+                            }
+                        </SelectOptions>
+                    </Select>
+                    
+                </AntDesign.Col>
+            </Row>
+        </Template>
+
+        <Button OnClick="@(() => OnSubmit(InstrumentSubGroup))" Type="primal" Color="Color.Green1" Block>Submit</Button>
+    </Drawer>
+</div>
+
+@code {
+
+    [Parameter]
+    public IEnumerable<InstrumentGroupModel> Groups { get; set; }
+
+    [Parameter]
+    public InstrumentSubGroupModel InstrumentSubGroup { get; set; } = new();
+
+    [Parameter]
+    public Action OnClose { get; set; }
+
+    [Parameter]
+    public Action<InstrumentSubGroupModel> OnSubmit { get; set; }
+
+}

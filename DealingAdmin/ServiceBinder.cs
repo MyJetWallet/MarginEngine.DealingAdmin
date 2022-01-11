@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using DealingAdmin.Abstractions;
-using DealingAdmin.MyNoSql;
 using DealingAdmin.Services;
 using DealingAdmin.Shared.Services;
 using Grpc.Net.Client;
@@ -29,6 +28,9 @@ using SimpleTrading.PersonalData.Grpc;
 using AntDesign;
 using DealingAdmin.Validators;
 using SimpleTrading.TradeLog.Grpc;
+using SimpleTrading.Abstraction.Trading.Instruments;
+using SimpleTrading.Abstraction.Trading.InstrumentsGroup;
+using SimpleTrading.Abstractions.Common.InstrumentsAvatar;
 
 namespace DealingAdmin
 {
@@ -118,13 +120,6 @@ namespace DealingAdmin
                 () => SimpleTrading.SettingsReader.SettingsReader.ReadSettings<SettingsModel>().PricesMyNoSqlServerReader,
                 AppName);
 
-            services.AddSingleton(tcpConnection.CreateTickerMyNoSqlReader());
-            services.AddSingleton(MyNoSqlFactory.CreateTickerMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
-            services.AddSingleton(tcpConnection.CreateCrossTickerMyNoSqlReader());
-            services.AddSingleton(MyNoSqlFactory.CreateCrossTickerMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
-            services.AddSingleton(MyNoSqlFactory.CreateInstrumentSubGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
-            services.AddSingleton(MyNoSqlFactory.CreateInstrumentGroupsMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl));
-
             // ST Services (to be replaced in the future)
             services.AddSingleton<IBidAskCache>(tcpConnection.CreateBidAskMyNoSqlCache());
             services.AddSingleton<IInstrumentsCache>(tcpConnection.CreateInstrumentsMyNoSqlReadCache());
@@ -140,17 +135,24 @@ namespace DealingAdmin
             liveDemoServicesMapper.InitService(false,
                services => services.ActiveOrdersReader = MyNoSqlServerFactory.CreateActiveOrdersCacheReader(tcpConnection, false));
 
-            var liveTradingProfileRepository =
-                 MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, true);
+            services.AddSingleton<ITradingInstrumentsRepository>(MyNoSqlServerFactory.CreateTradingInstrumentsMyNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton<IInstrumentSubGroupsRepository>(MyNoSqlServerFactory.CreateInstrumentSubGroupsMyNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton((ITradingInstrumentsAvatarRepository)CommonMyNoSqlServerFactory.CreateTradingInstrumentMyNoSqlRepository(
+                    () => settingsModel.DictionariesMyNoSqlServerWriter));
 
-            var demoTradingProfileRepository =
-                MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, false);
+            //var liveTradingProfileRepository =
+            //     MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, true);
 
-            liveDemoServicesMapper.InitService(true,
-                services => services.TradingProfileRepository = liveTradingProfileRepository);
+            //var demoTradingProfileRepository =
+            //    MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, false);
 
-            liveDemoServicesMapper.InitService(false,
-                services => services.TradingProfileRepository = demoTradingProfileRepository);
+            //liveDemoServicesMapper.InitService(true,
+            //    services => services.TradingProfileRepository = liveTradingProfileRepository);
+
+            //liveDemoServicesMapper.InitService(false,
+            //    services => services.TradingProfileRepository = demoTradingProfileRepository);
 
             var liveTradingGroupsRepository = 
                 MyNoSqlServerFactory.CreateTradingGroupsMyNoSqlRepository(() => settingsModel.DictionariesMyNoSqlServerWriter, true);

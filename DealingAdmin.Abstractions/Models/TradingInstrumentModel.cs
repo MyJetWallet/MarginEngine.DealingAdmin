@@ -28,7 +28,7 @@ namespace DealingAdmin.Abstractions.Models
 
         public int? Weight { get; set; }
 
-        public IEnumerable<TradingInstrumentDayOffModel> DaysOff { get; set; }
+        public List<TradingInstrumentDayOffModel> DaysOff { get; set; }
         
         public int? DayTimeout { get; set; }
         
@@ -39,6 +39,27 @@ namespace DealingAdmin.Abstractions.Models
         public string TokenKey { get; set; }
 
         IEnumerable<ITradingInstrumentDayOff> ITradingInstrument.DaysOff => DaysOff;
+
+        public static TradingInstrumentModel Create(ITradingInstrument src)
+        {
+            return new TradingInstrumentModel
+            {
+                Id = src.Id,
+                Name = src.Name,
+                Digits = src.Digits,
+                Base = src.Base,
+                Quote = src.Quote,
+                TickSize = src.TickSize,
+                SwapScheduleId = src.SwapScheduleId,
+                GroupId = src.GroupId,
+                SubGroupId = src.SubGroupId,
+                Weight = src.Weight,
+                DayTimeout = src.DayTimeout,
+                NightTimeout = src.NightTimeout,
+                TradingDisabled = src.TradingDisabled,
+                DaysOff = src.DaysOff.Select(TradingInstrumentDayOffModel.Create).ToList(),
+            };
+        }
     }
 
     public class TradingInstrumentModelExt : TradingInstrumentModel
@@ -62,7 +83,7 @@ namespace DealingAdmin.Abstractions.Models
                 DayTimeout = src.DayTimeout,
                 NightTimeout = src.NightTimeout,
                 TradingDisabled = src.TradingDisabled,
-                DaysOff = src.DaysOff.Select(TradingInstrumentDayOffModel.Create),
+                DaysOff = src.DaysOff.Select(TradingInstrumentDayOffModel.Create).ToList(),
                 BidAsk = bidAsk
             };
         }
@@ -70,30 +91,22 @@ namespace DealingAdmin.Abstractions.Models
 
     public class TradingInstrumentDayOffModel  : ITradingInstrumentDayOff
     {
-        public int DowFrom { get; set; }
+        public DayOfWeek DowFrom { get; set; }
 
-        DayOfWeek ITradingInstrumentDayOff.DowFrom => (DayOfWeek)DowFrom;
-        
-        public string TimeFrom { get; set; }
+        public TimeSpan TimeFrom { get; set; }
        
-        TimeSpan ITradingInstrumentDayOff.TimeFrom => TimeSpan.Parse(TimeFrom);
-
-        public int DowTo { get; set; }
+        public DayOfWeek DowTo { get; set; }
         
-        DayOfWeek ITradingInstrumentDayOff.DowTo => (DayOfWeek)DowTo;
+        public TimeSpan TimeTo { get; set; }
         
-        public string TimeTo { get; set; }
-        
-        TimeSpan ITradingInstrumentDayOff.TimeTo => TimeSpan.Parse(TimeTo);
-
         public static TradingInstrumentDayOffModel Create(ITradingInstrumentDayOff src)
         {
             return new TradingInstrumentDayOffModel
             {
-                DowFrom = (int)src.DowFrom,
-                DowTo = (int)src.DowTo,
-                TimeFrom = src.TimeFrom.ToString("c"),
-                TimeTo = src.TimeTo.ToString("c"),
+                DowFrom = src.DowFrom,
+                DowTo = src.DowTo,
+                TimeFrom = src.TimeFrom,
+                TimeTo = src.TimeTo,
             };
         }
     }

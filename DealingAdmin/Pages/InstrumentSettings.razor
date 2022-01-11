@@ -1,0 +1,144 @@
+@page "/InstrumentSettings"
+
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using SimpleTrading.Abstraction.Trading.Instruments
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+
+@inject IInstrumentSubGroupsRepository _subGroupsRepository;
+@inject IInstrumentGroupsRepository _groupsRepository;
+@inject ITradingInstrumentsRepository _instrumentsRepository;
+
+<Tabs DefaultActiveKey="1" Size="@TabSize.Large" Style="margin-bottom: 32px">
+    <TabPane Key="1" Tab="Instruments">
+        <PageHeader Class="site-page-header" Title="Trading profiles">
+            <PageHeaderExtra>
+                <Button OnClick="@(() => _isActiveAddInstrumentForm = true)" Type="@ButtonType.Primary">Add instrument</Button>
+            </PageHeaderExtra>
+        </PageHeader>
+        <Table DataSource="_tradingInstruments" TItem="TradingInstrumentModel">
+            <Column Title="Weight" DataIndex="Weight" TData="int?"/>
+            <Column Title="Id" TData="string">
+                <p>Id: @context.Id</p>
+                <p>Name: @context.Name</p>
+            </Column>
+            <Column Title="Group" DataIndex="GroupId" TData="string"/>
+            <Column Title="Sub group" DataIndex="SubGroupId" TData="string"/>
+            <Column Title="Avatar" TData="string">
+                <Avatar Size="64" Icon="user"/>
+            </Column>
+            <Column Title="Base" DataIndex="Base" TData="string"/>
+            <Column Title="Quote" DataIndex="Quote" TData="string"/>
+            <Column Title="Digits" DataIndex="Digits" TData="int"/>
+            <Column Title="Swap" DataIndex="SwapScheduleId" TData="string"/>
+            <Column Title="TickSize" DataIndex="TickSize" TData="double"/>
+            @* <Column Title="LP" DataIndex="MarginCallPercent" TData="int"/> *@
+            <Column Title="Time off" TData="string">
+                @string.Join("\n", context.DaysOff
+                    .Select(itm => $"{itm.DowFrom}:{itm.TimeFrom} - {itm.DowTo}:{itm.TimeTo}"))
+            </Column>
+            <Column Title="On/Off" Field="@context.TradingDisabled">
+                <Switch @bind-Value="@context.TradingDisabled"></Switch>
+            </Column>
+            @* <Column Title="Current price" DataIndex="MarginCallPercent" TData="int"/> *@
+            <Column Title="Timeout" TData="string">
+                Night: <Tag PresetColor="PresetColor.Purple">@context.NightTimeout</Tag>
+                Day: <Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>
+            </Column>
+        </Table>
+    </TabPane>
+    <TabPane Key="2" Tab="Instruments groups">
+        <PageHeader Class="site-page-header" Title="Instruments groups">
+            <PageHeaderExtra>
+                <Button OnClick="@(() => _isActiveAddGroupForm = true)" Type="@ButtonType.Primary">Add group</Button>
+            </PageHeaderExtra>
+        </PageHeader>
+        <Table DataSource="_instrumentGroups" TItem="InstrumentGroupModel">
+            <Column Title="Weight" DataIndex="Weight" TData="int"/>
+            <Column Title="Id" DataIndex="Id" TData="string"/>
+            <Column Title="Name" DataIndex="Name" TData="string"/>
+        </Table>
+    </TabPane>
+    <TabPane Key="3" Tab="Instruments sub groups">
+        <PageHeader Class="site-page-header" Title="Instruments sub groups">
+            <PageHeaderExtra>
+                <Button OnClick="@(() => _isActiveAddSubGroupForm = true)" Type="@ButtonType.Primary">Add sub group</Button>
+            </PageHeaderExtra>
+        </PageHeader>
+        <Table DataSource="_instrumentSubGroups" TItem="InstrumentSubGroupModel">
+            <Column Title="Weight" DataIndex="Weight" TData="int"/>
+            <Column Title="Id" DataIndex="Id" TData="string"/>
+            <Column Title="Name" DataIndex="Name" TData="string"/>
+            <Column Title="Group" DataIndex="GroupId" TData="string"/>
+        </Table>
+    </TabPane>
+</Tabs>
+
+@if (_isActiveAddInstrumentForm)
+{
+    <TradingInstrumentCrudForm InstrumentGroups="_instrumentGroups" SubGroups="_instrumentSubGroups" OnSubmit="HandleAddInstrument" OnClose="@HandleClose"/>
+}
+
+@if (_isActiveAddGroupForm)
+{
+    <TradingInstrumentGroupCrudForm OnSubmit="HandleAddGroup" OnClose="HandleClose"/>
+}
+
+@if (_isActiveAddSubGroupForm)
+{
+    <TradingInstrumentSubGroupCrudForm Groups="_instrumentGroups" OnSubmit="HandleAddSubGroup" OnClose="HandleClose"/>
+}
+
+@code {
+    private IEnumerable<TradingInstrumentModel> _tradingInstruments;
+    private IEnumerable<InstrumentGroupModel> _instrumentGroups;
+    private IEnumerable<InstrumentSubGroupModel> _instrumentSubGroups;
+
+    private bool _isActiveAddInstrumentForm;
+    private bool _isActiveAddGroupForm;
+    private bool _isActiveAddSubGroupForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
+        _instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
+        _tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void HandleAddSubGroup(IInstrumentSubGroup group)
+    {
+        await _subGroupsRepository.UpdateAsync(group);
+        _instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
+        _isActiveAddSubGroupForm = false;
+        StateHasChanged();
+    }
+
+    private async void HandleAddGroup(IInstrumentGroup group)
+    {
+        await _groupsRepository.UpdateAsync(group);
+        _instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
+        _isActiveAddGroupForm = false;
+        StateHasChanged();
+    }
+
+    private async void HandleAddInstrument(ITradingInstrument instrument)
+    {
+        await _instrumentsRepository.UpdateAsync(instrument);
+        _tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
+        _isActiveAddInstrumentForm = false;
+        StateHasChanged();
+    }
+
+    private void HandleClose()
+    {
+        _isActiveAddInstrumentForm = false;
+        _isActiveAddGroupForm = false;
+        _isActiveAddSubGroupForm = false;
+        StateHasChanged();
+    }
+
+
+}

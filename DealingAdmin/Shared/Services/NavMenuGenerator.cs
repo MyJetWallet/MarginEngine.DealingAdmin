@@ -8,6 +8,7 @@ namespace DealingAdmin.Shared.Services
         private static readonly List<NavMenuItem> MenuItems = new()
         {
             NavMenuItem.Create("ClientView", "Client View", "people"),
+            NavMenuItem.Create("InstrumentSettings", "Instruments", "grid_view"),            
             NavMenuItem.Create("Orders", "Orders", "list_alt"),
             NavMenuItem.Create("Candles", "Candles", "candlestick_chart"),
             NavMenuItem.Create("EmergencyTools", "Emergency Tools", "warning_amber"),

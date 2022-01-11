@@ -73,7 +73,7 @@
     </TabPane>
 </Tabs>
 
-@if (_isActiveAddInstrumentForm)
+@*@if (_isActiveAddInstrumentForm)
 {
     <TradingInstrumentCrudForm InstrumentGroups="_instrumentGroups" SubGroups="_instrumentSubGroups" OnSubmit="HandleAddInstrument" OnClose="@HandleClose"/>
 }
@@ -86,7 +86,7 @@
 @if (_isActiveAddSubGroupForm)
 {
     <TradingInstrumentSubGroupCrudForm Groups="_instrumentGroups" OnSubmit="HandleAddSubGroup" OnClose="HandleClose"/>
-}
+}*@
 
 @code {
     private IEnumerable<TradingInstrumentModel> _tradingInstruments;
@@ -99,11 +99,16 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine("InstrumentSettings >>> OnInitializedAsync >>> _instrumentSubGroups");
         _instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
+
+       Console.WriteLine("InstrumentSettings >>> OnInitializedAsync >>> _instrumentGroups");
         _instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
+
+        Console.WriteLine("InstrumentSettings >>> OnInitializedAsync >>> _tradingInstruments");
         _tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
 
-        await base.OnInitializedAsync();
+        // await base.OnInitializedAsync();
     }
 
     private async void HandleAddSubGroup(IInstrumentSubGroup group)

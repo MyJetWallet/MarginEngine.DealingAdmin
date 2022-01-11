@@ -42,6 +42,8 @@ namespace DealingAdmin.Abstractions.Models
 
         public static TradingInstrumentModel Create(ITradingInstrument src)
         {
+            Console.WriteLine("TradingInstrumentModel Create");
+
             return new TradingInstrumentModel
             {
                 Id = src.Id,

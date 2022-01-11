@@ -11,7 +11,7 @@
 @inject ITradingInstrumentsRepository _instrumentsRepository;
 
 <Tabs DefaultActiveKey="1" Size="@TabSize.Large" Style="margin-bottom: 32px">
-    <TabPane Key="1" Tab="Instruments">
+@*    <TabPane Key="1" Tab="Instruments">
         <PageHeader Class="site-page-header" Title="Trading profiles">
             <PageHeaderExtra>
                 <Button OnClick="@(() => _isActiveAddInstrumentForm = true)" Type="@ButtonType.Primary">Add instrument</Button>
@@ -45,7 +45,7 @@
                 Day: <Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>
             </Column>
         </Table>
-    </TabPane>
+    </TabPane>*@
     <TabPane Key="2" Tab="Instruments groups">
         <PageHeader Class="site-page-header" Title="Instruments groups">
             <PageHeaderExtra>

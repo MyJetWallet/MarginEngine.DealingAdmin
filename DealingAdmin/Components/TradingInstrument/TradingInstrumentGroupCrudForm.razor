@@ -3,8 +3,6 @@
 @using DealingAdmin.Abstractions
 @using SimpleTrading.Abstractions.Common.InstrumentsAvatar
 
-@inject ITradingInstrumentsAvatarRepository _imagesRepository
-
 <div>
     <Drawer Closable="true" Width="720" Visible="true" Title="@("Add trading instrument group")" OnClose="_ => OnClose.Invoke()">
         <Template style="height:90%">

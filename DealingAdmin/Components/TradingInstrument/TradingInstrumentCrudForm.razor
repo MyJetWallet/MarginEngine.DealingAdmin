@@ -4,9 +4,10 @@
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
 @using SimpleTrading.Abstraction.Trading.Settings
 @using SimpleTrading.Abstractions.Common.InstrumentsAvatar
+@using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
 
 
-@inject ITradingInstrumentsAvatarRepository _imagesRepository
+@inject TradingInstrumentMyNoSqlRepository instrumentAvatarRepository
 
 <div>
     <Drawer Closable="true" Width="720" Visible="true" Title="@("Add trading instrument")" OnClose="_ => OnClose.Invoke()">

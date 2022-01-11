@@ -3,6 +3,7 @@
 @using AntDesign
 @using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.TradingInstrument
 @using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
 
@@ -11,13 +12,13 @@
 @inject ITradingInstrumentsRepository _instrumentsRepository;
 
 <Tabs DefaultActiveKey="1" Size="@TabSize.Large" Style="margin-bottom: 32px">
-@*    <TabPane Key="1" Tab="Instruments">
+    <TabPane Key="1" Tab="Instruments">
         <PageHeader Class="site-page-header" Title="Trading profiles">
             <PageHeaderExtra>
-                <Button OnClick="@(() => _isActiveAddInstrumentForm = true)" Type="@ButtonType.Primary">Add instrument</Button>
+                <Button OnClick="@(() => isActiveAddInstrumentForm = true)" Type="@ButtonType.Primary">Add instrument</Button>
             </PageHeaderExtra>
         </PageHeader>
-        <Table DataSource="_tradingInstruments" TItem="TradingInstrumentModel">
+        <Table DataSource="tradingInstruments" TItem="TradingInstrumentModel">
             <Column Title="Weight" DataIndex="Weight" TData="int?"/>
             <Column Title="Id" TData="string">
                 <p>Id: @context.Id</p>
@@ -45,14 +46,14 @@
                 Day: <Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>
             </Column>
         </Table>
-    </TabPane>*@
+    </TabPane>
     <TabPane Key="2" Tab="Instruments groups">
         <PageHeader Class="site-page-header" Title="Instruments groups">
             <PageHeaderExtra>
-                <Button OnClick="@(() => _isActiveAddGroupForm = true)" Type="@ButtonType.Primary">Add group</Button>
+                <Button OnClick="@(() => isActiveAddGroupForm = true)" Type="@ButtonType.Primary">Add group</Button>
             </PageHeaderExtra>
         </PageHeader>
-        <Table DataSource="_instrumentGroups" TItem="InstrumentGroupModel">
+        <Table DataSource="instrumentGroups" TItem="InstrumentGroupModel">
             <Column Title="Weight" DataIndex="Weight" TData="int"/>
             <Column Title="Id" DataIndex="Id" TData="string"/>
             <Column Title="Name" DataIndex="Name" TData="string"/>
@@ -61,10 +62,10 @@
     <TabPane Key="3" Tab="Instruments sub groups">
         <PageHeader Class="site-page-header" Title="Instruments sub groups">
             <PageHeaderExtra>
-                <Button OnClick="@(() => _isActiveAddSubGroupForm = true)" Type="@ButtonType.Primary">Add sub group</Button>
+                <Button OnClick="@(() => isActiveAddSubGroupForm = true)" Type="@ButtonType.Primary">Add sub group</Button>
             </PageHeaderExtra>
         </PageHeader>
-        <Table DataSource="_instrumentSubGroups" TItem="InstrumentSubGroupModel">
+        <Table DataSource="instrumentSubGroups" TItem="InstrumentSubGroupModel">
             <Column Title="Weight" DataIndex="Weight" TData="int"/>
             <Column Title="Id" DataIndex="Id" TData="string"/>
             <Column Title="Name" DataIndex="Name" TData="string"/>
@@ -73,73 +74,68 @@
     </TabPane>
 </Tabs>
 
-@*@if (_isActiveAddInstrumentForm)
+@if (isActiveAddInstrumentForm)
 {
-    <TradingInstrumentCrudForm InstrumentGroups="_instrumentGroups" SubGroups="_instrumentSubGroups" OnSubmit="HandleAddInstrument" OnClose="@HandleClose"/>
+    <TradingInstrumentCrudForm InstrumentGroups="instrumentGroups" SubGroups="instrumentSubGroups" OnSubmit="HandleAddInstrument" OnClose="@HandleClose"/>
 }
 
-@if (_isActiveAddGroupForm)
+@if (isActiveAddGroupForm)
 {
     <TradingInstrumentGroupCrudForm OnSubmit="HandleAddGroup" OnClose="HandleClose"/>
 }
 
-@if (_isActiveAddSubGroupForm)
+@if (isActiveAddSubGroupForm)
 {
-    <TradingInstrumentSubGroupCrudForm Groups="_instrumentGroups" OnSubmit="HandleAddSubGroup" OnClose="HandleClose"/>
-}*@
+    <TradingInstrumentSubGroupCrudForm Groups="instrumentGroups" OnSubmit="HandleAddSubGroup" OnClose="HandleClose"/>
+}
 
 @code {
-    private IEnumerable<TradingInstrumentModel> _tradingInstruments;
-    private IEnumerable<InstrumentGroupModel> _instrumentGroups;
-    private IEnumerable<InstrumentSubGroupModel> _instrumentSubGroups;
+    private IEnumerable<TradingInstrumentModel> tradingInstruments;
+    private IEnumerable<InstrumentGroupModel> instrumentGroups;
+    private IEnumerable<InstrumentSubGroupModel> instrumentSubGroups;
 
-    private bool _isActiveAddInstrumentForm;
-    private bool _isActiveAddGroupForm;
-    private bool _isActiveAddSubGroupForm;
+    private bool isActiveAddInstrumentForm;
+    private bool isActiveAddGroupForm;
+    private bool isActiveAddSubGroupForm;
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("InstrumentSettings >>> OnInitializedAsync >>> _instrumentSubGroups");
-        _instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
+        instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
+        instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
+        tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
 
-       Console.WriteLine("InstrumentSettings >>> OnInitializedAsync >>> _instrumentGroups");
-        _instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
-
-        Console.WriteLine("InstrumentSettings >>> OnInitializedAsync >>> _tradingInstruments");
-        _tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
-
-        // await base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
     private async void HandleAddSubGroup(IInstrumentSubGroup group)
     {
         await _subGroupsRepository.UpdateAsync(group);
-        _instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
-        _isActiveAddSubGroupForm = false;
+        instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
+        isActiveAddSubGroupForm = false;
         StateHasChanged();
     }
 
     private async void HandleAddGroup(IInstrumentGroup group)
     {
         await _groupsRepository.UpdateAsync(group);
-        _instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
-        _isActiveAddGroupForm = false;
+        instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
+        isActiveAddGroupForm = false;
         StateHasChanged();
     }
 
     private async void HandleAddInstrument(ITradingInstrument instrument)
     {
         await _instrumentsRepository.UpdateAsync(instrument);
-        _tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
-        _isActiveAddInstrumentForm = false;
+        tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
+        isActiveAddInstrumentForm = false;
         StateHasChanged();
     }
 
     private void HandleClose()
     {
-        _isActiveAddInstrumentForm = false;
-        _isActiveAddGroupForm = false;
-        _isActiveAddSubGroupForm = false;
+        isActiveAddInstrumentForm = false;
+        isActiveAddGroupForm = false;
+        isActiveAddSubGroupForm = false;
         StateHasChanged();
     }
 

@@ -38,12 +38,12 @@ namespace DealingAdmin.Abstractions.Models
 
         public string TokenKey { get; set; }
 
+        public int? MarginCallPercent { get; set; }
+
         IEnumerable<ITradingInstrumentDayOff> ITradingInstrument.DaysOff => DaysOff;
 
         public static TradingInstrumentModel Create(ITradingInstrument src)
         {
-            Console.WriteLine("TradingInstrumentModel Create");
-
             return new TradingInstrumentModel
             {
                 Id = src.Id,
@@ -60,6 +60,7 @@ namespace DealingAdmin.Abstractions.Models
                 NightTimeout = src.NightTimeout,
                 TradingDisabled = src.TradingDisabled,
                 DaysOff = src.DaysOff.Select(TradingInstrumentDayOffModel.Create).ToList(),
+                MarginCallPercent = src.MarginCallPercent,
             };
         }
     }
@@ -86,6 +87,7 @@ namespace DealingAdmin.Abstractions.Models
                 NightTimeout = src.NightTimeout,
                 TradingDisabled = src.TradingDisabled,
                 DaysOff = src.DaysOff.Select(TradingInstrumentDayOffModel.Create).ToList(),
+                MarginCallPercent = src.MarginCallPercent,
                 BidAsk = bidAsk
             };
         }

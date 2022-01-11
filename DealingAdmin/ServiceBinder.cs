@@ -31,6 +31,7 @@ using SimpleTrading.TradeLog.Grpc;
 using SimpleTrading.Abstraction.Trading.Instruments;
 using SimpleTrading.Abstraction.Trading.InstrumentsGroup;
 using SimpleTrading.Abstractions.Common.InstrumentsAvatar;
+using SimpleTrading.Abstraction.Trading.Profiles;
 
 namespace DealingAdmin
 {

@@ -3,7 +3,8 @@
 @using AntDesign
 @using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
-@using DealingAdmin.Components.TradingInstrument
+@using DealingAdmin.Components.InstrumentSettings
+@using DealingAdmin.Components.InstrumentSettings.Dialogs
 @using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
 
@@ -12,42 +13,10 @@
 @inject ITradingInstrumentsRepository _instrumentsRepository;
 
 <Tabs DefaultActiveKey="1" Size="@TabSize.Large" Style="margin-bottom: 32px">
-    <TabPane Key="1" Tab="Instruments">
-        <PageHeader Class="site-page-header" Title="Trading profiles">
-            <PageHeaderExtra>
-                <Button OnClick="@(() => isActiveAddInstrumentForm = true)" Type="@ButtonType.Primary">Add instrument</Button>
-            </PageHeaderExtra>
-        </PageHeader>
-        <Table DataSource="tradingInstruments" TItem="TradingInstrumentModel">
-            <Column Title="Weight" DataIndex="Weight" TData="int?"/>
-            <Column Title="Id" TData="string">
-                <p>Id: @context.Id</p>
-                <p>Name: @context.Name</p>
-            </Column>
-            <Column Title="Group" DataIndex="GroupId" TData="string"/>
-            <Column Title="Sub group" DataIndex="SubGroupId" TData="string"/>
-            <Column Title="Avatar" TData="string">
-                <Avatar Size="64" Icon="user"/>
-            </Column>
-            <Column Title="Base" DataIndex="Base" TData="string"/>
-            <Column Title="Quote" DataIndex="Quote" TData="string"/>
-            <Column Title="Digits" DataIndex="Digits" TData="int"/>
-            <Column Title="Swap" DataIndex="SwapScheduleId" TData="string"/>
-            <Column Title="TickSize" DataIndex="TickSize" TData="double"/>
-            <Column Title="Time off" TData="string">
-                @string.Join("\n", context.DaysOff
-                    .Select(itm => $"{itm.DowFrom}:{itm.TimeFrom} - {itm.DowTo}:{itm.TimeTo}"))
-            </Column>
-            <Column Title="On/Off" Field="@context.TradingDisabled">
-                <Switch @bind-Value="@context.TradingDisabled"></Switch>
-            </Column>
-            <Column Title="Timeout" TData="string">
-                Night: <Tag PresetColor="PresetColor.Purple">@context.NightTimeout</Tag>
-                Day: <Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>
-            </Column>
-        </Table>
-    </TabPane>
-    <TabPane Key="2" Tab="Instruments groups">
+    <TabPane Tab="INSTRUMENTS">
+        <InstrumentsTab/>
+	</TabPane>
+    <TabPane Tab="INSTRUMENTS GROUPS" Key="InstrumentGroups">
         <PageHeader Class="site-page-header" Title="Instruments groups">
             <PageHeaderExtra>
                 <Button OnClick="@(() => isActiveAddGroupForm = true)" Type="@ButtonType.Primary">Add group</Button>
@@ -59,7 +28,7 @@
             <Column Title="Name" DataIndex="Name" TData="string"/>
         </Table>
     </TabPane>
-    <TabPane Key="3" Tab="Instruments sub groups">
+    <TabPane Tab="INSTRUMENTS SUBGROUPS" Key="InstrumentSubGroups">
         <PageHeader Class="site-page-header" Title="Instruments sub groups">
             <PageHeaderExtra>
                 <Button OnClick="@(() => isActiveAddSubGroupForm = true)" Type="@ButtonType.Primary">Add sub group</Button>
@@ -73,11 +42,6 @@
         </Table>
     </TabPane>
 </Tabs>
-
-@if (isActiveAddInstrumentForm)
-{
-    <TradingInstrumentCrudForm InstrumentGroups="instrumentGroups" SubGroups="instrumentSubGroups" OnSubmit="HandleAddInstrument" OnClose="@HandleClose"/>
-}
 
 @if (isActiveAddGroupForm)
 {
@@ -123,17 +87,8 @@
         StateHasChanged();
     }
 
-    private async void HandleAddInstrument(ITradingInstrument instrument)
-    {
-        await _instrumentsRepository.UpdateAsync(instrument);
-        tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
-        isActiveAddInstrumentForm = false;
-        StateHasChanged();
-    }
-
     private void HandleClose()
     {
-        isActiveAddInstrumentForm = false;
         isActiveAddGroupForm = false;
         isActiveAddSubGroupForm = false;
         StateHasChanged();

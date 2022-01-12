@@ -145,27 +145,31 @@ namespace DealingAdmin
             services.AddSingleton(CommonMyNoSqlServerFactory.CreateTradingInstrumentMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
 
-            //var liveTradingProfileRepository =
-            //     MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, true);
+            var liveTradingProfileRepository = MyNoSqlServerFactory.CreateTradingProfilesMyNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter, true);
 
-            //var demoTradingProfileRepository =
-            //    MyNoSqlFactory.CreateTradingProfilesMyNoSqlRepository(() => settingsModel.MyNoSqlRestUrl, false);
+            var demoTradingProfileRepository = MyNoSqlServerFactory.CreateTradingProfilesMyNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter, false);
 
-            //liveDemoServicesMapper.InitService(true,
-            //    services => services.TradingProfileRepository = liveTradingProfileRepository);
+            liveDemoServicesMapper.InitService(true, services => services.TradingProfileRepository = liveTradingProfileRepository);
 
-            //liveDemoServicesMapper.InitService(false,
-            //    services => services.TradingProfileRepository = demoTradingProfileRepository);
+            liveDemoServicesMapper.InitService(false, services => services.TradingProfileRepository = demoTradingProfileRepository);
 
-            var liveTradingGroupsRepository = 
-                MyNoSqlServerFactory.CreateTradingGroupsMyNoSqlRepository(() => settingsModel.DictionariesMyNoSqlServerWriter, true);
+            var liveTradingGroupsRepository = MyNoSqlServerFactory.CreateTradingGroupsMyNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter, true);
 
-            var demoTradingGroupsRepository =
-                MyNoSqlServerFactory.CreateTradingGroupsMyNoSqlRepository(() => settingsModel.DictionariesMyNoSqlServerWriter, true);
+            var demoTradingGroupsRepository = MyNoSqlServerFactory.CreateTradingGroupsMyNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter, false);
 
             liveDemoServicesMapper.InitService(true, services => services.TradingGroupsRepository = liveTradingGroupsRepository);
 
             liveDemoServicesMapper.InitService(false, services => services.TradingGroupsRepository = demoTradingGroupsRepository);
+
+            var liveTradingGroupsMarkupProfilesRepository = MyNoSqlServerFactory.CreateTradingGroupsMarkupProfilesNoSqlRepository(
+               () => settingsModel.DictionariesMyNoSqlServerWriter, true);
+
+            var demoTradingGroupsMarkupProfilesRepository = MyNoSqlServerFactory.CreateTradingGroupsMarkupProfilesNoSqlRepository(
+               () => settingsModel.DictionariesMyNoSqlServerWriter, true);
 
             return tcpConnection;
         }

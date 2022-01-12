@@ -1,0 +1,51 @@
+@page "/TradingProfiles"
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions.Models
+
+@inject LiveDemoServiceMapper _liveDemoServices;
+
+<PageHeader Class="site-page-header" Title="Trading profiles" >
+    <PageHeaderExtra>
+        <Button  Type="@ButtonType.Primary"><a style="color: white" href="/AddOrUpdateTradingProfilePage/">Add new</a></Button>
+    </PageHeaderExtra>
+</PageHeader>
+<Table DataSource="tradingProfiles" OnChange="OnChange" TItem="TradingProfileModel">
+    <Column Title="Id" DataIndex="Id" TData="string"/>
+    <Column Title="Margin call %" DataIndex="MarginCallPercent" TData="int" SorterMultiple="3" SorterCompare="(a, b) => a - b"/>
+    <Column Title="Stop out %" DataIndex="StopOutPercent" TData="int" SorterMultiple="2" SorterCompare="(a, b) => a - b"/>
+    <Column Title="Topping up %" DataIndex="PositionToppingUpPercent" TData="int" SorterMultiple="1" SorterCompare="(a, b) => a - b"/>
+    <Column Title="Instruments" TData="string">
+        @foreach (var instrument in context.Instruments)
+        {
+            <Tag PresetColor="GetRandomColor()">@instrument.Id</Tag>
+        }
+    </Column>
+</Table>
+
+
+@code {
+    private IEnumerable<TradingProfileModel> tradingProfiles;
+
+    [CascadingParameter(Name = "liveDemoContext")]
+    public bool LiveDemo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        tradingProfiles = (await _liveDemoServices.GetContext(LiveDemo)
+            .TradingProfileRepository.GetAllAsync()).Select(TradingProfileModel.Create);
+        await base.OnInitializedAsync();
+    }
+
+    void OnChange(QueryModel<TradingProfileModel> query)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(query));
+    }
+
+    private PresetColor GetRandomColor()
+    {
+        var random = new Random();
+        return (PresetColor)random.Next(0, 12);
+    }
+
+}

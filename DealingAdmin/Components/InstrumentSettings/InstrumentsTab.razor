@@ -2,12 +2,15 @@
 @using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Components.InstrumentSettings.Dialogs
+@using Serilog.Core
 @using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
 
-@inject IInstrumentSubGroupsRepository _subGroupsRepository;
-@inject IInstrumentGroupsRepository _groupsRepository;
-@inject ITradingInstrumentsRepository _instrumentsRepository;
+@inject IInstrumentSubGroupsRepository SubGroupsRepository;
+@inject IInstrumentGroupsRepository GroupsRepository;
+@inject ITradingInstrumentsRepository InstrumentsRepository;
+@inject IUserMessageService MessageService
+@inject Logger logger
 
 <PageHeader Class="m-0 p-0" Title="Instruments">
     <PageHeaderExtra>
@@ -27,11 +30,13 @@
                 TData="string"
                 DataIndex="GroupId"
                 Sortable
-                Filterable/>            
+                Filterable
+                Width="90"/>            
         <Column Title="Id"
                 TData="string"
                 DataIndex="Id"
-                Sortable>
+                Sortable
+                Width="90">
             <p>Id: @context.Id</p>
             <p>Name: @context.Name</p>
         </Column>
@@ -39,12 +44,13 @@
             TData="int?"
             DataIndex="Weight"
             Sortable
-            Width="60"/>
+            Width="80"/>
         <Column Title="Sub group" 
                 DataIndex="SubGroupId" 
                 TData="string"
                 Sortable
-                Filterable/>
+                Filterable
+                Width="120"/>
         <Column Title="Avatar" 
                 TData="string"
                 Width="60">
@@ -55,22 +61,23 @@
                 TData="string"
                 Sortable
                 Filterable
-                Width="60"/>
+                Width="66"/>
         <Column Title="Quote"
                 DataIndex="Quote"
                 TData="string"
                 Sortable
                 Filterable
-                Width="60"/>
+                Width="66"/>
         <Column Title="Digits" 
                 DataIndex="Digits" 
                 TData="int"
                 Sortable
                 Filterable
-                Width="60"/>
+                Width="66"/>
         <Column Title="Swap"
                 DataIndex="SwapScheduleId"
-                TData="string">
+                TData="string"
+                Width="60">
             @if (String.IsNullOrEmpty(context.SwapScheduleId))
             {
                 <i class="material-icons color-red font-18">warning_amber</i>
@@ -89,41 +96,33 @@
                 TData="bool"
                 Field="@context.TradingDisabled"
                 Sortable
-                Width="40">
+                Width="66">
             <Switch @bind-Value="@context.TradingDisabled"></Switch>
         </Column>
         <Column Title="Timeout"
                 TData="string" 
-                Width="80">
+                Width="66">
             Night:<Tag PresetColor="PresetColor.Purple">@context.NightTimeout</Tag>
             Day:<Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>
         </Column>        
-        <ActionColumn Title="Edit" Width="60">
+        <ActionColumn Title="Edit" Width="50">
                 <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
                     class="material-icons color-primary">edit</i></a>
         </ActionColumn>
     </RowTemplate>
 </Table>
    
-@*<Modal Title="@instrumentEditFormTitle"
+<Modal Title="@instrumentEditFormTitle"
        Visible="@isEditInstrumentDialogVisible"
        ConfirmLoading="@true"
-       OkText="@("Confirm")"
-       OnOk="()=>UpdateTradingGroup()"
-       OnCancel="()=>CloseUpdateTradingGroupDialog()">
-
-    <TradingInstrumentEditForm 
+       OkText="@("Save")"
+       OnOk="()=>SaveInstrument()"
+       OnCancel="()=>CloseEditInstrumentDialog()">
+    <TradingInstrumentEditForm
+        @bind-Instrument="editedInstrument"
         InstrumentGroups="instrumentGroups" 
-        SubGroups="instrumentSubGroups"
-        OnSubmit="HandleAddInstrument"
-        OnClose="@CloseEditInstrumentDialog"/>
-
-   
-</Modal>*@
-@if (isEditInstrumentDialogVisible)
-{
-    <TradingInstrumentCrudForm InstrumentGroups="instrumentGroups" SubGroups="instrumentSubGroups" OnSubmit="HandleAddInstrument" OnClose="@CloseEditInstrumentDialog"/>
-}
+        SubGroups="instrumentSubGroups"/>   
+</Modal>
 
 @code {
     private IEnumerable<TradingInstrumentModel> tradingInstruments;
@@ -143,9 +142,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
-        instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
-        tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
+        instrumentSubGroups = (await SubGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
+        instrumentGroups = (await GroupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
+        tradingInstruments = (await InstrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
 
         await base.OnInitializedAsync();
     }
@@ -166,14 +165,23 @@
 
     private void CloseEditInstrumentDialog()
     {
-       
         isEditInstrumentDialogVisible = false;
+        editedInstrument = new TradingInstrumentModel();
     }
 
-    private async void HandleAddInstrument(TradingInstrumentModel instrument)
+    private async void SaveInstrument()
     {
-        // await _instrumentsRepository.UpdateAsync(instrument);
-        //tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrument.Create);
-        StateHasChanged();
+        try
+        {
+            await InstrumentsRepository.UpdateAsync(editedInstrument);
+            tradingInstruments = (await InstrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
+            await MessageService.SuccessAsync("Instrument saved");
+            StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            await MessageService.ErrorAsync($"Error occured: {ex.Message}");
+        }
     }
 }

@@ -131,10 +131,9 @@
                 <div>@((context.ReservedFundsForToppingUp > 0 ? context.ReservedFundsForToppingUp.ToString("F2") : "-"))</div>
             </Column>
             <ActionColumn Title="Close" Width="66">
-                  <Button Type="@ButtonType.Primary"
-                    Shape="@ButtonShape.Circle"
-                    Color="Color.Red7"
-                    OnClick="()=>Close(context.Id)">X</Button>
+                <div>
+                    <a @onclick="()=>Close(context.Id)"><i class="material-icons color-red mx-1">cancel</i></a>
+                </div>
             </ActionColumn>
         </RowTemplate>
     </Table>

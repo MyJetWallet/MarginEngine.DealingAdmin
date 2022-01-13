@@ -16,6 +16,10 @@ a, .btn-link {
     font-size: 18px;
 }
 
+.ant-table td {
+    padding: 5px 10px !important
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
@@ -34,6 +38,11 @@ a, .btn-link {
 .grid-container-lp-quote-line {
     display: grid !important;
     grid-template-columns: 1fr 4fr 5fr 4fr 5fr 4fr 5fr 4fr 5fr;
+}
+
+.grid-container-dayoff-new-item {
+    display: grid !important;
+    grid-template-columns: 4fr 4fr 4fr 4fr 2fr
 }
 
 .valid.modified:not([type=checkbox]) {

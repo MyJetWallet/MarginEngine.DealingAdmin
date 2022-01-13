@@ -1,0 +1,110 @@
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using Microsoft.AspNetCore.Components
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Abstractions.Common.InstrumentsAvatar
+@using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
+
+<AntList Bordered DataSource="@Instrument.DaysOff" Size="small"> 
+    <ChildContent Context="item">
+        <ListItem>
+            <div>
+                <span>@(GetDayOffText(item))</span>
+                <a @onclick="()=>RemoveItem(item)"><i class="material-icons color-red mx-1">indeterminate_check_box</i></a>
+            </div>
+        </ListItem>
+    </ChildContent>
+</AntList>
+<div class="grid-container-dayoff-new-item">
+    <div>
+        <Text>Day From:</Text>
+        <Select Mode="default"
+                @bind-Value="newItem.DowFrom"
+                TItemValue="DayOfWeek"
+                TItem="DayOfWeek">
+            <SelectOptions>
+                @foreach (var item in Enum.GetValues<DayOfWeek>())
+                {
+                    <SelectOption
+                        TItemValue="DayOfWeek"
+                        TItem="DayOfWeek"
+                        Value=@item
+                        Label="@(Enum.GetName(typeof(DowShortNames), item))"/>
+                }
+            </SelectOptions>
+        </Select>
+    </div>
+    <div>
+        <Text>Time From:</Text>
+        <TimePicker @bind-Value="newItem.TimeFrom" TValue="TimeSpan"/>
+    </div>
+        <div>
+        <Text>Day To:</Text>
+        <Select Mode="default"
+                @bind-Value="newItem.DowTo"
+                TItemValue="DayOfWeek"
+                TItem="DayOfWeek">
+            <SelectOptions>
+                @foreach (var item in Enum.GetValues<DayOfWeek>())
+                {
+                    <SelectOption
+                        TItemValue="DayOfWeek"
+                        TItem="DayOfWeek"
+                        Value=@item
+                        Label="@(Enum.GetName(typeof(DowShortNames), item))"/>
+                }
+            </SelectOptions>
+        </Select>
+    </div>
+    <div>
+        <Text>Time To:</Text>
+        <TimePicker @bind-Value="newItem.TimeTo" TValue="TimeSpan"/>
+    </div>
+    <div>
+        <a @onclick="()=>AddItem()"><i class="material-icons color-green mx-1">add_box</i></a>        
+     </div>
+</div>
+ 
+@code {
+
+    private string DayFromToAdd { get; set; }
+    private string DayToToAdd { get; set; }
+    private DateTime TimeFromToAdd { get; set; }
+    private DateTime TimeToToAdd { get; set; }
+
+    [Parameter]
+    public TradingInstrumentModel Instrument { get; set; } = new();
+
+    TradingInstrumentDayOffModel newItem = new TradingInstrumentDayOffModel();
+
+    private void RemoveItem(TradingInstrumentDayOffModel item)
+    {
+        this.Instrument.DaysOff.Remove(item);
+        // this.StateHasChanged();
+    }
+
+    private void AddItem()
+    {
+        this.Instrument.DaysOff.Add(newItem);
+        newItem = new TradingInstrumentDayOffModel();
+    }
+
+    private string GetDayOffText(TradingInstrumentDayOffModel dayOff) =>
+        $"{GetDowTimeText(dayOff.DowFrom, dayOff.TimeFrom)} - {GetDowTimeText(dayOff.DowTo, dayOff.TimeTo)}";
+
+    private string GetDowTimeText(DayOfWeek dow, TimeSpan ts) =>
+        $"{Enum.GetName(typeof(DowShortNames), dow)}:{ts.ToString()}";
+
+    public enum DowShortNames
+    {
+        SUN,
+        MON,
+        TUE,
+        WED,
+        THU,
+        FRI,
+        SAT 
+    }
+
+}

@@ -9,7 +9,7 @@
 @inject IInstrumentGroupsRepository _groupsRepository;
 @inject ITradingInstrumentsRepository _instrumentsRepository;
 
-<PageHeader Class="site-page-header" Title="Trading profiles">
+<PageHeader Class="m-0 p-0" Title="Instruments">
     <PageHeaderExtra>
         <Button OnClick="ShowNewInstrumentDialog" Type="@ButtonType.Primary">New Instrument</Button>
     </PageHeaderExtra>
@@ -23,14 +23,6 @@
        ScrollY="calc(100vh - 260px)"
        PageSize="999">
     <RowTemplate>
-        <Column Title="" TData="string">
-            <div>
-                @if (String.IsNullOrEmpty(context.SwapScheduleId))
-                {
-                    <i class="material-icons color-red font-18">warning_amber</i>
-                }
-            </div>
-        </Column>
         <Column Title="Group"
                 TData="string"
                 DataIndex="GroupId"
@@ -46,49 +38,65 @@
         <Column Title="Weight"
             TData="int?"
             DataIndex="Weight"
-            Sortable/>
+            Sortable
+            Width="60"/>
         <Column Title="Sub group" 
                 DataIndex="SubGroupId" 
                 TData="string"
                 Sortable
                 Filterable/>
         <Column Title="Avatar" 
-                TData="string">
-            <Avatar Size="64" Icon="user"/>
+                TData="string"
+                Width="60">
+            <Avatar Size="48" Icon="user"/>
         </Column>
         <Column Title="Base"
                 DataIndex="Base" 
                 TData="string"
                 Sortable
-                Filterable/>
+                Filterable
+                Width="60"/>
         <Column Title="Quote"
                 DataIndex="Quote"
                 TData="string"
                 Sortable
-                Filterable/>
+                Filterable
+                Width="60"/>
         <Column Title="Digits" 
                 DataIndex="Digits" 
                 TData="int"
                 Sortable
-                Filterable/>
+                Filterable
+                Width="60"/>
         <Column Title="Swap"
                 DataIndex="SwapScheduleId"
-                TData="string"/>
-        <Column Title="TickSize"
-                DataIndex="TickSize"
-                TData="double"
-                Sortable
-                Filterable/>
-        <Column Title="Time off" TData="string">
+                TData="string">
+            @if (String.IsNullOrEmpty(context.SwapScheduleId))
+            {
+                <i class="material-icons color-red font-18">warning_amber</i>
+            }
+            else
+            {
+                <span>@context.SwapScheduleId</span>
+            }
+        </Column>
+        <Column Title="Time off"
+                TData="string">
             @string.Join("\n", context.DaysOff
                 .Select(x => $"{x.DowFrom}:{x.TimeFrom} - {x.DowTo}:{x.TimeTo}"))
         </Column>
-        <Column Title="On/Off" Field="@context.TradingDisabled">
+        <Column Title="On/Off"
+                TData="bool"
+                Field="@context.TradingDisabled"
+                Sortable
+                Width="40">
             <Switch @bind-Value="@context.TradingDisabled"></Switch>
         </Column>
-        <Column Title="Timeout" TData="string">
-            Night: <Tag PresetColor="PresetColor.Purple">@context.NightTimeout</Tag>
-            Day: <Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>
+        <Column Title="Timeout"
+                TData="string" 
+                Width="80">
+            Night:<Tag PresetColor="PresetColor.Purple">@context.NightTimeout</Tag>
+            Day:<Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>
         </Column>        
         <ActionColumn Title="Edit" Width="60">
                 <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
@@ -97,8 +105,21 @@
     </RowTemplate>
 </Table>
    
+@*<Modal Title="@instrumentEditFormTitle"
+       Visible="@isEditInstrumentDialogVisible"
+       ConfirmLoading="@true"
+       OkText="@("Confirm")"
+       OnOk="()=>UpdateTradingGroup()"
+       OnCancel="()=>CloseUpdateTradingGroupDialog()">
 
+    <TradingInstrumentEditForm 
+        InstrumentGroups="instrumentGroups" 
+        SubGroups="instrumentSubGroups"
+        OnSubmit="HandleAddInstrument"
+        OnClose="@CloseEditInstrumentDialog"/>
 
+   
+</Modal>*@
 @if (isEditInstrumentDialogVisible)
 {
     <TradingInstrumentCrudForm InstrumentGroups="instrumentGroups" SubGroups="instrumentSubGroups" OnSubmit="HandleAddInstrument" OnClose="@CloseEditInstrumentDialog"/>
@@ -117,6 +138,7 @@
     private bool isUpdateTradingGroupDialogVisible = false;
 
     private TradingInstrumentModel editedInstrument;
+    private string instrumentEditFormTitle;
     private bool isEditInstrumentDialogVisible;
 
     protected override async Task OnInitializedAsync()
@@ -128,14 +150,16 @@
         await base.OnInitializedAsync();
     }
 
-    private async void ShowNewInstrumentDialog()
+    private void ShowNewInstrumentDialog()
     {
+        instrumentEditFormTitle = "Add New Instrument";
         editedInstrument = new TradingInstrumentModel();
         isEditInstrumentDialogVisible = true;
     }
 
-    private async void ShowEditInstrumentDialog(TradingInstrumentModel instrument)
+    private void ShowEditInstrumentDialog(TradingInstrumentModel instrument)
     {
+        instrumentEditFormTitle = $"Edit '${instrument.Name}' Instrument";
         editedInstrument = instrument;
         isEditInstrumentDialogVisible = true;
     }

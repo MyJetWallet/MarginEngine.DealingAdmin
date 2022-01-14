@@ -37,7 +37,7 @@
     </div>
     <div>
         <Text>Time From:</Text>
-        <TimePicker @bind-Value="newItem.TimeFrom" TValue="TimeSpan"/>
+        <TimePicker @bind-Value="newItemTimeFrom" TValue="DateTime"/>
     </div>
         <div>
         <Text>Day To:</Text>
@@ -59,7 +59,7 @@
     </div>
     <div>
         <Text>Time To:</Text>
-        <TimePicker @bind-Value="newItem.TimeTo" TValue="TimeSpan"/>
+        <TimePicker @bind-Value="newItemTimeTo" TValue="DateTime"/>
     </div>
     <div>
         <a @onclick="()=>AddItem()"><i class="material-icons color-green mx-1">add_box</i></a>        
@@ -68,10 +68,8 @@
  
 @code {
 
-    private string DayFromToAdd { get; set; }
-    private string DayToToAdd { get; set; }
-    private DateTime TimeFromToAdd { get; set; }
-    private DateTime TimeToToAdd { get; set; }
+    private DateTime newItemTimeFrom { get; set; }
+    private DateTime newItemTimeTo { get; set; }
 
     [Parameter]
     public TradingInstrumentModel Instrument { get; set; } = new();
@@ -89,6 +87,8 @@
 
     private void AddItem()
     {
+        newItem.TimeFrom = newItemTimeFrom.TimeOfDay;
+        newItem.TimeTo = newItemTimeTo.TimeOfDay;
         this.Instrument.DaysOff.Add(newItem);
         newItem = new TradingInstrumentDayOffModel();
     }

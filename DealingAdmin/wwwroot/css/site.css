@@ -20,6 +20,10 @@ a, .btn-link {
     padding: 5px 10px !important
 }
 
+.ant-table th {
+    padding: 5px 10px !important
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;

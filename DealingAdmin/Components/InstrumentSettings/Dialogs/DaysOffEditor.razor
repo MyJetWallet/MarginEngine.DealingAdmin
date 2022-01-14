@@ -10,7 +10,7 @@
     <ChildContent Context="item">
         <ListItem>
             <div>
-                <span>@(GetDayOffText(item))</span>
+                <span>@(FormatUtils.GetDayOffText(item))</span>
                 <a @onclick="()=>RemoveItem(item)"><i class="material-icons color-red mx-1">indeterminate_check_box</i></a>
             </div>
         </ListItem>
@@ -30,7 +30,7 @@
                         TItemValue="DayOfWeek"
                         TItem="DayOfWeek"
                         Value=@item
-                        Label="@(Enum.GetName(typeof(DowShortNames), item))"/>
+                        Label="@(Enum.GetName(typeof(FormatUtils.DowShortNames), item))"/>
                 }
             </SelectOptions>
         </Select>
@@ -52,7 +52,7 @@
                         TItemValue="DayOfWeek"
                         TItem="DayOfWeek"
                         Value=@item
-                        Label="@(Enum.GetName(typeof(DowShortNames), item))"/>
+                        Label="@(Enum.GetName(typeof(FormatUtils.DowShortNames), item))"/>
                 }
             </SelectOptions>
         </Select>
@@ -98,22 +98,4 @@
         Console.WriteLine("UpdateInstrumentDayOffs call");
         await InstrumentChanged.InvokeAsync(Instrument);
     }
-
-    private string GetDayOffText(TradingInstrumentDayOffModel dayOff) =>
-        $"{GetDowTimeText(dayOff.DowFrom, dayOff.TimeFrom)} - {GetDowTimeText(dayOff.DowTo, dayOff.TimeTo)}";
-
-    private string GetDowTimeText(DayOfWeek dow, TimeSpan ts) =>
-        $"{Enum.GetName(typeof(DowShortNames), dow)}:{ts.ToString()}";
-
-    public enum DowShortNames
-    {
-        SUN,
-        MON,
-        TUE,
-        WED,
-        THU,
-        FRI,
-        SAT 
-    }
-
 }

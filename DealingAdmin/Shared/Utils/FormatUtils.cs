@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DealingAdmin.Abstractions.Models;
+using System;
 
 namespace DealingAdmin
 {
@@ -25,6 +26,23 @@ namespace DealingAdmin
         public static string DateTimeNamedWithMsFormat(DateTime dt)
         {
             return dt.ToString(FullDateTimeWithMsFormat);
+        }
+
+        public static string GetDayOffText(TradingInstrumentDayOffModel dayOff) =>
+            $"{GetDowTimeText(dayOff.DowFrom, dayOff.TimeFrom)} - {GetDowTimeText(dayOff.DowTo, dayOff.TimeTo)}";
+
+        public static string GetDowTimeText(DayOfWeek dow, TimeSpan ts) =>
+            $"{Enum.GetName(typeof(DowShortNames), dow)}:{ts}";
+
+        public enum DowShortNames
+        {
+            SUN,
+            MON,
+            TUE,
+            WED,
+            THU,
+            FRI,
+            SAT
         }
     }
 }

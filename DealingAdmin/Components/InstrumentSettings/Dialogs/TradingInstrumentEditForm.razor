@@ -8,14 +8,13 @@
 
 @inject TradingInstrumentMyNoSqlRepository instrumentAvatarRepository
 
-<Form Model="Instrument"
-        Layout="@(FormLayout.Inline)">
+<Form Model="Instrument" Layout="@(FormLayout.Inline)">
     <FormItem>
         <ChildContent>
-            <FormItem Label="Id" LabelColSpan="4" WrapperColSpan="8" Required>
+            <FormItem Label="Id" Required>
                 <Input @bind-Value="@context.Id" Placeholder="Instrument Id" Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
             </FormItem>            
-            <FormItem Label="Weight" LabelColSpan="4" WrapperColSpan="8" Required>
+            <FormItem Label="Weight" Required>
                 <Input @bind-Value="@context.Weight" TValue="int?" Placeholder="Weight" />
             </FormItem>
         </ChildContent>
@@ -25,10 +24,10 @@
     </FormItem>
     <FormItem>
         <ChildContent>
-            <FormItem Label="Base" LabelColSpan="4" WrapperColSpan="8" Required>
+            <FormItem Label="Base" LabelColSpan="4" Required>
                 <Input @bind-Value="@context.Base" Placeholder="Base" />
             </FormItem>
-            <FormItem Label="Quote" LabelColSpan="4" WrapperColSpan="8" Required>
+            <FormItem Label="Quote" LabelColSpan="4" Required>
                 <Input @bind-Value="@context.Quote" Placeholder="Quote" />
             </FormItem>
         </ChildContent>
@@ -63,7 +62,7 @@
             </SelectOptions>
         </Select>
     </FormItem>
-    <FormItem Label="Days Off">
+    <FormItem Label="Days Off" LabelColSpan="4">
         <DaysOffEditor @bind-Instrument="@context"/>
     </FormItem>  
     <FormItem Label="Day Timeout" Required>

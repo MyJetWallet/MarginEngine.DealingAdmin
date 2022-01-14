@@ -37,7 +37,7 @@
     </div>
     <div>
         <Text>Time From:</Text>
-        <TimePicker @bind-Value="newItemTimeFrom" TValue="DateTime"/>
+        <TimePicker @bind-Value="newItemTimeFrom" TValue="DateTime" Format="hh:mm"/>
     </div>
         <div>
         <Text>Day To:</Text>
@@ -59,7 +59,7 @@
     </div>
     <div>
         <Text>Time To:</Text>
-        <TimePicker @bind-Value="newItemTimeTo" TValue="DateTime"/>
+        <TimePicker @bind-Value="newItemTimeTo" TValue="DateTime" Format="hh:mm"/>
     </div>
     <div>
         <a @onclick="()=>AddItem()"><i class="material-icons color-green mx-1">add_box</i></a>        

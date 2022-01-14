@@ -19,15 +19,15 @@
             </FormItem>
         </ChildContent>
     </FormItem>
-    <FormItem Label="Name" LabelColSpan="4" Required>
+    <FormItem Label="Name" Required>
         <Input @bind-Value="@context.Name" Placeholder="Name" />
     </FormItem>
     <FormItem>
         <ChildContent>
-            <FormItem Label="Base" LabelColSpan="4" Required>
+            <FormItem Label="Base" Required>
                 <Input @bind-Value="@context.Base" Placeholder="Base" />
             </FormItem>
-            <FormItem Label="Quote" LabelColSpan="4" Required>
+            <FormItem Label="Quote" Required>
                 <Input @bind-Value="@context.Quote" Placeholder="Quote" />
             </FormItem>
         </ChildContent>
@@ -62,7 +62,7 @@
             </SelectOptions>
         </Select>
     </FormItem>
-    <FormItem Label="Days Off" LabelColSpan="4">
+    <FormItem Label="Days Off">
         <DaysOffEditor @bind-Instrument="@context"/>
     </FormItem>  
     <FormItem Label="Day Timeout" Required>

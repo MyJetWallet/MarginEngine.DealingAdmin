@@ -76,6 +76,9 @@
     [Parameter]
     public TradingInstrumentModel Instrument { get; set; } = new();
 
+    [Parameter]
+    public EventCallback<TradingInstrumentModel> InstrumentChanged { get; set; }
+
     TradingInstrumentDayOffModel newItem = new TradingInstrumentDayOffModel();
 
     private void RemoveItem(TradingInstrumentDayOffModel item)
@@ -88,6 +91,12 @@
     {
         this.Instrument.DaysOff.Add(newItem);
         newItem = new TradingInstrumentDayOffModel();
+    }
+
+    public async Task UpdateInstrumentDayOffs()
+    {
+        Console.WriteLine("UpdateInstrumentDayOffs call");
+        await InstrumentChanged.InvokeAsync(Instrument);
     }
 
     private string GetDayOffText(TradingInstrumentDayOffModel dayOff) =>

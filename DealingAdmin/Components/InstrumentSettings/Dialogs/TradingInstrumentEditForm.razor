@@ -77,7 +77,10 @@
 @code {
     [Parameter]
     public TradingInstrumentModel Instrument { get; set; } = new();
-     
+
+    [Parameter]
+    public EventCallback<TradingInstrumentModel> InstrumentChanged { get; set; }
+
     [Parameter]
     public IEnumerable<ISwapProfile> SwapProfiles { get; set; } = new List<ISwapProfile>();
 
@@ -86,4 +89,10 @@
 
     [Parameter]
     public IEnumerable<IInstrumentSubGroup> SubGroups { get; set; }
+
+    public async Task UpdateEditedInstrument()
+    {
+        Console.WriteLine("UpdateEditedInstrument call");
+        await InstrumentChanged.InvokeAsync(Instrument);
+    }
 }

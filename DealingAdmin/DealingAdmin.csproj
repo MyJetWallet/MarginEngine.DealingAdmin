@@ -18,7 +18,7 @@
 		<PackageReference Include="SimpleTrading.Common.MyNoSql" Version="1.0.45" />
 		<PackageReference Include="SimpleTrading.Engine.Grpc" Version="1.0.54" />
 		<PackageReference Include="SimpleTrading.Abstraction" Version="2.0.21" />
-		<PackageReference Include="SimpleTrading.ServiceBus" Version="4.0.16" />
+		<PackageReference Include="SimpleTrading.ServiceBus" Version="4.0.17" />
 		<PackageReference Include="SimpleTrading.TradeLog.Grpc" Version="1.0.7" />
 		<PackageReference Include="SimpleTrading.GrpcTemplate" Version="1.0.4" />
 		<PackageReference Include="SimpleTrading.CandlesHistory.AzureStorage" Version="1.0.20" />

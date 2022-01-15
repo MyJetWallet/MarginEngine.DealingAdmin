@@ -104,8 +104,6 @@
                 Width="100">
             <InsturmentBidAsk InstrumentId="@context.Id" InstrumentDigits="@context.Digits"/>
         </Column>
-        InsturmentBidAsk
-
         <Column Title="Timeout"
                 TData="string" 
                 Width="120">
@@ -124,7 +122,8 @@
        ConfirmLoading="@true"
        OkText="@("Save")"
        OnOk="()=>SaveInstrument()"
-       OnCancel="()=>CloseEditInstrumentDialog()">
+       OnCancel="()=>CloseEditInstrumentDialog()"
+       Width="800">
     <TradingInstrumentEditForm
         @bind-Instrument="editedInstrument"
         InstrumentGroups="instrumentGroups" 

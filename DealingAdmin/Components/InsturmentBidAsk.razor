@@ -1,0 +1,70 @@
+﻿@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.BidAsk
+
+@inject IBidAskCache bidAskCache
+@inject IPriceRetriever priceRetriever
+
+<div style="font-family:courier">
+    <p>Ask: @bidAsk?.Ask.ToString($"F{InstrumentDigits}")</p>
+    <p>Bid: @bidAsk?.Bid.ToString($"F{InstrumentDigits}")</p>
+    <p>Spread: @spread</p>
+</div>
+
+@code {
+    [Parameter]
+    public string InstrumentId { get; set; }
+
+    [Parameter]
+    public int InstrumentDigits { get; set; }
+
+
+    private BidAskModel bidAsk { get; set; }
+    private bool isUpdating = false;
+    private int spread;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var nowBidAsk = bidAskCache.Get(InstrumentId);
+
+        if (nowBidAsk != null)
+        {
+            bidAsk = nowBidAsk.ToBidAskModel();
+            spread = FxUtils.CalcSpread(bidAsk, InstrumentDigits);
+        }
+        else
+        {
+            bidAsk = null;
+        }
+
+        AppJobService.QuotesUpdateEvent += async () => await InvokeAsync(() => UpdateBidAsk());
+    } 
+
+    private void UpdateBidAsk()
+    {
+        if (isUpdating)
+        {
+            return;
+        }
+
+        isUpdating = true;
+
+        var currentBidAsk = priceRetriever.GetBidAsk(InstrumentId);
+
+        if (currentBidAsk != null)
+        {
+            SetBidAsk(currentBidAsk);
+        }
+
+        isUpdating = false;      
+    }
+
+    public void SetBidAsk(BidAskModel bidAskNow)
+    {
+        bidAsk = bidAskNow;
+        spread = FxUtils.CalcSpread(bidAsk, InstrumentDigits);
+        this.StateHasChanged();
+    }
+}

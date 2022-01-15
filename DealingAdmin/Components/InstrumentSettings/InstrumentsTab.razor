@@ -99,6 +99,13 @@
                 Width="72">
             <Switch @bind-Value="@context.TradingDisabled"></Switch>
         </Column>
+        <Column Title="Price"
+                TData="string"
+                Width="100">
+            <InsturmentBidAsk InstrumentId="@context.Id" InstrumentDigits="@context.Digits"/>
+        </Column>
+        InsturmentBidAsk
+
         <Column Title="Timeout"
                 TData="string" 
                 Width="120">

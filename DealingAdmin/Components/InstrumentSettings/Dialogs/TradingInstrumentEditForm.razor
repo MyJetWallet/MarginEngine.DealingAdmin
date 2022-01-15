@@ -8,29 +8,23 @@
 
 @inject TradingInstrumentMyNoSqlRepository instrumentAvatarRepository
 
-<Form Model="Instrument" Layout="@(FormLayout.Inline)">
-    <FormItem>
-        <ChildContent>
-            <FormItem Label="Id" Required>
-                <Input @bind-Value="@context.Id" Placeholder="Instrument Id" Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
-            </FormItem>            
-            <FormItem Label="Weight" Required>
-                <Input @bind-Value="@context.Weight" TValue="int?" Placeholder="Weight" />
-            </FormItem>
-        </ChildContent>
+<Form Model="Instrument"        
+      LabelColSpan="6"
+      WrapperColSpan="18">
+    <FormItem Label="Id" Required>
+        <Input @bind-Value="@context.Id" Placeholder="Instrument Id" Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
+    </FormItem>            
+    <FormItem Label="Weight" Required>
+        <Input @bind-Value="@context.Weight" TValue="int?" Placeholder="Weight" />
     </FormItem>
     <FormItem Label="Name" Required>
         <Input @bind-Value="@context.Name" Placeholder="Name" />
     </FormItem>
-    <FormItem>
-        <ChildContent>
-            <FormItem Label="Base" Required>
-                <Input @bind-Value="@context.Base" Placeholder="Base" />
-            </FormItem>
-            <FormItem Label="Quote" Required>
-                <Input @bind-Value="@context.Quote" Placeholder="Quote" />
-            </FormItem>
-        </ChildContent>
+    <FormItem Label="Base" Required>
+        <Input @bind-Value="@context.Base" Placeholder="Base" />
+    </FormItem>
+    <FormItem Label="Quote" Required>
+        <Input @bind-Value="@context.Quote" Placeholder="Quote" />
     </FormItem>
     <FormItem Label="Digits" Required>
         <Input @bind-Value="@context.Digits" TValue="int" Placeholder="Digits" />
@@ -64,10 +58,10 @@
     </FormItem>
     <FormItem Label="Days Off">
         <DaysOffEditor @bind-Instrument="@context"/>
-    </FormItem>  
+    </FormItem>
     <FormItem Label="Day Timeout" Required>
         <Input @bind-Value="@context.DayTimeout" TValue="int?" Placeholder="Day Timeout" />
-    </FormItem>    
+    </FormItem>
     <FormItem Label="Night Timeout" Required>
         <Input @bind-Value="@context.NightTimeout" TValue="int?" Placeholder="Night Timeout" />
     </FormItem>

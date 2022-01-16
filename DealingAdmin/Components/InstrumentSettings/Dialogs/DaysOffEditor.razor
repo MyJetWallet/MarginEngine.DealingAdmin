@@ -6,7 +6,7 @@
 @using SimpleTrading.Abstractions.Common.InstrumentsAvatar
 @using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
 
-<AntList Bordered DataSource="@Instrument.DaysOff" Size="small"> 
+<AntList DataSource="@Instrument.DaysOff" Size="small"> 
     <ChildContent Context="item">
         <ListItem>
             <div>
@@ -61,7 +61,7 @@
         <Text>Time To:</Text>
         <TimePicker @bind-Value="newItemTimeTo" TValue="DateTime" Format="hh:mm"/>
     </div>
-    <div>
+    <div style="margin: auto;">
         <Button OnClick="()=>AddItem()" Color="Color.Green1">+</Button>
      </div>
 </div>

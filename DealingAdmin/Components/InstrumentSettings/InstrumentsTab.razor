@@ -5,11 +5,13 @@
 @using Serilog.Core
 @using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+@using SimpleTrading.Abstraction.Trading.Swaps
 @using static DealingAdmin.FormatUtils
 
 @inject IInstrumentSubGroupsRepository SubGroupsRepository;
 @inject IInstrumentGroupsRepository GroupsRepository;
 @inject ITradingInstrumentsRepository InstrumentsRepository;
+@inject ISwapProfileWriter SwapProfileWriter
 @inject IUserMessageService MessageService
 @inject Logger logger
 
@@ -35,8 +37,7 @@
         <Column Title="Id"
                 TData="string"
                 DataIndex="Id"
-                Sortable
-                Width="100">
+                Sortable>
             <p>Id: <b>@context.Id</b></p>
             <p>Name: <b>@context.Name</b></p>
         </Column>
@@ -69,7 +70,6 @@
                 DataIndex="Digits" 
                 TData="int"
                 Sortable
-                Filterable
                 Width="72"/>
         <Column Title="Swap"
                 DataIndex="SwapScheduleId"
@@ -86,7 +86,7 @@
         </Column>
         <Column Title="Time off"
                 TData="string"
-                Width="250">
+                Width="220">
             @foreach(var item in context.DaysOff)
             {
                 <p>@(FormatUtils.GetDayOffText(item))</p>
@@ -101,7 +101,7 @@
         </Column>
         <Column Title="Price"
                 TData="string"
-                Width="100">
+                Width="220">
             <InsturmentBidAsk InstrumentId="@context.Id" InstrumentDigits="@context.Digits"/>
         </Column>
         <Column Title="Timeout"
@@ -123,17 +123,20 @@
        OkText="@("Save")"
        OnOk="()=>SaveInstrument()"
        OnCancel="()=>CloseEditInstrumentDialog()"
-       Width="800">
+       Width="900">
     <TradingInstrumentEditForm
         @bind-Instrument="editedInstrument"
         InstrumentGroups="instrumentGroups" 
-        SubGroups="instrumentSubGroups"/>   
+        SubGroups="instrumentSubGroups"
+        SwapProfiles="swapProfiles"
+        />   
 </Modal>
 
 @code {
     private IEnumerable<TradingInstrumentModel> tradingInstruments;
     private IEnumerable<InstrumentGroupModel> instrumentGroups;
     private IEnumerable<InstrumentSubGroupModel> instrumentSubGroups;
+    private IEnumerable<SwapProfileModel> swapProfiles;
 
     int _pageSize = 999;
 
@@ -151,7 +154,7 @@
         instrumentSubGroups = (await SubGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
         instrumentGroups = (await GroupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
         tradingInstruments = (await InstrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
-
+        swapProfiles = (await SwapProfileWriter.GetAllAsync()).Select(SwapProfileModel.Create);
         await base.OnInitializedAsync();
     }
 

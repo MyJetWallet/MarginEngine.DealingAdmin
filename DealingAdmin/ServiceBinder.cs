@@ -32,6 +32,7 @@ using SimpleTrading.Abstraction.Trading.Instruments;
 using SimpleTrading.Abstraction.Trading.InstrumentsGroup;
 using SimpleTrading.Abstractions.Common.InstrumentsAvatar;
 using SimpleTrading.Abstraction.Trading.Profiles;
+using SimpleTrading.Abstraction.Trading.Swaps;
 
 namespace DealingAdmin
 {
@@ -105,6 +106,8 @@ namespace DealingAdmin
             services.AddSingleton<IQuoteSourceService, QuoteSourceService>();
             services.AddSingleton<ITraderSearchService, TraderSearchService>();
             services.AddSingleton<IAccountNewTradingGroupValidator, AccountNewTradingGroupValidator>();
+
+
         }
 
         public static void InitLiveDemoManager(this IServiceCollection services, LiveDemoServiceMapper mapper)
@@ -129,6 +132,10 @@ namespace DealingAdmin
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton((IDefaultLiquidityProviderWriter)CommonMyNoSqlServerFactory.CreateDefaultValueMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton<ISwapScheduleWriter>(MyNoSqlServerFactory.CreateSwapScheduleMyNoSqlRepository(
+              () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton<ISwapProfileWriter>(MyNoSqlServerFactory.CreateSwapProfileMyNoSqlWriter(
+              () => settingsModel.DictionariesMyNoSqlServerWriter));
 
             liveDemoServicesMapper.InitService(true,
                services => services.ActiveOrdersReader = MyNoSqlServerFactory.CreateActiveOrdersCacheReader(tcpConnection, true));

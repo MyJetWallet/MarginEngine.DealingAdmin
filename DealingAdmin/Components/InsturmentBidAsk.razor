@@ -8,9 +8,9 @@
 @inject IPriceRetriever priceRetriever
 
 <div style="font-family:courier">
-    <p>Ask: @bidAsk?.Ask.ToString($"F{InstrumentDigits}")</p>
-    <p>Bid: @bidAsk?.Bid.ToString($"F{InstrumentDigits}")</p>
-    <p>Spread: @spread</p>
+    <div>Ask: @bidAsk?.Ask.ToString($"F{InstrumentDigits}")</div>
+    <div>Bid: @bidAsk?.Bid.ToString($"F{InstrumentDigits}")</div>
+    <div>Spread: @spread</div>
 </div>
 
 @code {

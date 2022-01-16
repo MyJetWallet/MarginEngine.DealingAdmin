@@ -46,7 +46,8 @@ a, .btn-link {
 
 .grid-container-dayoff-new-item {
     display: grid !important;
-    grid-template-columns: 4fr 4fr 4fr 4fr 2fr
+    grid-template-columns: 4fr 4fr 1fr;
+    column-gap: 10px;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -69,6 +70,11 @@ a, .btn-link {
     vertical-align: baseline;
 }
 
+.center-middle {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
 .simple-badge {
     border-radius: 10px !important;
     background-color: #000;
@@ -84,6 +90,10 @@ a, .btn-link {
     text-indent: 0;
     letter-spacing: 0;
     white-space: nowrap
+}
+
+.no-wrap {
+    white-space: nowrap;
 }
 
 .text-bold {

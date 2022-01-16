@@ -17,8 +17,8 @@
     </ChildContent>
 </AntList>
 <div class="grid-container-dayoff-new-item">
-    <div>
-        <Text>Day From:</Text>
+    <div class="no-wrap">
+        <span>From:</span>
         <Select Mode="default"
                 @bind-Value="newItem.DowFrom"
                 TItemValue="DayOfWeek"
@@ -34,13 +34,10 @@
                 }
             </SelectOptions>
         </Select>
-    </div>
-    <div>
-        <Text>Time From:</Text>
         <TimePicker @bind-Value="newItemTimeFrom" TValue="DateTime" Format="hh:mm"/>
     </div>
-        <div>
-        <Text>Day To:</Text>
+    <div class="no-wrap">
+        <span>To:</span>
         <Select Mode="default"
                 @bind-Value="newItem.DowTo"
                 TItemValue="DayOfWeek"
@@ -56,12 +53,9 @@
                 }
             </SelectOptions>
         </Select>
-    </div>
-    <div>
-        <Text>Time To:</Text>
         <TimePicker @bind-Value="newItemTimeTo" TValue="DateTime" Format="hh:mm"/>
     </div>
-    <div style="margin: auto;">
+    <div class="center-middle">
         <Button OnClick="()=>AddItem()" Color="Color.Green1">+</Button>
      </div>
 </div>

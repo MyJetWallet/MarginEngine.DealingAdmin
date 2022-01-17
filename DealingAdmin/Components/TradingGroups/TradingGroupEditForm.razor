@@ -78,13 +78,18 @@
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> START"); /// REMOVE AFTER TEST!!!
-        tradingProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
-            .TradingProfileRepository.GetAllAsync());
+        tradingProfiles = await liveDemoServices.GetContext(AppState.IsLive)
+            .TradingProfileRepository.GetAllAsync();
         Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> swapProfiles"); /// REMOVE AFTER TEST!!!
-        swapProfiles = (await swapProfileWriter.GetAllAsync());
+        swapProfiles = await swapProfileWriter.GetAllAsync();
         Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> markupProfiles"); /// REMOVE AFTER TEST!!!
-        markupProfiles = (await markupProfilesRepository.GetAllAsync());
+        markupProfiles = await markupProfilesRepository.GetAllAsync();
         Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> END"); /// REMOVE AFTER TEST!!!
+
+        Console.WriteLine($"tradingProfiles.Count = {tradingProfiles.Count()}"); /// REMOVE AFTER TEST!!!
+        Console.WriteLine($"swapProfiles.Count = {swapProfiles.Count()}"); /// REMOVE AFTER TEST!!!
+        Console.WriteLine($"markupProfiles.Count = {markupProfiles.Count()}"); /// REMOVE AFTER TEST!!!
+        Console.WriteLine($"tradingProfiles:= {String.Join(",", tradingProfiles)}"); /// REMOVE AFTER TEST!!!
     }
 
     public async Task UpdateEditedInstrument()

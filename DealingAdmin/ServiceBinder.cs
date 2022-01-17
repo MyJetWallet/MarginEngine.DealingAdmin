@@ -33,6 +33,7 @@ using SimpleTrading.Abstraction.Trading.InstrumentsGroup;
 using SimpleTrading.Abstractions.Common.InstrumentsAvatar;
 using SimpleTrading.Abstraction.Trading.Profiles;
 using SimpleTrading.Abstraction.Trading.Swaps;
+using SimpleTrading.Abstraction.Markups;
 
 namespace DealingAdmin
 {
@@ -46,7 +47,7 @@ namespace DealingAdmin
 
         public ISimpleTradingEngineApi EngineApi { get; set; }
 
-        public ITradingGroupsRepository TradingGroupsRepository { get; internal set; }
+        public ITradingGroupsRepository TradingGroupsRepository { get; set; }
     }
 
     public class LiveDemoServiceMapper
@@ -135,6 +136,8 @@ namespace DealingAdmin
             services.AddSingleton<ISwapScheduleWriter>(MyNoSqlServerFactory.CreateSwapScheduleMyNoSqlRepository(
               () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton<ISwapProfileWriter>(MyNoSqlServerFactory.CreateSwapProfileMyNoSqlWriter(
+              () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton<IMarkupProfilesRepository>(MyNoSqlServerFactory.CreateMarkupProfilesNoSqlRepository(
               () => settingsModel.DictionariesMyNoSqlServerWriter));
 
             liveDemoServicesMapper.InitService(true,

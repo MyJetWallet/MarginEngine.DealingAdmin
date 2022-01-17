@@ -2,12 +2,17 @@
 
 @using AntDesign.TableModels
 @using System.Text.Json
+@using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Components.TradingGroups
 @using DealingAdmin.Shared.Services
+@using Serilog.Core
 
 @inject StateManager AppState
-@inject LiveDemoServiceMapper _liveDemoServices;
+@inject LiveDemoServiceMapper liveDemoServices;
+@inject IUserMessageService messageService
+@inject AdminAppSettings appSettings
+@inject Logger logger
 
 <PageHeader Class="m-0 p-0" Title="Trading Groups">
     <PageHeaderExtra>
@@ -50,6 +55,14 @@
     </RowTemplate>
 </Table>
 
+<Modal Title="@groupEditFormTitle"
+       Visible="@isEditGroupDialogVisible"
+       OkText="@("Save")"
+       OnOk="()=>SaveGroup()"
+       OnCancel="()=>CloseEditGroupDialog()"
+       Width="900">
+    <TradingGroupEditForm @bind-TradingGroup="editedGroup" />   
+</Modal>
 
 @code {
     private List<TradingGroupModel> tradingGroups;
@@ -73,7 +86,7 @@
     {
         isLoading = true;
 
-        tradingGroups = (await _liveDemoServices.GetContext(AppState.IsLive)
+        tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
            .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
 
         isLoading = false;
@@ -99,5 +112,27 @@
     {
         isEditGroupDialogVisible = false;
         editedGroup = new TradingGroupModel();
+    }
+
+    private async void SaveGroup()
+    {
+        try
+        {
+            if (editedGroup.TokenKey != appSettings.AdminCrudApiKey)
+            {
+                await messageService.ErrorAsync("API key is not valid");
+                return;
+            }
+
+            await liveDemoServices.GetContext(AppState.IsLive).TradingGroupsRepository.UpdateAsync(editedGroup);
+            await messageService.SuccessAsync($"Group {editedGroup.Id} saved");
+            CloseEditGroupDialog();
+            await RefreshData();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            await messageService.ErrorAsync($"Error occured: {ex.Message}");
+        }
     }
 }

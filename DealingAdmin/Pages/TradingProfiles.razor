@@ -1,40 +1,89 @@
 @page "/TradingProfiles"
+
 @using AntDesign.TableModels
 @using System.Text.Json
 @using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
 
+@inject StateManager AppState
 @inject LiveDemoServiceMapper _liveDemoServices;
 
-<PageHeader Class="site-page-header" Title="Trading profiles" >
+<PageHeader Class="m-0 p-0" Title="Trading Profiles">
     <PageHeaderExtra>
-        <Button  Type="@ButtonType.Primary"><a style="color: white" href="/AddOrUpdateTradingProfilePage/">Add new</a></Button>
+        <Button OnClick="ShowNewProfileDialog" Type="@ButtonType.Primary">New Profile</Button>
     </PageHeaderExtra>
 </PageHeader>
-<Table DataSource="tradingProfiles" OnChange="OnChange" TItem="TradingProfileModel">
-    <Column Title="Id" DataIndex="Id" TData="string"/>
-    <Column Title="Margin call %" DataIndex="MarginCallPercent" TData="int" SorterMultiple="3" SorterCompare="(a, b) => a - b"/>
-    <Column Title="Stop out %" DataIndex="StopOutPercent" TData="int" SorterMultiple="2" SorterCompare="(a, b) => a - b"/>
-    <Column Title="Topping up %" DataIndex="PositionToppingUpPercent" TData="int" SorterMultiple="1" SorterCompare="(a, b) => a - b"/>
-    <Column Title="Instruments" TData="string">
-        @foreach (var instrument in context.Instruments)
-        {
-            <Tag PresetColor="GetRandomColor()">@instrument.Id</Tag>
-        }
-    </Column>
+
+<Table DataSource="@tradingProfiles"
+       TItem="TradingProfileModel"
+       Loading="@isLoading"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 260px)"
+       PageSize="999">
+    <RowTemplate>           
+        <Column Title="Id"
+                DataIndex="Id"
+                TData="string"
+                Sortable/>
+        <Column Title="Margin Call %" 
+                DataIndex="MarginCallPercent" 
+                TData="int"
+                Sortable/>
+        <Column Title="Stop out %"
+                DataIndex="StopOutPercent" 
+                TData="int"
+                Sortable/>
+        <Column Title="Topping up %"
+                DataIndex="PositionToppingUpPercent"
+                TData="int"
+                SorterMultiple="1" 
+                SorterCompare="(a, b) => a - b"/>
+        <Column Title="Instruments"
+                TData="string"
+                Width="600">
+            @foreach (var instrument in context.Instruments)
+            {
+                <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>
+            }
+        </Column>    
+        <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+        </ActionColumn>
+    </RowTemplate>
 </Table>
 
 
 @code {
     private IEnumerable<TradingProfileModel> tradingProfiles;
 
-    [CascadingParameter(Name = "liveDemoContext")]
-    public bool LiveDemo { get; set; }
+    int _pageSize = 999;
+
+    private bool isLoading = false;
+    private bool isUpdateProfileDialogVisible = false;
+
+    private TradingProfileModel editedProfile;
+    private string profileEditFormTitle;
+    private bool isEditInstrumentDialogVisible;
 
     protected override async Task OnInitializedAsync()
     {
-        tradingProfiles = (await _liveDemoServices.GetContext(LiveDemo)
+        await RefreshData();
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
+
+         tradingProfiles = (await _liveDemoServices.GetContext(AppState.IsLive)
             .TradingProfileRepository.GetAllAsync()).Select(TradingProfileModel.Create);
-        await base.OnInitializedAsync();
+
+        isLoading = false;
+
+        this.StateHasChanged();
     }
 
     void OnChange(QueryModel<TradingProfileModel> query)
@@ -42,10 +91,23 @@
         Console.WriteLine(JsonSerializer.Serialize(query));
     }
 
-    private PresetColor GetRandomColor()
+    private void ShowNewProfileDialog()
     {
-        var random = new Random();
-        return (PresetColor)random.Next(0, 12);
+        profileEditFormTitle = "Add New Instrument";
+        editedProfile = new TradingProfileModel();
+        isEditInstrumentDialogVisible = true;
     }
 
+    private void ShowEditInstrumentDialog(TradingProfileModel profile)
+    {
+        profileEditFormTitle = $"Edit '{profile.Id}' Profile";
+        editedProfile = profile;
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void CloseEditProfileDialog()
+    {
+        isEditInstrumentDialogVisible = false;
+        editedProfile = new TradingProfileModel();
+    }
 }

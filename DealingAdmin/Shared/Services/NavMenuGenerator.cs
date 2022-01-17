@@ -10,6 +10,7 @@ namespace DealingAdmin.Shared.Services
             NavMenuItem.Create("ClientView", "Client View", "people"),
             NavMenuItem.Create("InstrumentSettings", "Instruments", "grid_view"),
             NavMenuItem.Create("TradingProfiles", "Trading Profiles", "tune"),
+            NavMenuItem.Create("SwapProfiles", "Swap Profiles", "swap_horiz"),
             NavMenuItem.Create("Orders", "Orders", "list_alt"),
             NavMenuItem.Create("Candles", "Candles", "candlestick_chart"),
             NavMenuItem.Create("EmergencyTools", "Emergency Tools", "warning_amber"),

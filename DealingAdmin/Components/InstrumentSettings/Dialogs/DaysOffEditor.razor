@@ -16,8 +16,8 @@
         </ListItem>
     </ChildContent>
 </AntList>
-<div class="grid-container-dayoff-new-item">
-    <div class="no-wrap">
+<div class="grid-container-dayoff-new-item no-wrap">
+    <div>
         <span>From:</span>
         <Select Mode="default"
                 @bind-Value="newItem.DowFrom"
@@ -34,9 +34,11 @@
                 }
             </SelectOptions>
         </Select>
+    </div>
+    <div>
         <TimePicker @bind-Value="newItemTimeFrom" TValue="DateTime" Format="hh:mm"/>
     </div>
-    <div class="no-wrap">
+    <div>
         <span>To:</span>
         <Select Mode="default"
                 @bind-Value="newItem.DowTo"
@@ -53,6 +55,8 @@
                 }
             </SelectOptions>
         </Select>
+    </div>
+    <div>
         <TimePicker @bind-Value="newItemTimeTo" TValue="DateTime" Format="hh:mm"/>
     </div>
     <div class="center-middle">

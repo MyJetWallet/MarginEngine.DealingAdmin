@@ -3,6 +3,7 @@
 @using AntDesign.TableModels
 @using System.Text.Json
 @using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.TradingGroups
 @using DealingAdmin.Shared.Services
 
 @inject StateManager AppState
@@ -20,7 +21,7 @@
        Bordered="@true"
        Total="0"
        HidePagination="@true"
-       ScrollY="calc(100vh - 60px)"
+       ScrollY="calc(100vh - 120px)"
        PageSize="999">
     <RowTemplate>           
         <Column Title="Id"
@@ -59,7 +60,7 @@
     private bool isUpdateGroupDialogVisible = false;
 
     private TradingGroupModel editedGroup;
-    private string GroupEditFormTitle;
+    private string groupEditFormTitle;
     private bool isEditGroupDialogVisible;
 
     protected override async Task OnInitializedAsync()
@@ -82,14 +83,14 @@
 
     private void ShowNewGroupDialog()
     {
-        GroupEditFormTitle = "Add New Group";
+        groupEditFormTitle = "Add New Group";
         editedGroup = new TradingGroupModel();
         isEditGroupDialogVisible = true;
     }
 
     private void ShowEditGroupDialog(TradingGroupModel Group)
     {
-        GroupEditFormTitle = $"Edit '{Group.Id}' Group";
+        groupEditFormTitle = $"Edit '{Group.Id}' Group";
         editedGroup = Group;
         isEditGroupDialogVisible = true;
     }

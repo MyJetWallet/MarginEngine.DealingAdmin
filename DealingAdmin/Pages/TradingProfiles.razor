@@ -6,7 +6,7 @@
 @using DealingAdmin.Shared.Services
 
 @inject StateManager AppState
-@inject LiveDemoServiceMapper _liveDemoServices;
+@inject LiveDemoServiceMapper liveDemoServices;
 
 <PageHeader Class="m-0 p-0" Title="Trading Profiles">
     <PageHeaderExtra>
@@ -20,7 +20,7 @@
        Bordered="@true"
        Total="0"
        HidePagination="@true"
-       ScrollY="calc(100vh - 60px)"
+       ScrollY="calc(100vh - 120px)"
        PageSize="999">
     <RowTemplate>           
         <Column Title="Id"
@@ -80,7 +80,7 @@
     {
         isLoading = true;
 
-         tradingProfiles = (await _liveDemoServices.GetContext(AppState.IsLive)
+         tradingProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
             .TradingProfileRepository.GetAllAsync()).Select(TradingProfileModel.Create);
 
         isLoading = false;

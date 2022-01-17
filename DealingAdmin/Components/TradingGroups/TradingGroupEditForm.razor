@@ -77,15 +77,18 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> START"); /// REMOVE AFTER TEST!!!
         tradingProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
             .TradingProfileRepository.GetAllAsync());
         swapProfiles = (await swapProfileWriter.GetAllAsync());
         markupProfiles = (await markupProfilesRepository.GetAllAsync());
+        Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> END"); /// REMOVE AFTER TEST!!!
     }
 
     public async Task UpdateEditedInstrument()
     {
-        Console.WriteLine("UpdateEditedInstrument call");
+        Console.WriteLine("TradingGroupEditForm  >> UpdateEditedInstrument >> START"); /// REMOVE AFTER TEST!!!
         await TradingGroupChanged.InvokeAsync(TradingGroup);
+        Console.WriteLine("TradingGroupEditForm  >> UpdateEditedInstrument >> END"); /// REMOVE AFTER TEST!!!
     }
 }

@@ -72,8 +72,8 @@
     private bool isLoading = false;
     private bool isUpdateGroupDialogVisible = false;
 
-    private TradingGroupModel editedGroup;
-    private string groupEditFormTitle;
+    private TradingGroupModel editedGroup = new TradingGroupModel();
+    private string groupEditFormTitle = "";
     private bool isEditGroupDialogVisible;
 
     protected override async Task OnInitializedAsync()
@@ -84,14 +84,14 @@
 
     private async Task RefreshData()
     {
+        Console.WriteLine("TradingGroups  >> RefreshData >> START"); /// REMOVE AFTER TEST!!!
         isLoading = true;
 
         tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
            .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
 
         isLoading = false;
-
-        this.StateHasChanged();
+        Console.WriteLine("TradingGroups  >> RefreshData >> END"); /// REMOVE AFTER TEST!!!
     }
 
     private void ShowNewGroupDialog()
@@ -103,9 +103,11 @@
 
     private void ShowEditGroupDialog(TradingGroupModel Group)
     {
+        Console.WriteLine("TradingGroups  >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
         groupEditFormTitle = $"Edit '{Group.Id}' Group";
         editedGroup = Group;
         isEditGroupDialogVisible = true;
+        Console.WriteLine("TradingGroups  >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
     }
 
     private void CloseEditGroupDialog()
@@ -116,6 +118,7 @@
 
     private async void SaveGroup()
     {
+        Console.WriteLine("TradingGroups  >> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
         try
         {
             if (editedGroup.TokenKey != appSettings.AdminCrudApiKey)
@@ -134,5 +137,6 @@
             logger.Error(ex, ex.Message);
             await messageService.ErrorAsync($"Error occured: {ex.Message}");
         }
+        Console.WriteLine("TradingGroups  >> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
     }
 }

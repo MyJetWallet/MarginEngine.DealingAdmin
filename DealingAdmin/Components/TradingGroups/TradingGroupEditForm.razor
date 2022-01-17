@@ -23,26 +23,26 @@
     <FormItem Label="Name" Required>
         <Input @bind-Value="@context.Name" Placeholder="Name" />
     </FormItem>
-    <FormItem Label="Trading Profile Id" Required>
-        <Select Value="@context.TradingProfileId"
-                TItemValue="string"
-                TItem="string">
-            <SelectOptions>
-                @foreach (var item in tradingProfiles)
-                {
-                    <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Id/>
-                }
-            </SelectOptions>
-        </Select>
-    </FormItem>
     <FormItem Label="Markup Profile Id" Required>
          <Select @bind-Value="@context.MarkupProfileId"
                 TItemValue="string"
                 TItem="string">
             <SelectOptions>
-                @foreach (var item in markupProfiles)
+                @foreach (var profile in markupProfiles)
                 {
-                    <SelectOption TItemValue="string" TItem="string" Value=@item.ProfileId Label=@item.ProfileId/>
+                    <SelectOption TItemValue="string" TItem="string" Value=@profile.ProfileId Label=@profile.ProfileId/>
+                }
+            </SelectOptions>
+        </Select>
+    </FormItem>
+    <FormItem Label="Trading Profile Id" Required>
+        <Select @bind-Value="@context.TradingProfileId"
+                TItemValue="string"
+                TItem="string">
+            <SelectOptions>
+                @foreach (var profile in tradingProfiles)
+                {
+                    <SelectOption TItemValue="string" TItem="string" Value=@profile.Id Label=@profile.Id/>
                 }
             </SelectOptions>
         </Select>
@@ -77,11 +77,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> START"); /// REMOVE AFTER TEST!!!
         tradingProfiles = await liveDemoServices.GetContext(AppState.IsLive)
             .TradingProfileRepository.GetAllAsync();
         swapProfiles = await swapProfileWriter.GetAllAsync();
         markupProfiles = await markupProfilesRepository.GetAllAsync();
-        Console.WriteLine($"tradingProfiles:= {String.Join(",", tradingProfiles.Select(x => x.Id))}"); /// REMOVE AFTER TEST!!!
+        Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> END"); /// REMOVE AFTER TEST!!!
     }
 
     public async Task UpdateEditedInstrument()

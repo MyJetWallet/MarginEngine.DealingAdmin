@@ -78,20 +78,21 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshData();
+        tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
+           .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
+
         AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
     }
 
     private async Task RefreshData()
     {
-        Console.WriteLine("TradingGroups  >> RefreshData >> START"); /// REMOVE AFTER TEST!!!
         isLoading = true;
 
         tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
            .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
 
         isLoading = false;
-        Console.WriteLine("TradingGroups  >> RefreshData >> END"); /// REMOVE AFTER TEST!!!
+        this.StateHasChanged();
     }
 
     private void ShowNewGroupDialog()

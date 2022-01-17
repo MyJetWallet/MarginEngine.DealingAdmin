@@ -7,21 +7,16 @@ namespace DealingAdmin.Abstractions.Models
 {
     public class TradingProfileModel : ITradingProfile
     {
-        [Required]
         public string Id { get; set; }
 
-        [Required]
         public double MarginCallPercent { get; set; }
 
-        [Required]
         public double StopOutPercent { get; set; }
 
         public double PositionToppingUpPercent { get; set; }
 
-        [Required]
-        public int IsLive { get; set; }
-
         IEnumerable<ITradingProfileInstrument> ITradingProfile.Instruments => Instruments;
+        
         public List<TradingProfileInstrumentModel> Instruments { get; set; }
 
         public static TradingProfileModel Create(ITradingProfile src)

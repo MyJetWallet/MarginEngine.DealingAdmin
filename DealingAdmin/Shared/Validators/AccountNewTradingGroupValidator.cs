@@ -61,7 +61,7 @@ namespace DealingAdmin.Validators
                         return $"New Trading Group [{request.TradingGroupToAssign}] couldn't be found";
                     }
 
-                    var newGroup = TradingGroupModel.Create(newGroupToAssign, request.IsLive ? 1 : 0);
+                    var newGroup = TradingGroupModel.Create(newGroupToAssign);
 
                     var newProfileToAssign = (await _liveDemoServices.GetContext(request.IsLive).TradingProfileRepository
                         .GetAllAsync()).FirstOrDefault(profile => profile.Id == newGroup.TradingProfileId);

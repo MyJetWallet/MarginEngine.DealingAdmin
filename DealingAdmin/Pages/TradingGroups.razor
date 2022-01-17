@@ -1,0 +1,102 @@
+@page "/TradingGroups"
+
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper _liveDemoServices;
+
+<PageHeader Class="m-0 p-0" Title="Trading Groups">
+    <PageHeaderExtra>
+        <Button OnClick="ShowNewGroupDialog" Type="@ButtonType.Primary">New Group</Button>
+    </PageHeaderExtra>
+</PageHeader>
+
+<Table DataSource="@tradingGroups"
+       TItem="TradingGroupModel"
+       Loading="@isLoading"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 60px)"
+       PageSize="999">
+    <RowTemplate>           
+        <Column Title="Id"
+                DataIndex="Id"
+                TData="string"
+                Sortable/>
+        <Column Title="Name"
+                DataIndex="Name"
+                TData="string"
+                Sortable/>
+        <Column Title="Trading Profile Id" 
+                DataIndex="TradingProfileId" 
+                TData="string"
+                Sortable/>
+        <Column Title="Markup Profile Id"
+                DataIndex="MarkupProfileId" 
+                TData="string"
+                Sortable/>
+        <Column Title="Swap Profile Id"
+                DataIndex="SwapProfileId"
+                TData="string"/>
+        <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditGroupDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+
+@code {
+    private List<TradingGroupModel> tradingGroups;
+
+    int _pageSize = 999;
+
+    private bool isLoading = false;
+    private bool isUpdateGroupDialogVisible = false;
+
+    private TradingGroupModel editedGroup;
+    private string GroupEditFormTitle;
+    private bool isEditGroupDialogVisible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
+
+        tradingGroups = (await _liveDemoServices.GetContext(AppState.IsLive)
+           .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
+
+        isLoading = false;
+
+        this.StateHasChanged();
+    }
+
+    private void ShowNewGroupDialog()
+    {
+        GroupEditFormTitle = "Add New Group";
+        editedGroup = new TradingGroupModel();
+        isEditGroupDialogVisible = true;
+    }
+
+    private void ShowEditGroupDialog(TradingGroupModel Group)
+    {
+        GroupEditFormTitle = $"Edit '{Group.Id}' Group";
+        editedGroup = Group;
+        isEditGroupDialogVisible = true;
+    }
+
+    private void CloseEditGroupDialog()
+    {
+        isEditGroupDialogVisible = false;
+        editedGroup = new TradingGroupModel();
+    }
+}

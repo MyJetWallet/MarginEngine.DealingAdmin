@@ -14,13 +14,11 @@ namespace DealingAdmin.Abstractions.Models
 
         public string SwapProfileId { get; set; }
 
-        public int IsLive { get; set; }
-        
         public bool TradingDisabled { get; set; }
         
         public string TokenKey { get; set; }
 
-        public static TradingGroupModel Create(ITradingGroup src, int isLive)
+        public static TradingGroupModel Create(ITradingGroup src)
         {
             return new TradingGroupModel
             {
@@ -29,8 +27,7 @@ namespace DealingAdmin.Abstractions.Models
                 TradingProfileId = src.TradingProfileId,
                 MarkupProfileId = src.MarkupProfileId,
                 SwapProfileId = src.SwapProfileId,
-                TradingDisabled = src.TradingDisabled,
-                IsLive = isLive
+                TradingDisabled = src.TradingDisabled
             };
         }
     }

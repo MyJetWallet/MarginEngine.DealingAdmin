@@ -19,16 +19,16 @@
        Bordered="@true"
        Total="0"
        HidePagination="@true"
-       ScrollY="calc(100vh - 260px)"
+       ScrollY="calc(100vh - 60px)"
        PageSize="999">
     <RowTemplate>           
         <Column Title="Profile Id"
                 DataIndex="ProfileId"
                 TData="string"
-                Sortable/>
+                Sortable
+                Width="200"/>
         <Column Title="Instruments"
-                TData="string"
-                Width="600">
+                TData="string">
             @foreach (var instrument in context.Instruments)
             {
                 <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>

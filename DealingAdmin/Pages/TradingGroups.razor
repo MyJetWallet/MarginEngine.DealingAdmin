@@ -55,14 +55,13 @@
     </RowTemplate>
 </Table>
 
-<Modal Title="@groupEditFormTitle"
-       Visible="@isEditGroupDialogVisible"
-       OkText="@("Save")"
-       OnOk="()=>SaveGroup()"
-       OnCancel="()=>CloseEditGroupDialog()"
-       Width="900">
-    <TradingGroupEditForm @bind-TradingGroup="editedGroup" />   
-</Modal>
+if (@isEditGroupDialogVisible)
+{
+    <TradingGroupEditFormDialog
+        Title=@groupEditFormTitle
+        TradingGroup=@editedGroup
+        OnCloseDialog=@CloseEditGroupDialog />   
+}
 
 @code {
     private List<TradingGroupModel> tradingGroups;
@@ -115,29 +114,5 @@
     {
         isEditGroupDialogVisible = false;
         editedGroup = new TradingGroupModel();
-    }
-
-    private async void SaveGroup()
-    {
-        Console.WriteLine("TradingGroups  >> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
-        try
-        {
-            if (editedGroup.TokenKey != appSettings.AdminCrudApiKey)
-            {
-                await messageService.ErrorAsync("API key is not valid");
-                return;
-            }
-
-            await liveDemoServices.GetContext(AppState.IsLive).TradingGroupsRepository.UpdateAsync(editedGroup);
-            await messageService.SuccessAsync($"Group {editedGroup.Id} saved");
-            CloseEditGroupDialog();
-            await RefreshData();
-        }
-        catch(Exception ex)
-        {
-            logger.Error(ex, ex.Message);
-            await messageService.ErrorAsync($"Error occured: {ex.Message}");
-        }
-        Console.WriteLine("TradingGroups  >> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
     }
 }

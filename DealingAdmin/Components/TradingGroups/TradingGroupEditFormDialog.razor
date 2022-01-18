@@ -1,0 +1,143 @@
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Microsoft.AspNetCore.Components
+@using SimpleTrading.Abstraction.Markups
+@using SimpleTrading.Abstraction.Trading.Profiles
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Abstraction.Trading.Swaps
+@using SimpleTrading.Abstractions.Common.InstrumentsAvatar
+@using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
+@using Serilog.Core
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper liveDemoServices;
+@inject ISwapProfileWriter swapProfileWriter;
+@inject IMarkupProfilesRepository markupProfilesRepository
+@inject IUserMessageService messageService
+@inject AdminAppSettings appSettings
+@inject Logger logger
+
+<Modal Title="@Title"
+       CancelText="@("Close")"
+       OnCancel="()=>CloseDialog()"
+       Width="900">
+    <Form Model="TradingGroup"
+          ValidateOnChange="@true"
+          OnFinish=@SaveGroup
+          LabelColSpan="6"
+          WrapperColSpan="12">
+        <ChildContent>
+            <Validator>
+                <DataAnnotationsValidator />
+            </Validator>
+            <FormItem Label="Id" Required>
+                <Input @bind-Value="@context.Id" Placeholder="Group Id" Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
+            </FormItem>            
+            <FormItem Label="Name" Required>
+                <Input @bind-Value="@context.Name" Placeholder="Name" />
+            </FormItem>
+            <FormItem Label="Markup Profile Id" Required>
+                 <Select @bind-Value="@context.MarkupProfileId"
+                        TItemValue="string"
+                        TItem="string">
+                    <SelectOptions>
+                        @foreach (var profile in markupProfiles)
+                        {
+                            <SelectOption TItemValue="string" TItem="string" Value=@profile.ProfileId Label=@profile.ProfileId/>
+                        }
+                    </SelectOptions>
+                </Select>
+            </FormItem>
+            <FormItem Label="Trading Profile Id" Required>
+                <Select @bind-Value="@context.TradingProfileId"
+                        TItemValue="string"
+                        TItem="string">
+                    <SelectOptions>
+                        @foreach (var profile in tradingProfiles)
+                        {
+                            <SelectOption TItemValue="string" TItem="string" Value=@profile.Id Label=@profile.Id/>
+                        }
+                    </SelectOptions>
+                </Select>
+            </FormItem>
+            <FormItem Label="Swap Profile Id" Required>
+                 <Select @bind-Value="@context.SwapProfileId"
+                        TItemValue="string"
+                        TItem="string">
+                    <SelectOptions>
+                        @foreach (var item in swapProfiles)
+                        {
+                            <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Id/>
+                        }
+                    </SelectOptions>
+                </Select>
+            </FormItem> 
+            <FormItem Label="API Key" Required>
+                <InputPassword @bind-Value="@context.TokenKey" />
+            </FormItem>
+            <FormItem>
+                <Button Type="@ButtonType.Primary" HtmlType="submit">
+                    Save
+                </Button>
+            </FormItem>
+        </ChildContent>
+    </Form>
+</Modal>
+
+@code {
+    [Parameter]
+    public TradingGroupModel TradingGroup { get; set; } = new();
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public Action OnCloseDialog { get; set; }
+
+    private bool isFormValid = false;
+
+    private IEnumerable<ITradingProfile> tradingProfiles { get; set; } = new List<ITradingProfile>();
+    private IEnumerable<IMarkupProfile> markupProfiles { get; set; } = new List<IMarkupProfile>();
+    private IEnumerable<ISwapProfile> swapProfiles { get; set; } = new List<ISwapProfile>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> START"); /// REMOVE AFTER TEST!!!
+        tradingProfiles = await liveDemoServices.GetContext(AppState.IsLive)
+            .TradingProfileRepository.GetAllAsync();
+        swapProfiles = await swapProfileWriter.GetAllAsync();
+        markupProfiles = await markupProfilesRepository.GetAllAsync();
+        Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> END"); /// REMOVE AFTER TEST!!!
+    }
+
+    private async void SaveGroup()
+    {
+        Console.WriteLine("TradingGroups  >> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
+        try
+        {
+            if (TradingGroup.TokenKey != appSettings.AdminCrudApiKey)
+            {
+                await messageService.ErrorAsync("API key is not valid");
+                return;
+            }
+
+            await liveDemoServices.GetContext(AppState.IsLive).TradingGroupsRepository.UpdateAsync(TradingGroup);
+            Console.WriteLine($"Trading Group {TradingGroup.Id} saved");
+            await messageService.SuccessAsync($"Trading Group {TradingGroup.Id} saved");
+            
+            CloseDialog();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            await messageService.ErrorAsync($"Error occured: {ex.Message}");
+        }
+        Console.WriteLine("TradingGroups  >> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
+    }
+
+    private void CloseDialog()
+    {
+        OnCloseDialog();
+    }
+}

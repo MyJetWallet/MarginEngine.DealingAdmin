@@ -124,32 +124,4 @@
         isEditGroupDialogVisible = false;
         await RefreshData();
     }
-
-    //private async void SaveGroup()
-    //{
-    //    Console.WriteLine("TradingGroups >> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
-    //    try
-    //    {
-    //        if (editedGroup.TokenKey != appSettings.AdminCrudApiKey)
-    //        {
-    //            await messageService.ErrorAsync("API key is not valid");
-    //            return;
-    //        }
-
-    //        await liveDemoServices.GetContext(AppState.IsLive)
-    //            .TradingGroupsRepository.UpdateAsync(editedGroup);
-
-    //        Console.WriteLine($"Trading Group {editedGroup.Id} saved");
-    //        await messageService.SuccessAsync($"Trading Group {editedGroup.Id} saved");
-    //        CloseEditGroupDialog();
-    //        Console.WriteLine("TradingGroups >> SaveGroup >> Refresh"); /// REMOVE AFTER TEST!!!
-    //        await RefreshData();
-    //    }
-    //    catch(Exception ex)
-    //    {
-    //        logger.Error(ex, ex.Message);
-    //        await messageService.ErrorAsync($"Error occured: {ex.Message}");
-    //    }
-    //    Console.WriteLine("TradingGroups >> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
-    //}
 }

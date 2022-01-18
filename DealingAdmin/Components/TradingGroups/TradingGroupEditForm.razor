@@ -23,59 +23,64 @@
       ValidateOnChange="@true"
       LabelColSpan="6"
       WrapperColSpan="12">
-    <FormItem Label="Id" Required>
-        <Input @bind-Value="@context.Id" Placeholder="Group Id" Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
-    </FormItem>            
-    <FormItem Label="Name" Required>
-        <Input @bind-Value="@context.Name" Placeholder="Name" />
-    </FormItem>
-    <FormItem Label="Markup Profile Id" Required>
-         <Select @bind-Value="@context.MarkupProfileId"
-                TItemValue="string"
-                TItem="string">
-            <SelectOptions>
-                @foreach (var profile in markupProfiles)
-                {
-                    <SelectOption TItemValue="string" TItem="string" Value=@profile.ProfileId Label=@profile.ProfileId/>
-                }
-            </SelectOptions>
-        </Select>
-    </FormItem>
-    <FormItem Label="Trading Profile Id" Required>
-        <Select @bind-Value="@context.TradingProfileId"
-                TItemValue="string"
-                TItem="string">
-            <SelectOptions>
-                @foreach (var profile in tradingProfiles)
-                {
-                    <SelectOption TItemValue="string" TItem="string" Value=@profile.Id Label=@profile.Id/>
-                }
-            </SelectOptions>
-        </Select>
-    </FormItem>
-    <FormItem Label="Swap Profile Id" Required>
-         <Select @bind-Value="@context.SwapProfileId"
-                TItemValue="string"
-                TItem="string">
-            <SelectOptions>
-                @foreach (var item in swapProfiles)
-                {
-                    <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Id/>
-                }
-            </SelectOptions>
-        </Select>
-    </FormItem> 
-    <FormItem Label="API Key" Required>
-        <InputPassword @bind-Value="@context.TokenKey" />
-    </FormItem>
-    <FormItem>
-        <Button Type="@ButtonType.Primary" OnClick="SaveGroup">
-            Save
-        </Button>
-        <Button OnClick="CloseDialog">
-            Cancel
-        </Button>
-    </FormItem>
+    <Validator>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+    </Validator>
+    <ChildContent>
+        <FormItem Label="Id" Required>
+            <Input @bind-Value="@context.Id" Placeholder="Group Id" Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
+        </FormItem>            
+        <FormItem Label="Name" Required>
+            <Input @bind-Value="@context.Name" Placeholder="Name" />
+        </FormItem>
+        <FormItem Label="Markup Profile Id" Required>
+             <Select @bind-Value="@context.MarkupProfileId"
+                    TItemValue="string"
+                    TItem="string">
+                <SelectOptions>
+                    @foreach (var profile in markupProfiles)
+                    {
+                        <SelectOption TItemValue="string" TItem="string" Value=@profile.ProfileId Label=@profile.ProfileId/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        <FormItem Label="Trading Profile Id" Required>
+            <Select @bind-Value="@context.TradingProfileId"
+                    TItemValue="string"
+                    TItem="string">
+                <SelectOptions>
+                    @foreach (var profile in tradingProfiles)
+                    {
+                        <SelectOption TItemValue="string" TItem="string" Value=@profile.Id Label=@profile.Id/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        <FormItem Label="Swap Profile Id" Required>
+             <Select @bind-Value="@context.SwapProfileId"
+                    TItemValue="string"
+                    TItem="string">
+                <SelectOptions>
+                    @foreach (var item in swapProfiles)
+                    {
+                        <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Id/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem> 
+        <FormItem Label="API Key" Required>
+            <InputPassword @bind-Value="@context.TokenKey" />
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" OnClick="SaveGroup">
+                Save
+            </Button>
+            <Button OnClick="CloseDialog">
+                Cancel
+            </Button>
+        </FormItem>
+    </ChildContent>
 </Form>
  
 @code {
@@ -114,10 +119,16 @@
         Console.WriteLine(">> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
         try
         {
-            editForm.Validate();
+            if (!editForm.Validate())
+            {
+                Console.WriteLine(">> SaveGroup >> Edit form is not valid"); /// REMOVE AFTER TEST!!!
+                await message.Error("Edit form is not valid");
+                return;
+            }
 
             if (TradingGroup.TokenKey != appSettings.AdminCrudApiKey)
             {
+                Console.WriteLine(">> SaveGroup >> API key is not valid"); /// REMOVE AFTER TEST!!!
                 await message.Error("API key is not valid");
                 return;
             }

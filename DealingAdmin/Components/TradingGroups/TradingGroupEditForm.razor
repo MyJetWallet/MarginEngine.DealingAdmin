@@ -18,7 +18,8 @@
 @inject AdminAppSettings appSettings
 @inject Logger logger
 
-<Form Model="TradingGroup"
+<Form @ref="editForm"
+      Model="TradingGroup"
       ValidateOnChange="@true"
       LabelColSpan="6"
       WrapperColSpan="12">
@@ -91,6 +92,8 @@
     private IEnumerable<IMarkupProfile> markupProfiles { get; set; } = new List<IMarkupProfile>();
     private IEnumerable<ISwapProfile> swapProfiles { get; set; } = new List<ISwapProfile>();
 
+    AntDesign.Form<TradingGroupModel> editForm;
+
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> START"); /// REMOVE AFTER TEST!!!
@@ -111,6 +114,8 @@
         Console.WriteLine(">> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
         try
         {
+            editForm.Validate();
+
             if (TradingGroup.TokenKey != appSettings.AdminCrudApiKey)
             {
                 await messageService.ErrorAsync("API key is not valid");

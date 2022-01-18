@@ -14,7 +14,7 @@
 @inject LiveDemoServiceMapper liveDemoServices;
 @inject ISwapProfileWriter swapProfileWriter;
 @inject IMarkupProfilesRepository markupProfilesRepository
-@inject IUserMessageService messageService
+@inject MessageService message
 @inject AdminAppSettings appSettings
 @inject Logger logger
 
@@ -118,7 +118,7 @@
 
             if (TradingGroup.TokenKey != appSettings.AdminCrudApiKey)
             {
-                await messageService.ErrorAsync("API key is not valid");
+                await message.Error("API key is not valid");
                 return;
             }
 
@@ -128,13 +128,13 @@
             Console.WriteLine($"Trading Group {TradingGroup.Id} saved");
             await OnFinish.InvokeAsync();
             Console.WriteLine(">> SaveGroup >> Message"); /// REMOVE AFTER TEST!!!
-            await messageService.SuccessAsync($"Trading Group {TradingGroup.Id} saved");
+            await message.Success($"Trading Group {TradingGroup.Id} saved");
             Console.WriteLine(">> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
         }
         catch(Exception ex)
         {
             logger.Error(ex, ex.Message);
-            await messageService.ErrorAsync($"Error occured: {ex.Message}");
+            await message.Error($"Error occured: {ex.Message}");
         }
         Console.WriteLine("TradingGroups >> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
     }

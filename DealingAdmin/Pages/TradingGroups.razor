@@ -107,8 +107,7 @@ if (@isEditGroupDialogVisible)
         groupEditFormTitle = $"Edit '{Group.Id}' Group";
         editedGroup = Group;
         isEditGroupDialogVisible = true;
-        Console.WriteLine("TradingGroups  >> ShowEditGroupDialog >> END"); /// REMOVE AFTER TEST!!!
-        this.StateHasChanged();
+        Console.WriteLine("TradingGroups  >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
     }
 
     private void CloseEditGroupDialog()

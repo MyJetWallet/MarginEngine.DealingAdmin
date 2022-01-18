@@ -2,6 +2,7 @@
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Shared.Services
 @using Microsoft.AspNetCore.Components
+@using Serilog.Core
 @using SimpleTrading.Abstraction.Markups
 @using SimpleTrading.Abstraction.Trading.Profiles
 @using SimpleTrading.Abstraction.Trading.Settings
@@ -13,8 +14,12 @@
 @inject LiveDemoServiceMapper liveDemoServices;
 @inject ISwapProfileWriter swapProfileWriter;
 @inject IMarkupProfilesRepository markupProfilesRepository
+@inject IUserMessageService messageService
+@inject AdminAppSettings appSettings
+@inject Logger logger
 
-<Form Model="TradingGroup"        
+<Form Model="TradingGroup"
+      ValidateOnChange="@true"
       LabelColSpan="6"
       WrapperColSpan="12">
     <FormItem Label="Id" Required>
@@ -62,6 +67,14 @@
     <FormItem Label="API Key" Required>
         <InputPassword @bind-Value="@context.TokenKey" />
     </FormItem>
+    <FormItem>
+        <Button Type="@ButtonType.Primary" OnClick="SaveGroup">
+            Save
+        </Button>
+        <Button OnClick="CloseDialog">
+            Cancel
+        </Button>
+    </FormItem>
 </Form>
  
 @code {
@@ -69,7 +82,10 @@
     public TradingGroupModel TradingGroup { get; set; } = new();
 
     [Parameter]
-    public EventCallback<TradingGroupModel> TradingGroupChanged { get; set; }
+    public EventCallback OnFinish { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
 
     private IEnumerable<ITradingProfile> tradingProfiles { get; set; } = new List<ITradingProfile>();
     private IEnumerable<IMarkupProfile> markupProfiles { get; set; } = new List<IMarkupProfile>();
@@ -85,10 +101,36 @@
         Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> END"); /// REMOVE AFTER TEST!!!
     }
 
-    public async Task UpdateEditedInstrument()
+    private async void CloseDialog()
     {
-        Console.WriteLine("TradingGroupEditForm  >> UpdateEditedInstrument >> START"); /// REMOVE AFTER TEST!!!
-        await TradingGroupChanged.InvokeAsync(TradingGroup);
-        Console.WriteLine("TradingGroupEditForm  >> UpdateEditedInstrument >> END"); /// REMOVE AFTER TEST!!!
+        await OnCancel.InvokeAsync();
+    }
+
+    private async void SaveGroup()
+    {
+        Console.WriteLine(">> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
+        try
+        {
+            if (TradingGroup.TokenKey != appSettings.AdminCrudApiKey)
+            {
+                await messageService.ErrorAsync("API key is not valid");
+                return;
+            }
+
+            await liveDemoServices.GetContext(AppState.IsLive)
+                .TradingGroupsRepository.UpdateAsync(TradingGroup);
+
+            Console.WriteLine($"Trading Group {TradingGroup.Id} saved");
+            await OnFinish.InvokeAsync();
+            Console.WriteLine(">> SaveGroup >> Message"); /// REMOVE AFTER TEST!!!
+            await messageService.SuccessAsync($"Trading Group {TradingGroup.Id} saved");
+            Console.WriteLine(">> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            await messageService.ErrorAsync($"Error occured: {ex.Message}");
+        }
+        Console.WriteLine("TradingGroups >> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
     }
 }

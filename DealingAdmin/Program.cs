@@ -13,7 +13,6 @@ var settingsModel = SettingsReader.ReadSettings<SettingsModel>();
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddAntDesign();
 
 builder.Services.BindLogger(settingsModel);
 var serviceBusTcpClient = builder.Services.BindServiceBus(settingsModel);
@@ -24,6 +23,8 @@ builder.Services.BindPostgresRepositories(liveDemoManager, settingsModel);
 builder.Services.BindAzureStorage(settingsModel);
 builder.Services.InitLiveDemoManager(liveDemoManager);
 builder.Services.BindServices(settingsModel);
+builder.Services.AddAntDesign();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

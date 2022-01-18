@@ -83,7 +83,6 @@ namespace DealingAdmin
 
         public static void BindServices(this IServiceCollection services, SettingsModel settingsModel)
         {
-            services.AddScoped<MessageService>();            
             services.AddScoped<IUserMessageService, UserMessageService>();
 
             services.AddSingleton(new CandlesServiceSettings()

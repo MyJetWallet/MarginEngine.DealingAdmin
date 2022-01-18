@@ -30,25 +30,25 @@
         ScrollY="calc(100vh - 260px)"
         PageSize="999">
     <RowTemplate> 
-        <Column Title="Account"
+        <AntDesign.Column Title="Account"
                 TData="string"
                 @bind-Field="@context.AccountId"
                 Sortable
                 Filterable/>
-        <Column Title="Currency"
+        <AntDesign.Column Title="Currency"
                 TData="string"
                 @bind-Field="@context.Currency"
                 Width="120"/>
-        <Column Title="Balance"
+        <AntDesign.Column Title="Balance"
                 TData="double"
                 @bind-Field="@context.Balance"/>
-        <Column Title="Real Funds"
+        <AntDesign.Column Title="Real Funds"
                 @bind-Field="@context.Balance"/>
-        <Column Title="Bonus"
+        <AntDesign.Column Title="Bonus"
                 @bind-Field="@context.Bonus"/>
-        <Column Title="Real Funds"
+        <AntDesign.Column Title="Real Funds"
                 @bind-Field="@context.Balance"/>                
-        <Column Title="Trading Group"
+        <AntDesign.Column Title="Trading Group"
                 TData="string"
                 @bind-Field="@context.TradingGroup"/>
         <ActionColumn Title="Actions" Width="120">

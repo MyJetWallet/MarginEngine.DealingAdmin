@@ -12,7 +12,7 @@
 
 <PageTitle>Client View</PageTitle>
 
-<Row>
+<AntDesign.Row>
     <Col Xs="16" Sm="12" Md="6" Lg="6" Xl="4" class="m-3">    
         <span class="text-bold m-1">Search by TraderId / AccountId / E-mail:</span>
     </Col>    
@@ -20,11 +20,11 @@
         <Input @bind-Value="@searchPhrase" />
     </Col>
     <Col Xs="12" Sm="12" Md="6" Lg="2" Xl="2" class="m-3">
-        <Button Icon="search" OnClick="@OnSearch" Disabled="@(String.IsNullOrEmpty(searchPhrase))">
+        <AntDesign.Button Icon="search" OnClick="@OnSearch" Disabled="@(String.IsNullOrEmpty(searchPhrase))">
             <span>Search</span>
-        </Button>
+        </AntDesign.Button>
     </Col>   
-</Row>
+</AntDesign.Row>
 
 @if (traderMultiBrands)
 {

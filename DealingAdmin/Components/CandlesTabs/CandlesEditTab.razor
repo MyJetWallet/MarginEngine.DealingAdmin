@@ -18,7 +18,7 @@
 @inject IUserMessageService MessageService
 
 
-<Row>
+<AntDesign.Row>
     <Col Span="6" class="m-3">
        <div class="m-1">Instrument:</div>
         <Select
@@ -93,145 +93,145 @@
     </Col>
     <Col Span="2" class="m-4 px-3">
         <br/>
-        <Button OnClick="@GetCurrentValue">
+        <AntDesign.Button OnClick="@GetCurrentValue">
             <span>Get Value</span>
-        </Button>
+        </AntDesign.Button>
     </Col>
-</Row>​
-<Row>
+</AntDesign.Row>​
+<AntDesign.Row>
     <Col Span="5">
         <div class="simple-border mx-2">
-            <Row class="text-centered m-3">
+            <AntDesign.Row class="text-centered m-3">
                 <Col Span="24">
                     <h5>Edit Candle</h5>
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     Open:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@editedCandle.Open"/>
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     Close:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@editedCandle.Close" />
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     High:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@editedCandle.High" />
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     Low:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@editedCandle.Low" />
                 </Col>
-            </Row>
-            <Row class="m-3">                
+            </AntDesign.Row>
+            <AntDesign.Row class="m-3">                
                 <Col Span="4" class="m-3">
                 </Col>
                 <Col Span="8" class="m-3">
-                    <Button OnClick="@SaveCandle" Disabled="@formIsValid">
+                    <AntDesign.Button OnClick="@SaveCandle" Disabled="@formIsValid">
                         <span>Save Candle</span>  
-                    </Button>
+                    </AntDesign.Button>
                 </Col>
-            </Row>
+            </AntDesign.Row>
         </div>
     </Col>
     <Col Span="4">
         <div class="simple-border mx-2">
-            <Row class="text-centered m-3">
+            <AntDesign.Row class="text-centered m-3">
                 <Col Span="24">
                     <h5>Database Value</h5>
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     Open:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@dbCandle.Open" Disabled />
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     Close:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@dbCandle.Close" Disabled />
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     High:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@dbCandle.High" Disabled />
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     Low:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@dbCandle.Low" Disabled />
                 </Col>
-            </Row>
+            </AntDesign.Row>
          </div>
     </Col>
     <Col Span="4">
         <div class="simple-border mx-2">
-            <Row class="text-centered m-3">
+            <AntDesign.Row class="text-centered m-3">
                 <Col Span="24">
                     <h5>Cache Value</h5>
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     Open:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@cacheCandle.Open" Disabled />
                 </Col>                
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     Close:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@cacheCandle.Close" Disabled />
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     High:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@cacheCandle.High" Disabled />
                 </Col>
-            </Row>
-            <Row>
+            </AntDesign.Row>
+            <AntDesign.Row>
                 <Col Span="4" class="m-3">
                     Low:
                 </Col>
                 <Col Span="8" class="m-3">
                     <AntDesign.InputNumber @bind-Value="@cacheCandle.Low" Disabled />
                 </Col>
-            </Row>
+            </AntDesign.Row>
          </div>
     </Col>
-</Row>
+</AntDesign.Row>
 
 
 @code {

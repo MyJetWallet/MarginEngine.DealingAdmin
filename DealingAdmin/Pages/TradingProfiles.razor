@@ -10,7 +10,7 @@
 
 <PageHeader Class="m-0 p-0" Title="Trading Profiles">
     <PageHeaderExtra>
-        <Button OnClick="ShowNewProfileDialog" Type="@ButtonType.Primary">New Profile</Button>
+        <AntDesign.Button OnClick="ShowNewProfileDialog" Type="@AntDesign.ButtonType.Primary">New Profile</AntDesign.Button>
     </PageHeaderExtra>
 </PageHeader>
 
@@ -23,33 +23,33 @@
        ScrollY="calc(100vh - 120px)"
        PageSize="999">
     <RowTemplate>           
-        <Column Title="Id"
+        <AntDesign.Column Title="Id"
                 DataIndex="Id"
                 TData="string"
                 Sortable
                 Width="200"/>
-        <Column Title="Margin Call %" 
+        <AntDesign.Column Title="Margin Call %" 
                 DataIndex="MarginCallPercent" 
                 TData="int"
                 Sortable
                 Width="100"/>
-        <Column Title="Stop out %"
+        <AntDesign.Column Title="Stop out %"
                 DataIndex="StopOutPercent" 
                 TData="int"
                 Sortable
                 Width="100"/>
-        <Column Title="Topping up %"
+        <AntDesign.Column Title="Topping up %"
                 DataIndex="PositionToppingUpPercent"
                 TData="int"
                 Sortable
                 Width="100"/>
-        <Column Title="Instruments"
+        <AntDesign.Column Title="Instruments"
                 TData="string">
             @foreach (var instrument in context.Instruments)
             {
                 <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>
             }
-        </Column>    
+        </AntDesign.Column>    
         <ActionColumn Title="Edit" Width="60">
                 <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
                     class="material-icons color-primary">edit</i></a>

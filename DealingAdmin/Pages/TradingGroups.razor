@@ -16,7 +16,7 @@
 
 <PageHeader Class="m-0 p-0" Title="Trading Groups">
     <PageHeaderExtra>
-        <Button OnClick="ShowNewGroupDialog" Type="@ButtonType.Primary">New Group</Button>
+        <AntDesign.Button OnClick="ShowNewGroupDialog" Type="@AntDesign.ButtonType.Primary">New Group</AntDesign.Button>
     </PageHeaderExtra>
 </PageHeader>
 
@@ -29,23 +29,23 @@
        ScrollY="calc(100vh - 120px)"
        PageSize="999">
     <RowTemplate>           
-        <Column Title="Id"
+        <AntDesign.Column Title="Id"
                 DataIndex="Id"
                 TData="string"
                 Sortable/>
-        <Column Title="Name"
+        <AntDesign.Column Title="Name"
                 DataIndex="Name"
                 TData="string"
                 Sortable/>
-        <Column Title="Trading Profile Id" 
+        <AntDesign.Column Title="Trading Profile Id" 
                 DataIndex="TradingProfileId" 
                 TData="string"
                 Sortable/>
-        <Column Title="Markup Profile Id"
+        <AntDesign.Column Title="Markup Profile Id"
                 DataIndex="MarkupProfileId" 
                 TData="string"
                 Sortable/>
-        <Column Title="Swap Profile Id"
+        <AntDesign.Column Title="Swap Profile Id"
                 DataIndex="SwapProfileId"
                 TData="string"/>
         <ActionColumn Title="Edit" Width="60">
@@ -109,7 +109,7 @@
     {
         Console.WriteLine("TradingGroups >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
         groupEditFormTitle = $"Edit '{Group.Id}' Group";
-        editedGroup = Group;
+        editedGroup = TradingGroupModel.Create(Group);
         isEditGroupDialogVisible = true;
         Console.WriteLine("TradingGroups >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
     }

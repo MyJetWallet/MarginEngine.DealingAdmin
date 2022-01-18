@@ -29,7 +29,7 @@
                             <input @bind="TradingProfile.PositionToppingUpPercent" type="number" class="form-control" placeholder="Topping up %">
                         </div>
                         <div class="form-group col-md-3">
-                            <Button OnClick="@(HandleTradingProfileSubmit)" Type="@ButtonType.Primary">Submit</Button>
+                            <AntDesign.Button OnClick="@(HandleTradingProfileSubmit)" Type="@AntDesign.ButtonType.Primary">Submit</AntDesign.Button>
                         </div>
                     </div>
                 </div>
@@ -42,30 +42,30 @@
 <div style="background-color: #f5f5f5" class="site-page-header-ghost-wrapper">
     <PageHeader Ghost="true">
         <PageHeaderExtra>
-            <Button OnClick="@(() => IsActiveAddDrawer = true)" Type="@ButtonType.Primary">Add new profile instrument</Button>
+            <AntDesign.Button OnClick="@(() => IsActiveAddDrawer = true)" Type="@AntDesign.ButtonType.Primary">Add new profile instrument</AntDesign.Button>
         </PageHeaderExtra>
         <PageHeaderTitle>Trading profile instrument</PageHeaderTitle>
     </PageHeader>
 </div>
 
 <Table DataSource="@TradingProfileInstruments" OnChange="@(() => {})" TItem="TradingProfileInstrumentModel">
-    <Column Title="Id" DataIndex="Id" TData="string"/>
-    <Column TData="string" Title="Operations volume">
+    <AntDesign.Column Title="Id" DataIndex="Id" TData="string"/>
+    <AntDesign.Column TData="string" Title="Operations volume">
         <p>Max: <Tag PresetColor="@PresetColor.Red">@context.MaxOperationVolume</Tag></p>
         <p>Min: <Tag PresetColor="@PresetColor.Green">@context.MinOperationVolume</Tag></p>
-    </Column>
-    <Column Title="Max position volume" DataIndex="MaxOperationVolume" TData="int" SorterMultiple="2" SorterCompare="(a, b) => a - b"/>
+    </AntDesign.Column>
+    <AntDesign.Column Title="Max position volume" DataIndex="MaxOperationVolume" TData="int" SorterMultiple="2" SorterCompare="(a, b) => a - b"/>
 
-    <Column TData="string" Title="Position delays">
+    <AntDesign.Column TData="string" Title="Position delays">
         <p>Max: <Tag PresetColor="@PresetColor.Red">@context.OpenPositionMaxDelayMs ms</Tag></p>
         <p>Min: <Tag PresetColor="@PresetColor.Green">@context.OpenPositionMinDelayMs ms</Tag></p>
-    </Column>
+    </AntDesign.Column>
 
-    <Column Title="Leverages" TData="string">
+    <AntDesign.Column Title="Leverages" TData="string">
         @string.Join(", ", context.Leverages.Select(itm => itm.ToString()))
-    </Column>
+    </AntDesign.Column>
 
-    <Column Title="Stop out percent" DataIndex="StopOutPercent" TData="int" SorterMultiple="2" SorterCompare="(a, b) => a - b"/>
+    <AntDesign.Column Title="Stop out percent" DataIndex="StopOutPercent" TData="int" SorterMultiple="2" SorterCompare="(a, b) => a - b"/>
 </Table>
 
 @if (IsActiveAddDrawer)

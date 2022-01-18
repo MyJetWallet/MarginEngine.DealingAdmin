@@ -15,7 +15,7 @@
 
 <div id="PendingOrdersRegion">    
     <div class="mb-2">
-        <Row>
+        <AntDesign.Row>
             <Col Span="4" Class="text-nowrap">
                 <span class="text-bold mx-2">Accounts:</span>
                 <Select Mode="default"
@@ -35,7 +35,7 @@
                     </SelectOptions>
                 </Select>
             </Col>
-        </Row>       
+        </AntDesign.Row>       
     </div>
     <Table DataSource="@GridData"
            TItem="PendingOrderViewModel"
@@ -46,21 +46,21 @@
            @bind-PageIndex="_pageIndex"
            @bind-PageSize="_pageSize">
         <RowTemplate> 
-            <Column Ellipsis
+            <AntDesign.Column Ellipsis
                     TData="long"
                     Title="Id"
                     @bind-Field="@context.Id"
                     Width="100"
                     Sortable
                     Filterable>
-            </Column>
-            <Column Title="Account"
+            </AntDesign.Column>
+            <AntDesign.Column Title="Account"
                     TData="string"
                     @bind-Field="@context.AccountId"
                     Width="140"
                     Sortable
                     Filterable/>
-            <Column Title="Open Date"
+            <AntDesign.Column Title="Open Date"
                     TData="DateTime"
                     @bind-Field="@context.Created"
                     Format="yyyy-MM-dd"
@@ -68,49 +68,49 @@
                 <div style="font-family: Nunito Sans,-apple-system,BlinkMacSystemFont,Helvetica Neue,sans-serif;">
                     <div><Icon Type="plus-circle" Theme="outline"  /> @FormatUtils.DateTimeNamedWithMsFormat(context.Created)</div>
                 </div>
-            </Column>
-            <Column Title="Price"
+            </AntDesign.Column>
+            <AntDesign.Column Title="Price"
                     @bind-Field="@context.Id"
                     Width="280">
                     <PendingOrderPrice Order="context" Digits="context.InstrumentDigits"></PendingOrderPrice>
-            </Column>
-            <Column Title="Now BidAsk"
+            </AntDesign.Column>
+            <AntDesign.Column Title="Now BidAsk"
                     @bind-Field="@context.Id">
                 <OrderNowBidAsk BidAsk="@(new BidAskModel { Id = context.Instrument })" Digits="context.InstrumentDigits"></OrderNowBidAsk>
-            </Column>
-            <Column Title="Operation"
+            </AntDesign.Column>
+            <AntDesign.Column Title="Operation"
                     @bind-Field="@context.Operation"
                     Width="100">
                     <OrderOperation Operation="context.Operation" OrderType="context.OpenOrderType"></OrderOperation>
-            </Column>
-            <Column Title="Instrument"
+            </AntDesign.Column>
+            <AntDesign.Column Title="Instrument"
                     TData="string"
                     @bind-Field="@context.Instrument"
                     Sortable
                     Filterable/>
-            <Column Title="Investment"
+            <AntDesign.Column Title="Investment"
                     TData="double"
                     @bind-Field="@context.InvestmentAmount"
                     Sortable>
                 <div>@($"{context.InvestmentAmount.ToString("F0")} x 1:{context.Leverage }")</div>
                 <div>@($"V: {(context.InvestmentAmount * context.Leverage).ToString("F0")}")</div>
-            </Column>
-            <Column Title="Take Profit"
+            </AntDesign.Column>
+            <AntDesign.Column Title="Take Profit"
                     TData="double?"
                     @bind-Field="@context.TakeProfitInCurrency">
                 <div>@($"{GetOrderTakeProfit(context)}")</div>
-            </Column>
-            <Column Title="Stop Loss"
+            </AntDesign.Column>
+            <AntDesign.Column Title="Stop Loss"
                     TData="double?"
                     @bind-Field="@context.StopLossInCurrency">
                 <div>@($"{GetOrderStopLoss(context)}")</div>
-            </Column>
-            <Column Title="Refill %"
+            </AntDesign.Column>
+            <AntDesign.Column Title="Refill %"
                     TData="double"
                     @bind-Field="@context.ToppingUpPercent"
                     Sortable>
                 <div>@((context.ToppingUpPercent > 0 ? $"{context.ToppingUpPercent.ToString("F0")}%" : "-"))</div>
-            </Column>
+            </AntDesign.Column>
         </RowTemplate>
     </Table>
 </div>

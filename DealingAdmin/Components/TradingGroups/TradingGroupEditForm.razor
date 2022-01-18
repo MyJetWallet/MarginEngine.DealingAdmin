@@ -15,7 +15,8 @@
 @inject LiveDemoServiceMapper liveDemoServices;
 @inject ISwapProfileWriter swapProfileWriter;
 @inject IMarkupProfilesRepository markupProfilesRepository
-@inject MessageService message
+@inject ISnackbar snackbar
+
 @inject AdminAppSettings appSettings
 @inject Logger logger
 
@@ -75,12 +76,12 @@
             <InputPassword @bind-Value="@context.TokenKey" />
         </FormItem>
         <FormItem>
-            <Button Type="@ButtonType.Primary" OnClick="SaveGroup">
+            <AntDesign.Button Type="@AntDesign.ButtonType.Primary" OnClick="SaveGroup">
                 Save
-            </Button>
-            <Button OnClick="CloseDialog">
+            </AntDesign.Button>
+            <AntDesign.Button OnClick="CloseDialog">
                 Cancel
-            </Button>
+            </AntDesign.Button>
         </FormItem>
     </ChildContent>
 </Form>
@@ -140,15 +141,13 @@
         {
             if (!editForm.Validate())
             {
-                Console.WriteLine(">> SaveGroup >> Edit form is not valid"); /// REMOVE AFTER TEST!!!
-                await message.Error("Edit form is not valid");
+                snackbar.Add("Edit form is not valid", Severity.Error);
                 return;
             }
 
             if (TradingGroup.TokenKey != appSettings.AdminCrudApiKey)
             {
-                Console.WriteLine(">> SaveGroup >> API key is not valid"); /// REMOVE AFTER TEST!!!
-                await message.Error("API key is not valid");
+                snackbar.Add("API key is not valid", Severity.Error);
                 return;
             }
 
@@ -158,13 +157,13 @@
             Console.WriteLine($"Trading Group {TradingGroup.Id} saved");
             await OnFinish.InvokeAsync();
             Console.WriteLine(">> SaveGroup >> Message"); /// REMOVE AFTER TEST!!!
-            await message.Success($"Trading Group {TradingGroup.Id} saved");
+            snackbar.Add($"Trading Group {TradingGroup.Id} saved", Severity.Success);
             Console.WriteLine(">> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
         }
         catch(Exception ex)
         {
             logger.Error(ex, ex.Message);
-            await message.Error($"Error occured: {ex.Message}");
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
         }
         Console.WriteLine("TradingGroups >> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
     }

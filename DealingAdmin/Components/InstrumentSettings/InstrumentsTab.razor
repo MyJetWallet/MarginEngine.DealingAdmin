@@ -17,7 +17,7 @@
 
 <PageHeader Class="m-0 p-0" Title="Instruments">
     <PageHeaderExtra>
-        <Button OnClick="ShowNewInstrumentDialog" Type="@ButtonType.Primary">New Instrument</Button>
+        <AntDesign.Button OnClick="ShowNewInstrumentDialog" Type="@AntDesign.ButtonType.Primary">New Instrument</AntDesign.Button>
     </PageHeaderExtra>
 </PageHeader>
 <Table DataSource="@tradingInstruments"
@@ -29,49 +29,49 @@
        ScrollY="calc(100vh - 260px)"
        PageSize="999">
     <RowTemplate>
-        <Column Title="Group"
+        <AntDesign.Column Title="Group"
                 TData="string"
                 DataIndex="GroupId"
                 Sortable
                 Filterable/>            
-        <Column Title="Id"
+        <AntDesign.Column Title="Id"
                 TData="string"
                 DataIndex="Id"
                 Sortable>
             <p>Id: <b>@context.Id</b></p>
             <p>Name: <b>@context.Name</b></p>
-        </Column>
-        <Column Title="Weight"
+        </AntDesign.Column>
+        <AntDesign.Column Title="Weight"
             TData="int?"
             DataIndex="Weight"
             Sortable
             Width="80"/>
-        <Column Title="Sub group" 
+        <AntDesign.Column Title="Sub group" 
                 DataIndex="SubGroupId" 
                 TData="string"
                 Sortable
                 Filterable/>
-        <Column Title="Avatar" 
+        <AntDesign.Column Title="Avatar" 
                 TData="string"
                 Width="90">
             <Avatar Size="48" Icon="user"/>
-        </Column>
-        <Column Title="Base"
+        </AntDesign.Column>
+        <AntDesign.Column Title="Base"
                 DataIndex="Base" 
                 TData="string"
                 Sortable
                 Width="80"/>
-        <Column Title="Quote"
+        <AntDesign.Column Title="Quote"
                 DataIndex="Quote"
                 TData="string"
                 Sortable
                 Width="80"/>
-        <Column Title="Digits" 
+        <AntDesign.Column Title="Digits" 
                 DataIndex="Digits" 
                 TData="int"
                 Sortable
                 Width="72"/>
-        <Column Title="Swap"
+        <AntDesign.Column Title="Swap"
                 DataIndex="SwapScheduleId"
                 TData="string"
                 Width="72">
@@ -83,33 +83,33 @@
             {
                 <span>@context.SwapScheduleId</span>
             }
-        </Column>
-        <Column Title="Time off"
+        </AntDesign.Column>
+        <AntDesign.Column Title="Time off"
                 TData="string"
                 Width="220">
             @foreach(var item in context.DaysOff)
             {
                 <p>@(FormatUtils.GetDayOffText(item))</p>
             }
-        </Column>
-        <Column Title="On/Off"
+        </AntDesign.Column>
+        <AntDesign.Column Title="On/Off"
                 TData="bool"
                 Field="@context.TradingDisabled"
                 Sortable
                 Width="72">
             <Switch @bind-Value="@context.TradingDisabled"></Switch>
-        </Column>
-        <Column Title="Price"
+        </AntDesign.Column>
+        <AntDesign.Column Title="Price"
                 TData="string"
                 Width="160">
             <InsturmentBidAsk InstrumentId="@context.Id" InstrumentDigits="@context.Digits"/>
-        </Column>
-        <Column Title="Timeout"
+        </AntDesign.Column>
+        <AntDesign.Column Title="Timeout"
                 TData="string" 
                 Width="120">
             Night:<Tag PresetColor="PresetColor.Purple">@context.NightTimeout</Tag>
             Day:<Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>
-        </Column>        
+        </AntDesign.Column>        
         <ActionColumn Title="Edit" Width="60">
                 <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
                     class="material-icons color-primary">edit</i></a>

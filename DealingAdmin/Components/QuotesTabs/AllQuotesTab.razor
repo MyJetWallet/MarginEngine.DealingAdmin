@@ -20,13 +20,13 @@
            HidePagination="@true"
            ScrollY="calc(100vh - 160px)">
         <RowTemplate> 
-            <Column Title="Instrument"
+            <AntDesign.Column Title="Instrument"
                     Field="@context.Name"
                     TData="string"
                     Width="140"
                     Sortable
                     Filterable/>
-            <Column Title="Quotes"  
+            <AntDesign.Column Title="Quotes"  
                     Field="@context.Id">
                 <TitleTemplate>
                     <div class="grid-container-lp-quote-line">
@@ -47,7 +47,7 @@
                         ProvidersList="@liquidityProvidersList"
                         ActiveProviderId="@dictInstrumentProviderMaps[context.Id]"/>
                 </ChildContent>               
-            </Column>
+            </AntDesign.Column>
         </RowTemplate>
     </Table>
 </div>

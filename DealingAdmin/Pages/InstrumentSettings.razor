@@ -19,26 +19,26 @@
     <TabPane Tab="INSTRUMENTS GROUPS" Key="InstrumentGroups">
         <PageHeader Title="Instruments groups">
             <PageHeaderExtra>
-                <Button OnClick="@(() => isActiveAddGroupForm = true)" Type="@ButtonType.Primary">Add group</Button>
+                <AntDesign.Button OnClick="@(() => isActiveAddGroupForm = true)" Type="@AntDesign.ButtonType.Primary">Add group</AntDesign.Button>
             </PageHeaderExtra>
         </PageHeader>
         <Table DataSource="instrumentGroups" TItem="InstrumentGroupModel">
-            <Column Title="Weight" DataIndex="Weight" TData="int"/>
-            <Column Title="Id" DataIndex="Id" TData="string"/>
-            <Column Title="Name" DataIndex="Name" TData="string"/>
+            <AntDesign.Column Title="Weight" DataIndex="Weight" TData="int"/>
+            <AntDesign.Column Title="Id" DataIndex="Id" TData="string"/>
+            <AntDesign.Column Title="Name" DataIndex="Name" TData="string"/>
         </Table>
     </TabPane>
     <TabPane Tab="INSTRUMENTS SUBGROUPS" Key="InstrumentSubGroups">
         <PageHeader Class="site-page-header" Title="Instruments sub groups">
             <PageHeaderExtra>
-                <Button OnClick="@(() => isActiveAddSubGroupForm = true)" Type="@ButtonType.Primary">Add sub group</Button>
+                <AntDesign.Button OnClick="@(() => isActiveAddSubGroupForm = true)" Type="@AntDesign.ButtonType.Primary">Add sub group</AntDesign.Button>
             </PageHeaderExtra>
         </PageHeader>
         <Table DataSource="instrumentSubGroups" TItem="InstrumentSubGroupModel">
-            <Column Title="Weight" DataIndex="Weight" TData="int"/>
-            <Column Title="Id" DataIndex="Id" TData="string"/>
-            <Column Title="Name" DataIndex="Name" TData="string"/>
-            <Column Title="Group" DataIndex="GroupId" TData="string"/>
+            <AntDesign.Column Title="Weight" DataIndex="Weight" TData="int"/>
+            <AntDesign.Column Title="Id" DataIndex="Id" TData="string"/>
+            <AntDesign.Column Title="Name" DataIndex="Name" TData="string"/>
+            <AntDesign.Column Title="Group" DataIndex="GroupId" TData="string"/>
         </Table>
     </TabPane>
 </Tabs>

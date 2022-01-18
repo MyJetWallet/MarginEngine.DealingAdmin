@@ -14,7 +14,7 @@
 @inject IUserMessageService MessageService
 
 <Title Level="4">Upload Candles History</Title>
-<Row>
+<AntDesign.Row>
     <Col Xs="24" Sm="24" Md="18" Lg="14" Xl="6" class="m-3">
         <div class="m-1">Instrument:</div>
         <Select
@@ -43,26 +43,26 @@
             </SelectOptions>
         </Select>
     </Col>
-</Row>
-<Row>
+</AntDesign.Row>
+<AntDesign.Row>
     <Col Xs="24" Sm="24" Md="20" Lg="16" Xl="8" class="m-3">
         <div>Candles History File:</div>
         <InputFile OnChange="@FileChanged"/>
     </Col>
     <Col Xs="6" Sm="6" Md="4" Lg="4" Xl="4" class="mx-3">
         <br/>
-        <Button Icon="upload" OnClick="@UploadCandles" Disabled="@(candlesFile == null)">
+        <AntDesign.Button Icon="upload" OnClick="@UploadCandles" Disabled="@(candlesFile == null)">
             <span>Upload</span>
-        </Button>
+        </AntDesign.Button>
     </Col>
-</Row>
+</AntDesign.Row>
 
 <Divider />
 
-<Row>
+<AntDesign.Row>
     <Title Level="4">Refresh Candles Cache</Title>
-</Row>
-<Row>
+</AntDesign.Row>
+<AntDesign.Row>
     <Col Xs="24" Sm="24" Md="18" Lg="14" Xl="6" class="m-3">
         <Select
             DataSource="@instrumentIds"
@@ -73,11 +73,11 @@
         </Select>
     </Col>
     <Col Xs="16" Sm="12" Md="6" Lg="6" Xl="4" class="m-3">
-        <Button Icon="reload" OnClick="@RefreshCache">
+        <AntDesign.Button Icon="reload" OnClick="@RefreshCache">
             <span>Refresh</span>
-        </Button>
+        </AntDesign.Button>
     </Col>
-</Row>
+</AntDesign.Row>
 
 @code {
     bool isLoading = false;

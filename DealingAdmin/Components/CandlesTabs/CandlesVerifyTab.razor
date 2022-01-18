@@ -15,7 +15,7 @@
 @inject IUserMessageService MessageService
 
 <Title Level="4">Verify Candles History</Title>
-<Row>
+<AntDesign.Row>
     <Col Xs="10" Sm="8" Md="6" Lg="4" Xl="3" class="m-3">
         <div class="m-1">Source to check:</div>
         <Select Mode="default"
@@ -62,46 +62,46 @@
             </SelectOptions>
         </Select>
     </Col>
-</Row>
-<Row>
+</AntDesign.Row>
+<AntDesign.Row>
     <Col Xs="24" Sm="24" Md="20" Lg="16" Xl="8" class="m-3">
         <div>Candles History File:</div>
         <InputFile OnChange="@FileChanged"/>
     </Col>
     <Col Xs="6" Sm="6" Md="4" Lg="4" Xl="4" class="mx-3">
         <br/>
-        <Button Icon="upload" OnClick="@VerifyCandles" Disabled="@(candlesFile == null)">
+        <AntDesign.Button Icon="upload" OnClick="@VerifyCandles" Disabled="@(candlesFile == null)">
             <span>Verify</span>
-        </Button>
+        </AntDesign.Button>
     </Col>
-</Row>
+</AntDesign.Row>
 <Divider />
-<Row class="m-3">
+<AntDesign.Row class="m-3">
     <h5>Verification Result: </h5><span style="@verifyResultStyle">@verifyResultText</span>
-</Row>
+</AntDesign.Row>
 @if (resultConformity.HasValue)
 {
-    <Row class="m-3">
+    <AntDesign.Row class="m-3">
         Total Count: @verificationResult.TotalCount
-    </Row>
+    </AntDesign.Row>
     @if (showActualCount)
     {
-        <Row> class="m-3"
+        <AntDesign.Row> class="m-3"
             Actual Count: @verificationResult.ActualCount
-        </Row>
+        </AntDesign.Row>
     }
-    <Row class="m-3">
+    <AntDesign.Row class="m-3">
         Scanned Count: @verificationResult.ScannedCount
-    </Row>
-    <Row class="m-3">
+    </AntDesign.Row>
+    <AntDesign.Row class="m-3">
         Corresponding Count: <span style="color:green">@verificationResult.CorrespondingCount</span>
-    </Row>
-    <Row class="m-3">
+    </AntDesign.Row>
+    <AntDesign.Row class="m-3">
         Differing Count:  <span style="color:orange">@verificationResult.DifferingCount</span>
-    </Row>
-    <Row class="m-3"> 
+    </AntDesign.Row>
+    <AntDesign.Row class="m-3"> 
         Missed Count: <span style="color:red">@verificationResult.MissedCount</span>
-    </Row>
+    </AntDesign.Row>
 }
 
 @code {

@@ -22,7 +22,7 @@
 @inject ITradeLogGrpcService TradeLogGrpcService
 
 <div class="mb-2">
-    <Row>
+    <AntDesign.Row>
         <Col Span="8" Class="text-nowrap">
             <span class="text-bold mx-2">Account:</span>               
             <Select DataSource="@AccountsList"
@@ -49,20 +49,20 @@
                 TValue="DateTime"
                 AllowClear="false"
                 Picker="@DatePickerType.Date"/>
-            <Button
-                Type="@ButtonType.Primary"
+            <AntDesign.Button
+                Type="@AntDesign.ButtonType.Primary"
                 OnClick="()=>LoadDataForDay()"
                 Class="mx-2">
                 Load
-            </Button>
+            </AntDesign.Button>
         </Col>
         <Col Span="8" Class="align-items-end">
-            <Button
-                Type="@ButtonType.Primary"
+            <AntDesign.Button
+                Type="@AntDesign.ButtonType.Primary"
                 OnClick="()=>LoadLastData()"
                 Class="mx-2">
                 Load Last
-            </Button>
+            </AntDesign.Button>
             <AntDesign.InputNumber @bind-Value="@tradeLogTimeUnits" />
             <Select Mode="default"
                     @bind-Value="@timeUnitType"    
@@ -81,7 +81,7 @@
                 </SelectOptions>
             </Select>
         </Col>
-    </Row>       
+    </AntDesign.Row>       
 </div>
 
 <Table DataSource="@GridData"
@@ -93,22 +93,22 @@
         @bind-PageIndex="_pageIndex"
         @bind-PageSize="_pageSize">
     <RowTemplate> 
-        <Column Title="DateTime"
+        <AntDesign.Column Title="DateTime"
                 TData="DateTime"
                 @bind-Field="@context.DateTime"
                 Format="@(FormatUtils.DateTimeCommonFormat)"
                 Sortable
                 Filterable
                 Width="200"/>
-        <Column Title="Process Id"
+        <AntDesign.Column Title="Process Id"
                 TData="string"
                 @bind-Field="@context.ProcessId"
                 Width="360"/>
-        <Column Title="Component"
+        <AntDesign.Column Title="Component"
                 TData="string"
                 @bind-Field="@context.Component"
                 Width="140"/>
-        <Column Title="Message"
+        <AntDesign.Column Title="Message"
                 TData="string"
                 @bind-Field="@context.Message"/>
         <ActionColumn Title="Actions" Width="100">

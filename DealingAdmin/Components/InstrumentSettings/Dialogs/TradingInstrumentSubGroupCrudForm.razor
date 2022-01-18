@@ -6,7 +6,7 @@
 <div>
     <Drawer Closable="true" Width="720" Visible="true" Title="@("Add trading instrument sub group")" OnClose="_ => OnClose.Invoke()">
         <Template style="height:90%">
-            <Row Gutter="16">
+            <AntDesign.Row Gutter="16">
                 <AntDesign.Col Span="12">
                     <Text>Id</Text>
                     <Input @bind-Value="InstrumentSubGroup.Id" Placeholder="Id" TValue="string"/>
@@ -15,9 +15,9 @@
                     <Text>Name</Text>
                     <Input @bind-Value="InstrumentSubGroup.Name" Placeholder="Name" TValue="string"/>
                 </AntDesign.Col>
-            </Row>
+            </AntDesign.Row>
             <br/>
-            <Row Gutter="16">
+            <AntDesign.Row Gutter="16">
                 <AntDesign.Col Span="12">
                     <Text>Weight</Text>
                     <Input @bind-Value="InstrumentSubGroup.Weight" Placeholder="Weight" TValue="int"/>
@@ -36,10 +36,10 @@
                     </Select>
                     
                 </AntDesign.Col>
-            </Row>
+            </AntDesign.Row>
         </Template>
 
-        <Button OnClick="@(() => OnSubmit(InstrumentSubGroup))" Type="primal" Color="Color.Green1" Block>Submit</Button>
+        <AntDesign.Button OnClick="@(() => OnSubmit(InstrumentSubGroup))" Type="primal" Color="AntDesign.Color.Green1" Block>Submit</AntDesign.Button>
     </Drawer>
 </div>
 

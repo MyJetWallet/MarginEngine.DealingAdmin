@@ -6,7 +6,7 @@
 <div>
     <Drawer Closable="true" Width="720" Visible="true" Title="@("Add trading instrument group")" OnClose="_ => OnClose.Invoke()">
         <Template style="height:90%">
-            <Row Gutter="16">
+            <AntDesign.Row Gutter="16">
                 <AntDesign.Col Span="12">
                     <Text>Id</Text>
                     <Input @bind-Value="InstrumentGroup.Id" Placeholder="Id" TValue="string"/>
@@ -15,17 +15,17 @@
                     <Text>Name</Text>
                     <Input @bind-Value="InstrumentGroup.Name" Placeholder="Name" TValue="string"/>
                 </AntDesign.Col>
-            </Row>
+            </AntDesign.Row>
             <br/>
-            <Row >
+            <AntDesign.Row >
                 <AntDesign.Col>
                     <Text>Weight</Text>
                     <Input @bind-Value="InstrumentGroup.Weight" Placeholder="Weight" TValue="int"/>
                 </AntDesign.Col>
-            </Row>
+            </AntDesign.Row>
         </Template>
 
-        <Button OnClick="@(() => OnSubmit(InstrumentGroup))" Type="primal" Color="Color.Green1" Block>Submit</Button>
+        <AntDesign.Button OnClick="@(() => OnSubmit(InstrumentGroup))" Type="primal" Color="AntDesign.Color.Green1" Block>Submit</AntDesign.Button>
     </Drawer>
 </div>
 

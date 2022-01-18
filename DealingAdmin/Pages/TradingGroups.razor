@@ -86,6 +86,7 @@
 
     private async Task RefreshData()
     {
+         Console.WriteLine("TradingGroups >> RefreshData"); /// REMOVE AFTER TEST!!!
         isLoading = true;
 
         tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
@@ -104,22 +105,21 @@
 
     private void ShowEditGroupDialog(TradingGroupModel Group)
     {
-        Console.WriteLine("TradingGroups  >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
+        Console.WriteLine("TradingGroups >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
         groupEditFormTitle = $"Edit '{Group.Id}' Group";
         editedGroup = Group;
         isEditGroupDialogVisible = true;
-        Console.WriteLine("TradingGroups  >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
+        Console.WriteLine("TradingGroups >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
     }
 
     private void CloseEditGroupDialog()
     {
         isEditGroupDialogVisible = false;
-        editedGroup = new TradingGroupModel();
     }
 
     private async void SaveGroup()
     {
-        Console.WriteLine("TradingGroups  >> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
+        Console.WriteLine("TradingGroups >> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
         try
         {
             if (editedGroup.TokenKey != appSettings.AdminCrudApiKey)
@@ -128,9 +128,13 @@
                 return;
             }
 
-            await liveDemoServices.GetContext(AppState.IsLive).TradingGroupsRepository.UpdateAsync(editedGroup);
-            await messageService.SuccessAsync($"Group {editedGroup.Id} saved");
+            await liveDemoServices.GetContext(AppState.IsLive)
+                .TradingGroupsRepository.UpdateAsync(editedGroup);
+
+            Console.WriteLine($"Trading Group {editedGroup.Id} saved");
+            await messageService.SuccessAsync($"Trading Group {editedGroup.Id} saved");
             CloseEditGroupDialog();
+            Console.WriteLine("TradingGroups >> SaveGroup >> Refresh"); /// REMOVE AFTER TEST!!!
             await RefreshData();
         }
         catch(Exception ex)
@@ -138,6 +142,6 @@
             logger.Error(ex, ex.Message);
             await messageService.ErrorAsync($"Error occured: {ex.Message}");
         }
-        Console.WriteLine("TradingGroups  >> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
+        Console.WriteLine("TradingGroups >> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
     }
 }

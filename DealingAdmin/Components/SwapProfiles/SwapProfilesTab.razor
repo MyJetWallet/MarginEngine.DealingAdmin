@@ -4,7 +4,7 @@
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.Trading.Swaps
 
-@inject ISwapProfileWriter SwapProfileWriter;
+@inject ISwapProfileWriter SwapProfileWriter
 @inject NavigationManager NavManager
 
 <PageHeader Class="m-0 p-0" Title="Swap Profiles">
@@ -39,7 +39,6 @@
         </ActionColumn>
     </RowTemplate>
 </Table>
-
 
 @code {
     private List<SwapGroupProfile> swapGroupProfiles = new List<SwapGroupProfile>();

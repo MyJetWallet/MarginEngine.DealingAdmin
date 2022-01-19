@@ -12,35 +12,34 @@
 
 @inject ITradingInstrumentsRepository InstrumentsRepository;
 @inject ISwapProfileWriter SwapProfileWriter
+@inject AdminAppSettings appSettings
 @inject ISnackbar snackbar
 @inject Logger logger
+@inject NavigationManager NavManager
 
 <PageHeader Class="m-0 p-0" Title="@pageTitle">
 </PageHeader>
 <AntDesign.Row>
     <Col Span="16">
-        <MudForm @ref="form">
-            <MudTextField @bind-Value="@profileId" Label="Profile Id" Variant="Variant.Outlined" Required />
-        </MudForm>
-    </Col>
-    <Col Flex=@("auto")></Col>
-    <Col Flex=@("300px")>
-        <AntDesign.Button Icon="check" Color="AntDesign.Color.Green10" Class="btn-text" OnClick="SaveSwapProfile">Save</AntDesign.Button>
-        <Space Size="@("middle")"></Space>
-        <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow10" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
-    </Col>
-</AntDesign.Row>
-<AntDesign.Row>
-    <Col Span="16">
-        <Form @ref="antForm" Model="editedInstrument">
-            <Input @bind-Value="@context.Id" Placeholder="Profile Id" Style="width:100px"/>
+        <Form @ref="idForm"
+                Model="editedInstrument"        
+                ValidateOnChange="@true"
+                ValidateMode="@FormValidateMode.Rules">
+            <FormItem Label="Profile Id" Rules=@RequiredRule>
+                <Input @bind-Value="@context.Id"
+                        Placeholder="Profile Id"
+                        Style="width:300px" 
+                        Size="@InputSize.Large" 
+                        Disabled="@(!String.IsNullOrEmpty(ProfileId))"
+                        Rules=@RequiredRule/>
+            </FormItem>            
         </Form>
     </Col>
     <Col Flex=@("auto")></Col>
     <Col Flex=@("300px")>
-        <AntDesign.Button Icon="check" Color="AntDesign.Color.Green10" Class="btn-text" OnClick="SaveSwapProfile">Save</AntDesign.Button>
-        <Space Size="@("middle")"></Space>
-        <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow10" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
+        <AntDesign.Button Icon="check" Color="AntDesign.Color.Green5" Class="btn-text" OnClick="SaveSwapProfile">Save</AntDesign.Button>
+        <Space Size="@("large")"></Space>
+        <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow5" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
     </Col>
 </AntDesign.Row>
 
@@ -52,16 +51,14 @@
        ScrollY="calc(100vh - 120px)"
        PageSize="999">
     <TitleTemplate>
-        <AntDesign.Row>
-            <Col Flex=@("200px")>Profile Instruments</Col>
-            <Col Flex=@("auto")></Col>
-            <Col Flex=@("200px")> 
-                <AntDesign.Button 
+        <PageHeader Title="Profile Instruments">
+            <PageHeaderExtra>
+                 <AntDesign.Button 
                     OnClick="ShowNewInstrumentDialog" 
                     Type="@AntDesign.ButtonType.Primary"
                     Class="btn-text">Add Instrument</AntDesign.Button>
-            </Col>
-        </AntDesign.Row>
+            </PageHeaderExtra>
+        </PageHeader>
     </TitleTemplate>
     <RowTemplate>           
         <AntDesign.Column Title="Instrument Id"
@@ -76,7 +73,7 @@
                 TData="double"
                 DataIndex="Short"
                 Sortable/>
-        <ActionColumn Title="Actions" Width="90">
+        <ActionColumn Title="Actions">
             <Tooltip Title="@("Edit")">
                 <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
                     class="material-icons color-primary">edit</i></a>
@@ -86,22 +83,59 @@
                     class="material-icons color-teal">content_copy</i></a>
             </Tooltip>
             <Tooltip Title="@("Delete")">
-                <a><i @onclick="()=>DeleteInstrument(context)"
-                    class="material-icons color-red">delete</i></a>
+                <Popconfirm Title="Are you sure?" OkText="Confirm" CancelText="Cancel">
+                    <a><i @onclick="()=>DeleteInstrument(context)"
+                        class="material-icons color-red">delete</i></a>
+                </Popconfirm>
             </Tooltip>
         </ActionColumn>
     </RowTemplate>
 </Table>
 
+<Modal Title="@instrumentEditFormTitle"
+       Visible="@isEditInstrumentDialogVisible"
+       Closable="@false"
+       OkText="@("Save")"
+       OnOk="()=>SaveInstrument()"
+       OnCancel="()=>CancelEditInstrumentDialog()"
+       Width="900">
+    <Form Model="editedInstrument"        
+            LabelColSpan="6"
+            WrapperColSpan="18"     
+            ValidateOnChange="@true"
+            ValidateMode="@FormValidateMode.Rules">
+        <FormItem Label="Instrument Id" Rules=@RequiredRule>
+            <Select DataSource="@availableInstruments"
+                @bind-Value="@context.InstrumentId"
+	            TItemValue="string"
+	            TItem="string"
+                Disabled="@(selectedInstrument != null)"
+                EnableSearch>
+            </Select>
+        </FormItem>
+        <FormItem Label="Long %" Required Rules=@RequiredRule>
+            <AntDesign.InputNumber @bind-Value="@context.Long" />
+        </FormItem>            
+        <FormItem Label="Short %" Required Rules=@RequiredRule>
+            <AntDesign.InputNumber @bind-Value="@context.Short" />
+        </FormItem>
+    </Form> 
+</Modal>
+
 @code {
     [Parameter]
     public string ProfileId { get; set; }
 
-    MudForm form;
-    AntDesign.Form<SwapProfileModel> antForm;
+    AntDesign.Form<SwapProfileModel> idForm;
 
     private List<SwapProfileModel> swapProfileInstruments = new List<SwapProfileModel>();
+    SwapProfileModel selectedInstrument;
     SwapProfileModel editedInstrument = new SwapProfileModel();
+    List<string> instrumentIds;
+    List<string> availableInstruments;
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+    private FormValidationRule[] CrudApiKeyRule;
 
     int _pageSize = 999;
 
@@ -125,46 +159,143 @@
             var swapProfileInstruments = (await SwapProfileWriter.GetAsync(ProfileId))
                 .Select(SwapProfileModel.Create).ToList();
         }
+
+        CrudApiKeyRule = new FormValidationRule[]
+        {
+            new FormValidationRule
+                {
+                    Required = true,
+                    Type = FormFieldType.String,
+                    OneOf = new string[] { appSettings.AdminCrudApiKey },
+                    Message = "API Key is not valid"
+                }
+        };
+
+        instrumentIds = (await InstrumentsRepository.GetAllAsync()).Select(x => x.Id).ToList();
+        availableInstruments = GetAvailableInstrumentsList();
+    }
+
+
+    private List<string> GetAvailableInstrumentsList()
+    {
+        var resultSet = new List<string>();
+
+        if (selectedInstrument != null)
+        {
+            resultSet.Add(selectedInstrument.InstrumentId);
+        }
+        else if (swapProfileInstruments.Any()) 
+        {
+            foreach(var instId in instrumentIds)
+            {
+                if (!swapProfileInstruments.Where(x => x.InstrumentId == instId).Any())
+                {
+                    resultSet.Add(instId);
+                }
+            }
+        }
+        else
+        {
+            resultSet.AddRange(instrumentIds);
+        }
+
+        return resultSet;
+    }
+
+    private void SaveInstrument()
+    {
+        if (selectedInstrument != null)
+        {
+            selectedInstrument = editedInstrument;
+        }
+        else
+        {
+            swapProfileInstruments.Add(editedInstrument);
+        }
+
+        isEditInstrumentDialogVisible = false;
     }
 
     private void ShowNewInstrumentDialog()
     {
-        editedInstrument = new SwapProfileModel();
+        selectedInstrument = null;
+        editedInstrument = new SwapProfileModel 
+        {
+            Id = profileId,
+            InstrumentId = instrumentIds.First() 
+        };
+        
+        availableInstruments = GetAvailableInstrumentsList();
         instrumentEditFormTitle = $"Add New Instrument for Swap Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }
 
     private void ShowEditInstrumentDialog(SwapProfileModel swapItem)
     {
-        editedInstrument = swapItem;
+        selectedInstrument = swapItem;
+        editedInstrument = SwapProfileModel.Create(swapItem);
+        availableInstruments = GetAvailableInstrumentsList();
         instrumentEditFormTitle = $"Edit '{swapItem.InstrumentId}' Instrument for Swap Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }
 
     private void CloneInstrument(SwapProfileModel swapItem)
     {
+        selectedInstrument = null;
         editedInstrument = SwapProfileModel.Create(swapItem);
+        availableInstruments = GetAvailableInstrumentsList();
         instrumentEditFormTitle = $"Add New Instrument for Swap Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }
 
     private void DeleteInstrument(SwapProfileModel swapItem)
     {
-
+        swapProfileInstruments.Remove(swapItem);
     }
 
-    private void CloseEditProfileDialog()
+    private void CancelEditInstrumentDialog()
     {
         isEditInstrumentDialogVisible = false;
     }
 
-    private void SaveSwapProfile()
+    private async void SaveSwapProfile()
     {
+        try
+        {
+            int errorCount = 0;
 
+            foreach (var item in swapProfileInstruments)
+            {
+                var instruments = await InstrumentsRepository.GetAllAsync();
+
+                if (instruments.All(itm => itm.Id != item.InstrumentId))
+                {
+                    snackbar.Add($"Instrument {item.InstrumentId} is not found", Severity.Error);
+                    errorCount++;
+                }
+
+                await SwapProfileWriter.AddOrUpdate(item);
+            }
+
+            if (errorCount > 0)
+            {
+                var totalCount = swapProfileInstruments.Count;
+                snackbar.Add($"[{totalCount - errorCount}] of [{totalCount}] Instruments for Swap Profile '{profileId}' saved", Severity.Warning);
+            }
+            else
+            {
+                snackbar.Add($"Instruments for Swap Profile '{profileId}' saved", Severity.Success);
+            }
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
     }
 
     void GoBack()
     {
-        
+        NavManager.NavigateTo("/SwapSettings");
     }
 }

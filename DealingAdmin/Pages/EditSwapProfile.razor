@@ -1,0 +1,163 @@
+@page "/SwapProfiles/Edit"
+@page "/SwapProfiles/Edit/{ProfileId}"
+
+@using AntDesign
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.Instruments
+@using SimpleTrading.Abstraction.Trading.Swaps
+
+@inject ITradingInstrumentsRepository InstrumentsRepository;
+@inject ISwapProfileWriter SwapProfileWriter
+@inject ISnackbar snackbar
+@inject Logger logger
+
+<PageHeader Class="m-0 p-0" Title="@pageTitle">
+</PageHeader>
+<AntDesign.Row>
+    <Col Span="16">
+        ProfileId: <Input @bind-Value=@profileId Placeholder="Profile Id" TValue="string"/>
+    </Col>
+    <Col Flex=@("auto")></Col>
+    <Col Flex=@("300px")>
+        <AntDesign.Button Icon="check" Color="AntDesign.Color.Green1" Class="btn-text" OnClick="SaveSwapProfile">Save</AntDesign.Button>
+        <Space Size="@("large")"></Space>
+        <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow1" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
+    </Col>
+</AntDesign.Row>
+<AntDesign.Row>
+    <Col Span="12">
+        Profile Instruments
+    </Col>
+    <Col Flex=@("auto")></Col>
+    <Col Flex=@("200px")>
+        <AntDesign.Button Icon="check" Color="AntDesign.Color.Green1" Class="btn-text" OnClick="SaveSwapProfile">Save</AntDesign.Button>
+        <Space Size="@("large")"></Space>
+        <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow1" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
+    </Col>
+</AntDesign.Row>
+
+<Table DataSource="@swapProfileInstruments"
+       TItem="SwapProfileModel"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 120px)"
+       PageSize="999">
+    <TitleTemplate>
+        <AntDesign.Row>
+            <Col Flex=@("200px")><Title Level="3">Profile Instruments</Title></Col>
+            <Col Flex=@("auto")></Col>
+            <Col Flex=@("200px")> 
+                <AntDesign.Button 
+                    OnClick="ShowNewInstrumentDialog" 
+                    Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text">New Instrument</AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
+    </TitleTemplate>
+    <RowTemplate>           
+        <AntDesign.Column Title="Instrument Id"
+                TData="string"
+                DataIndex="InstrumentId"
+                Sortable/>
+        <AntDesign.Column Title="Long"
+                TData="double"
+                DataIndex="Long"
+                Sortable/>
+        <AntDesign.Column Title="Short"
+                TData="double"
+                DataIndex="Short"
+                Sortable/>
+        <ActionColumn Title="Actions" Width="90">
+            <Tooltip Title="@("Edit")">
+                <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+            </Tooltip>
+            <Tooltip Title="@("Clone")">
+                <a><i @onclick="()=>CloneInstrument(context)"
+                    class="material-icons color-teal">content_copy</i></a>
+            </Tooltip>
+            <Tooltip Title="@("Delete")">
+                <a><i @onclick="()=>DeleteInstrument(context)"
+                    class="material-icons color-red">delete</i></a>
+            </Tooltip>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+@code {
+    [Parameter]
+    public string ProfileId { get; set; }
+
+    private List<SwapProfileModel> swapProfileInstruments = new List<SwapProfileModel>();
+    SwapProfileModel editedInstrument = new SwapProfileModel();
+
+    int _pageSize = 999;
+
+    private string profileId { get; set; }
+
+    private bool isNewProfile = true;
+
+    private string pageTitle = "Add New Swap Profile";
+    private string instrumentEditFormTitle = "";
+    private string profileEditFormTitle;
+    private bool isEditInstrumentDialogVisible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!String.IsNullOrEmpty(ProfileId))
+        {
+            pageTitle = $"Edit '{ProfileId}' Swap Profile";
+            isNewProfile = false;
+            profileId = ProfileId;
+
+            var swapProfileInstruments = (await SwapProfileWriter.GetAsync(ProfileId))
+                .Select(SwapProfileModel.Create).ToList();
+        }
+    }
+
+    private void ShowNewInstrumentDialog()
+    {
+        editedInstrument = new SwapProfileModel();
+        instrumentEditFormTitle = $"Add New Instrument for Swap Profile {profileId}";
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void ShowEditInstrumentDialog(SwapProfileModel swapItem)
+    {
+        editedInstrument = swapItem;
+        instrumentEditFormTitle = $"Edit '{swapItem.InstrumentId}' Instrument for Swap Profile {profileId}";
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void CloneInstrument(SwapProfileModel swapItem)
+    {
+        editedInstrument = SwapProfileModel.Create(swapItem);
+        instrumentEditFormTitle = $"Add New Instrument for Swap Profile {profileId}";
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void DeleteInstrument(SwapProfileModel swapItem)
+    {
+
+    }
+
+    private void CloseEditProfileDialog()
+    {
+        isEditInstrumentDialogVisible = false;
+    }
+
+    private void SaveSwapProfile()
+    {
+
+    }
+
+    void GoBack()
+    {
+        
+    }
+}

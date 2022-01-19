@@ -11,7 +11,7 @@ namespace DealingAdmin.Shared.Services
             NavMenuItem.Create("InstrumentSettings", "Instruments", "grid_view"),
             NavMenuItem.Create("TradingProfiles", "Trading Profiles", "tune"),
             NavMenuItem.Create("TradingGroups", "Trading Groups", "format_list_bulleted"),
-            NavMenuItem.Create("SwapProfiles", "Swap Profiles", "swap_horiz"),
+            NavMenuItem.Create("SwapSettings", "Swap Profiles", "swap_horiz"),
             NavMenuItem.Create("Orders", "Orders", "list_alt"),
             NavMenuItem.Create("Candles", "Candles", "candlestick_chart"),
             NavMenuItem.Create("EmergencyTools", "Emergency Tools", "warning_amber"),

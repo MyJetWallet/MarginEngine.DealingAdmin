@@ -3,8 +3,8 @@
 @using AntDesign
 @using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
-@using DealingAdmin.Components.InstrumentSettings
-@using DealingAdmin.Components.InstrumentSettings.Dialogs
+@using DealingAdmin.Components.Instruments
+@using DealingAdmin.Components.Instruments.Forms
 @using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
 
@@ -12,8 +12,8 @@
 @inject IInstrumentGroupsRepository _groupsRepository;
 @inject ITradingInstrumentsRepository _instrumentsRepository;
 
-<Tabs DefaultActiveKey="1" Size="@TabSize.Large" Style="margin-bottom: 32px">
-    <TabPane Tab="INSTRUMENTS">
+<Tabs Size="@TabSize.Large">
+    <TabPane Tab="INSTRUMENTS" Key="Instruments">
         <InstrumentsTab/>
 	</TabPane>
     <TabPane Tab="INSTRUMENTS GROUPS" Key="InstrumentGroups">

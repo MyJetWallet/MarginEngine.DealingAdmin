@@ -36,7 +36,7 @@
     </ItemGroup>
     
     <ItemGroup>
-      <Content Update="Components\CandlesTabs\CandlesVerifyTab.razor">
+      <Content Update="Components\Candles\CandlesVerifyTab.razor">
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </Content>
     </ItemGroup>

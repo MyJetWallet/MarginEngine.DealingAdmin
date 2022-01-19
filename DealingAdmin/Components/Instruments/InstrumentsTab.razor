@@ -1,7 +1,7 @@
 @using AntDesign
 @using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
-@using DealingAdmin.Components.InstrumentSettings.Dialogs
+@using DealingAdmin.Components.Instruments.Forms
 @using Serilog.Core
 @using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
@@ -102,7 +102,7 @@
         <AntDesign.Column Title="Price"
                 TData="string"
                 Width="160">
-            <InsturmentBidAsk InstrumentId="@context.Id" InstrumentDigits="@context.Digits"/>
+            <InstrumentBidAsk InstrumentId="@context.Id" InstrumentDigits="@context.Digits"/>
         </AntDesign.Column>
         <AntDesign.Column Title="Timeout"
                 TData="string" 
@@ -124,7 +124,7 @@
        OnCancel="()=>CloseEditInstrumentDialog()"
        Width="900">
     <TradingInstrumentEditForm
-        @bind-Instrument="editedInstrument"
+        Instrument="editedInstrument"
         InstrumentGroups="instrumentGroups" 
         SubGroups="instrumentSubGroups"
         SwapProfiles="swapProfiles"

@@ -25,12 +25,12 @@ a, .btn-link {
 }
 
 .btn-text {
-    font-size: .75rem;
-    font-weight: 500;
-    letter-spacing: .0892857143em;
-    text-indent: .0892857143em;
-    text-transform: uppercase;
-    white-space: nowrap;
+    font-size: .75rem !important;
+    font-weight: 500 !important;
+    letter-spacing: .0892857143em !important;
+    text-indent: .0892857143em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
 }
 
 .btn-primary {

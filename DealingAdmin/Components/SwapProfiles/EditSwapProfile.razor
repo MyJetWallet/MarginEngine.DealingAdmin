@@ -32,13 +32,15 @@
         </Form>
     </Col>
     <Col Flex=@("auto")></Col>
-    <Col Flex=@("300px")>
+    <Col Flex=@("160px")>
         <AntDesign.Button Icon="check"
             Color="AntDesign.Color.Green5"
             Class="btn-text"
             OnClick="SaveSwapProfile"
             Disabled="@(String.IsNullOrEmpty(ProfileGroup.ProfileId))">Save</AntDesign.Button>
-        <Space Size="@("large")"></Space>
+        <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow5" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
+    </Col>
+    <Col Flex=@("160px")>
         <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow5" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
     </Col>
 </AntDesign.Row>
@@ -51,7 +53,7 @@
        ScrollY="calc(100vh - 120px)"
        PageSize="999">
     <TitleTemplate>
-        <PageHeader Title="Profile Instruments">
+        <PageHeader Title="Profile Instruments" Class="m-0 p-0">
             <PageHeaderExtra>
                  <AntDesign.Button 
                     OnClick="ShowNewInstrumentDialog" 

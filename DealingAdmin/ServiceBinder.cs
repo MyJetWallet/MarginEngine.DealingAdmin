@@ -25,7 +25,6 @@ using SimpleTrading.Auth.Grpc;
 using SimpleTrading.Engine.Grpc;
 using SimpleTrading.Abstraction.Trading;
 using SimpleTrading.PersonalData.Grpc;
-using AntDesign;
 using DealingAdmin.Validators;
 using SimpleTrading.TradeLog.Grpc;
 using SimpleTrading.Abstraction.Trading.Instruments;
@@ -34,6 +33,7 @@ using SimpleTrading.Abstractions.Common.InstrumentsAvatar;
 using SimpleTrading.Abstraction.Trading.Profiles;
 using SimpleTrading.Abstraction.Trading.Swaps;
 using SimpleTrading.Abstraction.Markups;
+using SimpleTrading.Common.Abstractions.DefaultValues;
 
 namespace DealingAdmin
 {
@@ -130,7 +130,11 @@ namespace DealingAdmin
             services.AddSingleton<ILiquidityProviderReader>(new LiquidityProviderReader(settingsModel.QuoteFeedRouterUrl));
             services.AddSingleton(MyNoSqlServerFactory.CreateInstrumentSourcesMapsNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton((IDefaultValuesRepository)CommonMyNoSqlServerFactory.CreateDefaultValueMyNoSqlRepository(
+               () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton((IDefaultLiquidityProviderWriter)CommonMyNoSqlServerFactory.CreateDefaultValueMyNoSqlRepository(
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton((IDefaultMarkupProfileWriter)CommonMyNoSqlServerFactory.CreateDefaultValueMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton<ISwapScheduleWriter>(MyNoSqlServerFactory.CreateSwapScheduleMyNoSqlRepository(
               () => settingsModel.DictionariesMyNoSqlServerWriter));

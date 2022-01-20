@@ -28,9 +28,11 @@
                 TData="string"
                 Sortable
                 Width="200"/>
-            <AntDesign.Column Title="Instruments"
-                TData="string">   
-                    <div>@(String.Join(",", context.Instruments.Select(x => x.Id)))</div>
+            <AntDesign.Column Title="Instruments" TData="string">   
+                @foreach (var instrument in context.Instruments)
+                {
+                    <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>
+                }
             </AntDesign.Column>
             <ActionColumn Title="Edit" Width="60">
                 <a><i @onclick="()=>ShowEditProfile(context)"
@@ -45,7 +47,7 @@ else
 }
 
 @code {
-    private List<SwapGroupProfile> swapGroupProfiles = new List<SwapGroupProfile>();
+    private List<SwapGroupProfile> swapGroupProfiles;
 
     int _pageSize = 999;
     
@@ -60,6 +62,7 @@ else
 
     private async Task RefreshData()
     {
+        swapGroupProfiles = new List<SwapGroupProfile>();
         var swapProfiles = (await SwapProfileWriter.GetAllAsync()).Select(SwapProfileModel.Create);
         var profilesGroupDictionary = new Dictionary<string, List<SwapProfileModel>>();
 
@@ -70,19 +73,16 @@ else
                 profilesGroupDictionary.Add(item.Id, new List<SwapProfileModel>());
             }
 
-            Console.WriteLine($"Swap Profiles Init >> profilesGroupDictionary item: {item.InstrumentId}"); // !!! REMOVE AFTER TEST
             profilesGroupDictionary[item.Id].Add(item);
         }
 
-        foreach(var group in profilesGroupDictionary)
+        foreach(var groupId in profilesGroupDictionary.Keys)
         {
             swapGroupProfiles.Add(new SwapGroupProfile
                 {
-                    ProfileId = group.Key,
-                    Instruments = group.Value
+                    ProfileId = groupId,
+                    Instruments = profilesGroupDictionary[groupId]
                 });
-
-            Console.WriteLine($">>> swapGroupProfile [{group.Key}] ({String.Join("|", group.Value.Select(x => x.InstrumentId))})"); // !!! REMOVE AFTER TEST
         }
 
         editedProfile = new SwapGroupProfile

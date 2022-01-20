@@ -1,0 +1,121 @@
+@page "/InstrumentSettings"
+
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.Instruments
+@using DealingAdmin.Components.Instruments.Forms
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Markups
+@using SimpleTrading.Abstraction.Trading.Instruments
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+@using SimpleTrading.Common.Abstractions.DefaultValues
+@using SimpleTrading.QuotesFeedRouter.Abstractions
+
+@inject ILiquidityProviderReader liquidityProviderReader
+@inject IMarkupProfilesRepository markupProfilesRepo
+@inject IDefaultLiquidityProviderWriter defLiquidityProviderWriter
+@inject IDefaultMarkupProfileWriter defaultMarkupProfileWriter 
+@inject IDefaultValuesRepository defValuesRepository
+@inject ISnackbar snackbar
+@inject Logger logger
+
+<Tabs Size="@TabSize.Large">
+    <TabPane Tab="LIQUIDITY PROVIDER" Key="LiquidityProvider"> 
+        <Card Title="Default Liquidity Provider" Class="my-2" Style="width: 300px;">
+            <Body>
+                <Select DataSource="@liquidityProviders"
+                    @bind-Value="@selectedLiquidityProvider"
+	                TItemValue="string"
+	                TItem="string">
+                </Select>
+            </Body>
+		    <ActionTemplate>
+                <AntDesign.Button 
+                    Class="btn-text color-teal" 
+                    OnClick="SaveDefaultLP"
+                    Disabled="@(String.IsNullOrEmpty(selectedLiquidityProvider))">Save</AntDesign.Button>
+                <Space Size="@("large")"/>
+                <AntDesign.Button Class="btn-text color-yellow" OnClick="ResetDefaultLP">Reset</AntDesign.Button>
+            </ActionTemplate>
+        </Card>
+	</TabPane>
+    <TabPane Tab="MARKUP PROFILE" Key="MarkupProfile">
+        <Card Title="Default Markup Profile" Class="my-2" Style="width: 300px;">
+            <Body>
+                <Select DataSource="@markupProfiles"
+                    @bind-Value="@selectedMarkupProfile"
+	                TItemValue="string"
+	                TItem="string">
+                </Select>
+            </Body>
+		    <ActionTemplate>
+                <AntDesign.Button 
+                    Class="btn-text color-teal"
+                    OnClick="SaveDefaultMarkup" 
+                    Disabled="@(String.IsNullOrEmpty(selectedMarkupProfile))">Save</AntDesign.Button>
+                <Space Size="@("large")"/>
+                <AntDesign.Button Class="btn-text color-yellow" OnClick="ResetDefaultMarkup">Reset</AntDesign.Button>
+            </ActionTemplate>
+        </Card>
+    </TabPane>
+    <TabPane Tab="INSTRUMENT AVATAR" Key="InstrumentAvatar">
+      
+    </TabPane>
+</Tabs>
+
+@code {
+    private IEnumerable<string> liquidityProviders;
+    private IEnumerable<string> markupProfiles;
+
+    string selectedLiquidityProvider;
+    string selectedMarkupProfile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        liquidityProviders = await liquidityProviderReader.GetLiquidityProviders();
+        markupProfiles = (await markupProfilesRepo.GetAllAsync()).Select(x => x.ProfileId);
+        selectedLiquidityProvider = await defLiquidityProviderWriter.GetAsync();
+        selectedMarkupProfile = await defaultMarkupProfileWriter.GetAsync();
+    }
+
+    private async void SaveDefaultLP()
+    {
+        try
+        {
+            await defLiquidityProviderWriter.SetAsync(selectedLiquidityProvider);
+            snackbar.Add($"Default LiquidityProvider set to '{selectedLiquidityProvider}'", Severity.Success);
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async void ResetDefaultLP()
+    {
+        selectedLiquidityProvider = await defLiquidityProviderWriter.GetAsync();
+        this.StateHasChanged();
+    }
+
+    private async void SaveDefaultMarkup()
+    {
+        try
+        {
+            await defaultMarkupProfileWriter.SetAsync(selectedMarkupProfile);
+            snackbar.Add($"Default MarkupProfile set to '{selectedMarkupProfile}'", Severity.Success);
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async void ResetDefaultMarkup()
+    {
+        selectedMarkupProfile = await defaultMarkupProfileWriter.GetAsync();
+        this.StateHasChanged();
+    }
+}

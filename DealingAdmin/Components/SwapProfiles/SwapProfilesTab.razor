@@ -28,18 +28,10 @@
                 TData="string"
                 Sortable
                 Width="200"/>
-            <AntDesign.Column Title="DEBUG"
-                TData="string">   
-                    @(String.Join(",", context.Instruments));
-            </AntDesign.Column>
             <AntDesign.Column Title="Instruments"
                 TData="string">   
-                    @(String.Join(",", context.Instruments));                    
-                    @foreach (var instrument in context.Instruments)
-                    {
-                        <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>
-                    }
-            </AntDesign.Column>    
+                    <div>@(String.Join(",", context.Instruments.Select(x => x.Id)))</div>
+            </AntDesign.Column>
             <ActionColumn Title="Edit" Width="60">
                 <a><i @onclick="()=>ShowEditProfile(context)"
                     class="material-icons color-primary">edit</i></a>

@@ -33,7 +33,14 @@ a, .btn-link {
     white-space: nowrap !important;
 }
 
-.btn-primary {
+.tab-text {
+    font-size: .875rem !important;
+    font-weight: 500 !important;
+    letter-spacing: .0892857143em !important;
+    text-transform: uppercase !important;
+}
+
+.btn-primary-color {
     color: #fff;
     background-color: #1b6ec2;
     border-color: #1861ac;
@@ -107,6 +114,14 @@ a, .btn-link {
 
 .text-bold {
     font-weight: bold
+}
+
+.bg-color-teal {
+    background-color: teal !important
+}
+
+.bg-color-yellow {
+    background-color: #ffd300 !important;
 }
 
 .color-green {

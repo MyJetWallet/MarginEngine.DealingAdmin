@@ -21,7 +21,7 @@
 @inject Logger logger
 
 <Tabs Size="@TabSize.Large">
-    <TabPane Tab="LIQUIDITY PROVIDER" Key="LiquidityProvider"> 
+    <TabPane Tab="LIQUIDITY PROVIDER" Key="LiquidityProvider" Class="tab-text"> 
         <Card Title="Default Liquidity Provider" Class="my-2" Style="width: 300px;">
             <Body>
                 <Select DataSource="@liquidityProviders"
@@ -32,15 +32,16 @@
             </Body>
 		    <ActionTemplate>
                 <AntDesign.Button 
-                    Class="btn-text color-teal" 
+                    Class="btn-text bg-color-green
+" 
                     OnClick="SaveDefaultLP"
                     Disabled="@(String.IsNullOrEmpty(selectedLiquidityProvider))">Save</AntDesign.Button>
                 <Space Size="@("large")"/>
-                <AntDesign.Button Class="btn-text color-yellow" OnClick="ResetDefaultLP">Reset</AntDesign.Button>
+                <AntDesign.Button Class="btn-text bg-color-yellow" OnClick="ResetDefaultLP">Reset</AntDesign.Button>
             </ActionTemplate>
         </Card>
 	</TabPane>
-    <TabPane Tab="MARKUP PROFILE" Key="MarkupProfile">
+    <TabPane Tab="MARKUP PROFILE" Key="MarkupProfile" Class="tab-text">
         <Card Title="Default Markup Profile" Class="my-2" Style="width: 300px;">
             <Body>
                 <Select DataSource="@markupProfiles"
@@ -50,17 +51,21 @@
                 </Select>
             </Body>
 		    <ActionTemplate>
-                <AntDesign.Button 
-                    Class="btn-text color-teal"
-                    OnClick="SaveDefaultMarkup" 
-                    Disabled="@(String.IsNullOrEmpty(selectedMarkupProfile))">Save</AntDesign.Button>
-                <Space Size="@("large")"/>
-                <AntDesign.Button Class="btn-text color-yellow" OnClick="ResetDefaultMarkup">Reset</AntDesign.Button>
+                <AntDesign.Row>
+                    <Col Span="12">
+                        <AntDesign.Button 
+                            Class="btn-text bg-color-teal"
+                            OnClick="SaveDefaultMarkup" 
+                            Disabled="@(String.IsNullOrEmpty(selectedMarkupProfile))">Save</AntDesign.Button>
+                    </Col>
+                    <Col Span="12">
+                        <AntDesign.Button Class="btn-text bg-color-yellow" OnClick="ResetDefaultMarkup">Reset</AntDesign.Button>
+                    </Col>
+                </AntDesign.Row>
             </ActionTemplate>
         </Card>
     </TabPane>
-    <TabPane Tab="INSTRUMENT AVATAR" Key="InstrumentAvatar">
-      
+    <TabPane Tab="INSTRUMENT AVATAR" Key="InstrumentAvatar" Class="tab-text">      
     </TabPane>
 </Tabs>
 

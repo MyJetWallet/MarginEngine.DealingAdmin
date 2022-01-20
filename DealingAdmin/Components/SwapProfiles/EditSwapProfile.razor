@@ -34,14 +34,14 @@
     <Col Flex=@("auto")></Col>
     <Col Flex=@("160px")>
         <AntDesign.Button Icon="check"
-            Color="AntDesign.Color.Green5"
-            Class="btn-text"
+            Class="btn-text bg-color-green"
             OnClick="SaveSwapProfile"
             Disabled="@(String.IsNullOrEmpty(ProfileGroup.ProfileId))">Save</AntDesign.Button>
-        <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow5" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
     </Col>
     <Col Flex=@("160px")>
-        <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow5" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
+        <AntDesign.Button Icon="arrow-left"
+            Class="btn-text bg-color-yellow"
+            OnClick="GoBack">Back</AntDesign.Button>
     </Col>
 </AntDesign.Row>
 
@@ -82,7 +82,7 @@
             </Tooltip>
             <Tooltip Title="@("Clone")">
                 <a><i @onclick="()=>CloneInstrument(context)"
-                    class="material-icons color-teal">content_copy</i></a>
+                    class="material-icons color-green">content_copy</i></a>
             </Tooltip>
             <Tooltip Title="@("Delete")">
                 <Popconfirm Title="Are you sure?" OkText="Confirm" CancelText="Cancel">
@@ -100,7 +100,7 @@
        OkText="@("Save")"
        OnOk="()=>SaveInstrument()"
        OnCancel="()=>CancelEditInstrumentDialog()"
-       Width="900">
+       Width="480">
     <Form Model="editedInstrument"        
             LabelColSpan="6"
             WrapperColSpan="18"     

@@ -7,51 +7,61 @@
 @inject ISwapProfileWriter SwapProfileWriter
 @inject NavigationManager NavManager
 
-<PageHeader Class="m-0 p-0" Title="Swap Profiles">
-    <PageHeaderExtra>
-        <AntDesign.Button OnClick="ShowNewProfileDialog" Type="@AntDesign.ButtonType.Primary">New Profile</AntDesign.Button>
-    </PageHeaderExtra>
-</PageHeader>
+@if (!editFormSwitch)
+{
+    <PageHeader Class="m-0 p-0" Title="Swap Profiles">
+        <PageHeaderExtra>
+            <AntDesign.Button OnClick="ShowNewProfile" Type="@AntDesign.ButtonType.Primary">New Profile</AntDesign.Button>
+        </PageHeaderExtra>
+    </PageHeader>
 
-<Table DataSource="@swapGroupProfiles"
-       TItem="SwapGroupProfile"
-       Bordered="@true"
-       Total="0"
-       HidePagination="@true"
-       ScrollY="calc(100vh - 120px)"
-       PageSize="999">
-    <RowTemplate>           
-        <AntDesign.Column Title="Profile Id"
+    <Table DataSource="@swapGroupProfiles"
+           TItem="SwapGroupProfile"
+           Bordered="@true"
+           Total="0"
+           HidePagination="@true"
+           ScrollY="calc(100vh - 120px)"
+           PageSize="999">
+        <RowTemplate>           
+            <AntDesign.Column Title="Profile Id"
                 DataIndex="ProfileId"
                 TData="string"
                 Sortable
                 Width="200"/>
-        <AntDesign.Column Title="Instruments"
+            <AntDesign.Column Title="Instruments"
                 TData="string">
-            @foreach (var instrument in context.Instruments)
-            {
-                <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>
-            }
-        </AntDesign.Column>    
-        <ActionColumn Title="Edit" Width="60">
-                <a><i @onclick="()=>ShowEditProfileDialog(context)"
+                @foreach (var instrument in context.Instruments)
+                {
+                    <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>
+                }
+            </AntDesign.Column>    
+            <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditProfile(context)"
                     class="material-icons color-primary">edit</i></a>
-        </ActionColumn>
-    </RowTemplate>
-</Table>
+            </ActionColumn>
+        </RowTemplate>
+    </Table>
+}
+else
+{
+    <EditSwapProfile ProfileGroup="editedProfile" OnGoBack="CloseEditProfile"/>
+}
 
 @code {
     private List<SwapGroupProfile> swapGroupProfiles = new List<SwapGroupProfile>();
 
     int _pageSize = 999;
-
-    private bool isUpdateProfileDialogVisible = false;
-
+    
     private SwapGroupProfile editedProfile;
     private string profileEditFormTitle;
-    private bool isEditInstrumentDialogVisible;
+    private bool editFormSwitch = false;
 
     protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
     {
         var swapProfiles = (await SwapProfileWriter.GetAllAsync()).Select(SwapProfileModel.Create);
         var profilesGroupDictionary = new Dictionary<string, List<SwapProfileModel>>();
@@ -63,6 +73,7 @@
                 profilesGroupDictionary.Add(item.Id, new List<SwapProfileModel>());
             }
 
+            Console.WriteLine($"Swap Profiles Init >> profilesGroupDictionary item: {item.InstrumentId}"); // !!! REMOVE AFTER TEST
             profilesGroupDictionary[item.Id].Add(item);
         }
 
@@ -73,10 +84,18 @@
                     ProfileId = group.Key,
                     Instruments = group.Value
                 });
+
+            Console.WriteLine($">>> swapGroupProfile [{group.Key}] ({String.Join("|", group.Value.Select(x => x.InstrumentId))})"); // !!! REMOVE AFTER TEST
         }
+
+        editedProfile = new SwapGroupProfile
+            {
+                ProfileId = "",
+                Instruments = new List<SwapProfileModel>()
+            };
     }
 
-    private void ShowNewProfileDialog()
+    private void ShowNewProfile()
     {
         profileEditFormTitle = "Add New Profile";
         editedProfile = new SwapGroupProfile
@@ -84,29 +103,19 @@
                 ProfileId = "",
                 Instruments = new List<SwapProfileModel>()
             };
-        isEditInstrumentDialogVisible = true;
-        NavManager.NavigateTo("/SwapProfiles/Edit");
+        editFormSwitch = true;
     }
 
-    private void ShowEditProfileDialog(SwapGroupProfile groupProfile)
+    private void ShowEditProfile(SwapGroupProfile groupProfile)
     {
         profileEditFormTitle = $"Edit '{groupProfile.ProfileId}' Profile";
-        editedProfile = new SwapGroupProfile
-            {
-                ProfileId = "",
-                Instruments = new List<SwapProfileModel>()
-            };
-        isEditInstrumentDialogVisible = true;
-        NavManager.NavigateTo($"/SwapProfiles/Edit/{groupProfile.ProfileId}");
+        editedProfile = groupProfile;
+        editFormSwitch = true;
     }
 
-    private void CloseEditProfileDialog()
+    private async void CloseEditProfile()
     {
-        isEditInstrumentDialogVisible = false;
-        editedProfile = new SwapGroupProfile
-            {
-                ProfileId = "",
-                Instruments = new List<SwapProfileModel>()
-            };
+        editFormSwitch = false;
+        await RefreshData();
     }
 }

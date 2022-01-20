@@ -1,6 +1,3 @@
-@page "/SwapProfiles/Edit"
-@page "/SwapProfiles/Edit/{ProfileId}"
-
 @using AntDesign
 @using AntDesign.TableModels
 @using System.Text.Json
@@ -21,8 +18,7 @@
 </PageHeader>
 <AntDesign.Row>
     <Col Span="16">
-        <Form @ref="idForm"
-                Model="editedInstrument"        
+        <Form Model="editedInstrument"        
                 ValidateOnChange="@true"
                 ValidateMode="@FormValidateMode.Rules">
             <FormItem Label="Profile Id" Rules=@RequiredRule>
@@ -30,7 +26,7 @@
                         Placeholder="Profile Id"
                         Style="width:300px" 
                         Size="@InputSize.Large" 
-                        Disabled="@(!String.IsNullOrEmpty(ProfileId))"
+                        Disabled="@(!String.IsNullOrEmpty(profileId))"
                         Rules=@RequiredRule/>
             </FormItem>            
         </Form>
@@ -124,9 +120,10 @@
 
 @code {
     [Parameter]
-    public string ProfileId { get; set; }
+    public SwapGroupProfile ProfileGroup { get; set; }
 
-    AntDesign.Form<SwapProfileModel> idForm;
+    [Parameter]
+    public EventCallback OnGoBack { get; set; }
 
     private List<SwapProfileModel> swapProfileInstruments = new List<SwapProfileModel>();
     SwapProfileModel selectedInstrument;
@@ -150,14 +147,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!String.IsNullOrEmpty(ProfileId))
+        if (!String.IsNullOrEmpty(ProfileGroup.ProfileId))
         {
-            pageTitle = $"Edit '{ProfileId}' Swap Profile";
+            profileId = ProfileGroup.ProfileId;
+            pageTitle = $"Edit '{profileId}' Swap Profile";
             isNewProfile = false;
-            profileId = ProfileId;
 
-            var swapProfileInstruments = (await SwapProfileWriter.GetAsync(ProfileId))
-                .Select(SwapProfileModel.Create).ToList();
+            var swapProfileInstruments = ProfileGroup.Instruments;
         }
 
         CrudApiKeyRule = new FormValidationRule[]
@@ -206,7 +202,8 @@
     {
         if (selectedInstrument != null)
         {
-            selectedInstrument = editedInstrument;
+            selectedInstrument.Long = editedInstrument.Long;
+            selectedInstrument.Short = editedInstrument.Short;
         }
         else
         {
@@ -294,8 +291,8 @@
         }
     }
 
-    void GoBack()
+    private async void GoBack()
     {
-        NavManager.NavigateTo("/SwapSettings");
+        await OnGoBack.InvokeAsync();
     }
 }

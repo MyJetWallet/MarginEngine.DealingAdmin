@@ -15,6 +15,7 @@ namespace DealingAdmin.Shared.Services
             NavMenuItem.Create("Orders", "Orders", "list_alt"),
             NavMenuItem.Create("Candles", "Candles", "candlestick_chart"),
             NavMenuItem.Create("EmergencyTools", "Emergency Tools", "warning_amber"),
+            NavMenuItem.Create("Defaults", "Defaults", "library_add_check"),
         };
 
         public static IEnumerable<NavMenuItem> GenerateNavMenuItems()

@@ -18,28 +18,32 @@
 </PageHeader>
 <AntDesign.Row>
     <Col Span="16">
-        <Form Model="editedInstrument"        
+        <Form Model="ProfileGroup"        
                 ValidateOnChange="@true"
                 ValidateMode="@FormValidateMode.Rules">
             <FormItem Label="Profile Id" Rules=@RequiredRule>
-                <Input @bind-Value="@context.Id"
+                <Input @bind-Value="@context.ProfileId"
                         Placeholder="Profile Id"
-                        Style="width:300px" 
+                        Style="width:300px"
                         Size="@InputSize.Large" 
-                        Disabled="@(!String.IsNullOrEmpty(profileId))"
+                        Disabled="@(!isNewProfile)"
                         Rules=@RequiredRule/>
             </FormItem>            
         </Form>
     </Col>
     <Col Flex=@("auto")></Col>
     <Col Flex=@("300px")>
-        <AntDesign.Button Icon="check" Color="AntDesign.Color.Green5" Class="btn-text" OnClick="SaveSwapProfile">Save</AntDesign.Button>
+        <AntDesign.Button Icon="check"
+            Color="AntDesign.Color.Green5"
+            Class="btn-text"
+            OnClick="SaveSwapProfile"
+            Disabled="@(String.IsNullOrEmpty(ProfileGroup.ProfileId))">Save</AntDesign.Button>
         <Space Size="@("large")"></Space>
         <AntDesign.Button Icon="arrow-left" Color="AntDesign.Color.Yellow5" Class="btn-text" OnClick="GoBack">Back</AntDesign.Button>
     </Col>
 </AntDesign.Row>
 
-<Table DataSource="@swapProfileInstruments"
+<Table DataSource="@ProfileGroup.Instruments"
        TItem="SwapProfileModel"
        Bordered="@true"
        Total="0"
@@ -125,7 +129,6 @@
     [Parameter]
     public EventCallback OnGoBack { get; set; }
 
-    private List<SwapProfileModel> swapProfileInstruments = new List<SwapProfileModel>();
     SwapProfileModel selectedInstrument;
     SwapProfileModel editedInstrument = new SwapProfileModel();
     List<string> instrumentIds;
@@ -152,8 +155,6 @@
             profileId = ProfileGroup.ProfileId;
             pageTitle = $"Edit '{profileId}' Swap Profile";
             isNewProfile = false;
-
-            var swapProfileInstruments = ProfileGroup.Instruments;
         }
 
         CrudApiKeyRule = new FormValidationRule[]
@@ -180,11 +181,11 @@
         {
             resultSet.Add(selectedInstrument.InstrumentId);
         }
-        else if (swapProfileInstruments.Any()) 
+        else if (ProfileGroup.Instruments.Any()) 
         {
             foreach(var instId in instrumentIds)
             {
-                if (!swapProfileInstruments.Where(x => x.InstrumentId == instId).Any())
+                if (!ProfileGroup.Instruments.Where(x => x.InstrumentId == instId).Any())
                 {
                     resultSet.Add(instId);
                 }
@@ -207,7 +208,7 @@
         }
         else
         {
-            swapProfileInstruments.Add(editedInstrument);
+            ProfileGroup.Instruments.Add(editedInstrument);
         }
 
         isEditInstrumentDialogVisible = false;
@@ -247,7 +248,7 @@
 
     private void DeleteInstrument(SwapProfileModel swapItem)
     {
-        swapProfileInstruments.Remove(swapItem);
+        ProfileGroup.Instruments.Remove(swapItem);
     }
 
     private void CancelEditInstrumentDialog()
@@ -261,7 +262,7 @@
         {
             int errorCount = 0;
 
-            foreach (var item in swapProfileInstruments)
+            foreach (var item in ProfileGroup.Instruments)
             {
                 var instruments = await InstrumentsRepository.GetAllAsync();
 
@@ -276,7 +277,7 @@
 
             if (errorCount > 0)
             {
-                var totalCount = swapProfileInstruments.Count;
+                var totalCount = ProfileGroup.Instruments.Count;
                 snackbar.Add($"[{totalCount - errorCount}] of [{totalCount}] Instruments for Swap Profile '{profileId}' saved", Severity.Warning);
             }
             else

@@ -34,15 +34,17 @@
                 </Select>
             </Body>
 		    <ActionTemplate>
-                <CardGrid Style="width:50%;text-align:center">
-                    <AntDesign.Button 
-                        Class="btn-text bg-color-green" 
-                        OnClick="SaveDefaultLP"
-                        Disabled="@(String.IsNullOrEmpty(selectedLiquidityProvider))">Save</AntDesign.Button>
-                </CardGrid>
-                <CardGrid Style="width:50%;text-align:center">
-                     <AntDesign.Button Class="btn-text bg-color-yellow" OnClick="ResetDefaultLP">Reset</AntDesign.Button>
-                </CardGrid>               
+                <AntDesign.Row Class="center-middle">
+                    <Col Span="12" Class="center-middle">
+                        <AntDesign.Button
+                            Class="btn-text bg-color-teal" 
+                            OnClick="SaveDefaultLP"
+                            Disabled="@(String.IsNullOrEmpty(selectedLiquidityProvider))">Save</AntDesign.Button>
+                    </Col>
+                    <Col Span="12" Class="center-middle">
+                        <AntDesign.Button Class="btn-text bg-color-yellow" OnClick="ResetDefaultLP">Reset</AntDesign.Button>
+                    </Col>
+                </AntDesign.Row>
             </ActionTemplate>
         </Card>
 	</TabPane>
@@ -79,17 +81,16 @@
                 </CardGrid>
                 <CardGrid Style="width:50%;text-align:center">
                     <div>Default PNG Avatar:</div>
-                    <Image Width="150px" Src="@defaultAvatarSvgSrc" />
+                    <Image Width="150px" Src="@defaultAvatarPngSrc" />
                 </CardGrid>
             </Body>
 		    <ActionTemplate>
                 <AntDesign.Row>
-                    <Col Span="16" class="m-3">
+                    <Col Span="14" class="m-3">
                         <div>Pick an image (svg/png) for new default avatar:</div>
                         <InputFile AdditionalAttributes=@imageAcceptFilterDict OnChange="@ImageFileChanged"/>
                     </Col>
-                    <Col Span="8" class="mx-3">
-                        <br/>
+                    <Col Span="10" class="mx-3">
                         <AntDesign.Button Icon="upload"
                             Type="primary"
                             Class="btn-text"
@@ -101,8 +102,6 @@
                 </AntDesign.Row>
             </ActionTemplate>
         </Card>
-
-        Default SVG Avatar:
     </TabPane>
 </Tabs>
 
@@ -215,8 +214,7 @@
                 return;
             }
 
-            /*
-            var imgArray = fileService.FileToBytes(imageFile);
+            var imgArray = await CommonUtils.FileToBytesAsync(imageFile);
             var avatarStr = Convert.ToBase64String(imgArray);
 
             if (imageType == ImageTypes.SVG)
@@ -228,7 +226,7 @@
             {
                 await defValuesRepository.SetTradingInstrumentAvatarPngAsync(avatarStr);
                 snackbar.Add("New default PNG avatar saved", Severity.Success);
-            }*/
+            }
         }
         catch(Exception ex)
         {

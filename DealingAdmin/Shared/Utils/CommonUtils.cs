@@ -1,5 +1,8 @@
-﻿using SimpleTrading.Abstraction.Trading.Settings;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using SimpleTrading.Abstraction.Trading.Settings;
 using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace DealingAdmin
 {
@@ -66,6 +69,21 @@ namespace DealingAdmin
             }
 
             return false;
+        }
+
+        public static async Task<byte[]> FileToBytesAsync(IBrowserFile file)
+        {
+            using var memStream = new MemoryStream();
+
+            // although file.OpenReadStream is itself a stream,
+            // using it directly causes "Synchronous reads are not supported" error
+            await file.OpenReadStream().CopyToAsync(memStream);
+
+            // at the end of the copy method, we are at the end of both the input and output stream
+            // and need to reset the one we want to work with.
+            memStream.Seek(0, SeekOrigin.Begin);
+
+            return memStream.ToArray();
         }
     }
 }

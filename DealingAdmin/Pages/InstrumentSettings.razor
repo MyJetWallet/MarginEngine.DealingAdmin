@@ -13,10 +13,10 @@
 @inject ITradingInstrumentsRepository _instrumentsRepository;
 
 <Tabs Size="@TabSize.Large">
-    <TabPane Tab="INSTRUMENTS" Key="Instruments">
+    <TabPane Tab="INSTRUMENTS" Key="Instruments" Class="tab-text">
         <InstrumentsTab/>
 	</TabPane>
-    <TabPane Tab="INSTRUMENTS GROUPS" Key="InstrumentGroups">
+    <TabPane Tab="INSTRUMENTS GROUPS" Key="InstrumentGroups" Class="tab-text">
         <PageHeader Title="Instruments groups">
             <PageHeaderExtra>
                 <AntDesign.Button OnClick="@(() => isActiveAddGroupForm = true)" Type="@AntDesign.ButtonType.Primary">Add group</AntDesign.Button>
@@ -28,7 +28,7 @@
             <AntDesign.Column Title="Name" DataIndex="Name" TData="string"/>
         </Table>
     </TabPane>
-    <TabPane Tab="INSTRUMENTS SUBGROUPS" Key="InstrumentSubGroups">
+    <TabPane Tab="INSTRUMENTS SUBGROUPS" Key="InstrumentSubGroups" Class="tab-text">
         <PageHeader Class="site-page-header" Title="Instruments sub groups">
             <PageHeaderExtra>
                 <AntDesign.Button OnClick="@(() => isActiveAddSubGroupForm = true)" Type="@AntDesign.ButtonType.Primary">Add sub group</AntDesign.Button>

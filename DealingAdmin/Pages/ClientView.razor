@@ -34,7 +34,7 @@
     <Tabs OnChange="@OnBrandTabSelect" DefaultActiveKey="@SelectedBrandTabKey" Animated="@false">
         @foreach(var brand in traderBrands)
         {
-            <TabPane Tab="@brand.Brand.ToUpper()" Key="@brand.Brand">
+            <TabPane Tab="@brand.Brand.ToUpper()" Key="@brand.Brand" Class="tab-text">
 	        </TabPane>
         }
     </Tabs>
@@ -46,13 +46,13 @@
 else if (traderNotFound.HasValue && !traderNotFound.Value)
 {
     <Tabs OnChange="@OnTabSelect" DefaultActiveKey="@SelectedTabKey" Animated="@false">
-        <TabPane Tab="ACCOUNTS" Key="Accounts">
+        <TabPane Tab="ACCOUNTS" Key="Accounts" Class="tab-text">
             <ClientViewAccountsTab TraderId="@activeBrandTab?.TraderId"/>
 	    </TabPane>
-        <TabPane Tab="TRADE LOG" Key="TradeLog">
+        <TabPane Tab="TRADE LOG" Key="TradeLog" Class="tab-text">
              <ClientViewTradeLogTab TraderId="@activeBrandTab?.TraderId" />
         </TabPane>
-        <TabPane Tab="CLIENT PROFILE" Key="ClientProfile">
+        <TabPane Tab="CLIENT PROFILE" Key="ClientProfile" Class="tab-text">
              <ClientViewProfileTab TraderId="@activeBrandTab?.TraderId" />
         </TabPane>
     </Tabs>

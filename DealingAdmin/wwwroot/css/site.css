@@ -116,9 +116,14 @@ a, .btn-link {
     font-weight: bold
 }
 
+.bg-color-green {
+    color: #000;
+    background-color: SeaGreen !important
+}
+
 .bg-color-teal {
     color: #000;
-    background-color: teal !important
+    background-color: Teal !important
 }
 
 .bg-color-yellow {
@@ -131,7 +136,11 @@ a, .btn-link {
     color: SeaGreen !important
 }
 
-.color-red {
+.color-crimson {
+    color: Crimson !important
+}
+
+.color-darkred {
     color: DarkRed !important
 }
 

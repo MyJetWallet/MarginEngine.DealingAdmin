@@ -31,7 +31,7 @@
             <AntDesign.Column Title="Instruments" TData="string">   
                 @foreach (var instrument in context.Instruments)
                 {
-                    <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>
+                    <Tag PresetColor="PresetColor.Purple">@instrument.InstrumentId</Tag>
                 }
             </AntDesign.Column>
             <ActionColumn Title="Edit" Width="60">

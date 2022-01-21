@@ -117,14 +117,17 @@ a, .btn-link {
 }
 
 .bg-color-teal {
+    color: #000;
     background-color: teal !important
 }
 
 .bg-color-yellow {
+    color: #000;
     background-color: #ffd300 !important;
 }
 
 .color-green {
+    color: #000;
     color: SeaGreen !important
 }
 

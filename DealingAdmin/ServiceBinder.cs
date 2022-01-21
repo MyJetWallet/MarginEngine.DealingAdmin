@@ -34,6 +34,7 @@ using SimpleTrading.Abstraction.Trading.Profiles;
 using SimpleTrading.Abstraction.Trading.Swaps;
 using SimpleTrading.Abstraction.Markups;
 using SimpleTrading.Common.Abstractions.DefaultValues;
+using SimpleTrading.ClientApi.Services;
 
 namespace DealingAdmin
 {
@@ -84,6 +85,8 @@ namespace DealingAdmin
         public static void BindServices(this IServiceCollection services, SettingsModel settingsModel)
         {
             services.AddScoped<IUserMessageService, UserMessageService>();
+
+            services.AddScoped<IFileService, FileService>();
 
             services.AddSingleton(new CandlesServiceSettings()
             {

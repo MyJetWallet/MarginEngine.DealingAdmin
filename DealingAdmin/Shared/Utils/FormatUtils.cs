@@ -6,8 +6,12 @@ namespace DealingAdmin
     public static class FormatUtils
     {
         public const string DateTimeCommonFormat = "yyyy-MM-dd HH:mm:ss";
-
+        
         public const string FullDateTimeWithMsFormat = "ddd, dd MMM yyy HH:mm:ss.fff";
+        
+        public const string ImagePngDataPrefix = "data:image/png;base64, ";
+        
+        public const string ImageSvgDataPrefix = "data:image/svg+xml;base64, ";
 
         public static string TimeSpanToString(TimeSpan ts)
         {

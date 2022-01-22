@@ -32,9 +32,7 @@
 	                TItemValue="string"
 	                TItem="string">
                 </Select>
-            </Body>
-		    <ActionTemplate>
-                <AntDesign.Row Class="center-middle">
+                <AntDesign.Row Class="center-middle mx-3">
                     <Col Span="12" Class="center-middle">
                         <AntDesign.Button
                             Class="btn-text bg-color-aquamarine" 
@@ -45,7 +43,7 @@
                         <AntDesign.Button Class="btn-text bg-color-light-yellow" OnClick="ResetDefaultLP">Reset</AntDesign.Button>
                     </Col>
                 </AntDesign.Row>
-            </ActionTemplate>
+            </Body>
         </Card>
 	</TabPane>
     <TabPane Tab="MARKUP PROFILE" Key="MarkupProfile" Class="tab-text">
@@ -56,9 +54,7 @@
 	                TItemValue="string"
 	                TItem="string">
                 </Select>
-            </Body>
-		    <ActionTemplate>
-                <AntDesign.Row Class="center-middle">
+                <AntDesign.Row Class="center-middle mx-3">
                     <Col Span="12" Class="center-middle">
                         <AntDesign.Button 
                             Class="btn-text bg-color-aquamarine"
@@ -69,7 +65,7 @@
                         <AntDesign.Button Class="btn-text bg-color-light-yellow" OnClick="ResetDefaultMarkup">Reset</AntDesign.Button>
                     </Col>
                 </AntDesign.Row>
-            </ActionTemplate>
+            </Body>
         </Card>
     </TabPane>
     <TabPane Tab="INSTRUMENT AVATAR" Key="InstrumentAvatar" Class="tab-text">
@@ -83,14 +79,12 @@
                     <div>Default PNG Avatar:</div>
                     <Image Width="150px" Src="@defaultAvatarPngSrc" />
                 </CardGrid>
-            </Body>
-		    <ActionTemplate>
-                <AntDesign.Row>
-                    <Col Span="14" class="m-3">
+                <AntDesign.Row Class="mx-3">
+                    <Col Span="14">
                         <div>Pick an image (svg/png) for new default avatar:</div>
                         <InputFile AdditionalAttributes=@imageAcceptFilterDict OnChange="@ImageFileChanged"/>
                     </Col>
-                    <Col Span="10" class="mx-3">
+                    <Col Span="10">
                         <AntDesign.Button Icon="upload"
                             Type="primary"
                             Class="btn-text"
@@ -100,7 +94,7 @@
                         </AntDesign.Button>
                     </Col>
                 </AntDesign.Row>
-            </ActionTemplate>
+            </Body>
         </Card>
     </TabPane>
 </Tabs>

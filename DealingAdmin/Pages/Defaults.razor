@@ -32,7 +32,7 @@
 	                TItemValue="string"
 	                TItem="string">
                 </Select>
-                <AntDesign.Row Class="center-middle my-3">
+                <AntDesign.Row Class="center-middle mt-5">
                     <Col Span="12" Class="center-middle">
                         <AntDesign.Button
                             Class="btn-text bg-color-aquamarine" 
@@ -54,7 +54,7 @@
 	                TItemValue="string"
 	                TItem="string">
                 </Select>
-                <AntDesign.Row Class="center-middle my-3">
+                <AntDesign.Row Class="center-middle mt-5">
                     <Col Span="12" Class="center-middle">
                         <AntDesign.Button 
                             Class="btn-text bg-color-aquamarine"
@@ -79,13 +79,13 @@
                     <div>Default PNG Avatar:</div>
                     <Image Width="150px" Src="@defaultAvatarPngSrc" />
                 </CardGrid>
-                <CardGrid Class="my-3">
+                <CardGrid  Style="width:100%; Class="my-3">
                     <AntDesign.Row>
-                        <Col Span="10">
+                        <Col Span="18">
                             <div>Pick an image (svg/png) for new default avatar:</div>
                             <InputFile AdditionalAttributes=@imageAcceptFilterDict OnChange="@ImageFileChanged"/>
                         </Col>
-                        <Col Span="8">
+                        <Col Span="6">
                             <AntDesign.Button Icon="upload"
                                 Type="primary"
                                 Class="btn-text"

@@ -2,6 +2,7 @@
 @using System.Text.Json
 @using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.Instruments.Forms
 @using DealingAdmin.Components.TradingGroups
 @using DealingAdmin.Shared.Services
 @using Serilog.Core
@@ -48,32 +49,12 @@
 <Modal Title="@groupEditFormTitle"
        Visible="@isEditGroupDialogVisible"
        Closable="@false"
-       OkText="@("Save")"
-       OnOk="()=>SaveGroup()"
-       OnCancel="()=>CloseEditDialog()"
-       Width="480">
-    <Form Model="editedGroup"
-            LabelColSpan="6"
-            WrapperColSpan="18"     
-            ValidateOnChange="@true"
-            ValidateMode="@FormValidateMode.Rules">
-        <FormItem Label="Group Id" Rules=@RequiredRule>
-            <InputText @bind-Value="@context.Id"
-                    Placeholder="Group Id"
-                    Disabled="@(!isNewGroup)"
-                    Rules=@RequiredRule/>
-        </FormItem>
-        <FormItem Label="Name" Required Rules=@RequiredRule>
-            <InputText @bind-Value="@context.Name"
-                    Placeholder="Name"
-                    Rules=@RequiredRule/>
-        </FormItem>
-        <FormItem Label="Weight" Required Rules=@RequiredRule>
-            <AntDesign.InputNumber @bind-Value="@context.Weight"
-                    Placeholder="Weight"
-                    Rules=@RequiredRule/>
-        </FormItem>
-    </Form> 
+       Footer=null
+       Width="900">
+    <InstrumentGroupEditForm
+        InstrumentGroup="editedGroup"
+        OnFinish="CloseEditDialogAndRefresh"
+        OnCancel="CloseEditDialog"/>
 </Modal>
 
 @code {
@@ -114,18 +95,14 @@
         isEditGroupDialogVisible = true;
     }
 
-    private async void SaveGroup()
-    {
-        if (editedGroup != null)
-        {
-            await groupsRepository.UpdateAsync(editedGroup);
-            await RefreshData();
-            this.StateHasChanged();
-        }
-    }
-
     private void CloseEditDialog()
     {
         isEditGroupDialogVisible = false;
+    }
+
+    private async void CloseEditDialogAndRefresh()
+    {
+        isEditGroupDialogVisible = false;
+        await RefreshData();
     }
 }

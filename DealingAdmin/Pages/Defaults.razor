@@ -37,12 +37,12 @@
                 <AntDesign.Row Class="center-middle">
                     <Col Span="12" Class="center-middle">
                         <AntDesign.Button
-                            Class="btn-text bg-color-teal" 
+                            Class="btn-text bg-color-aquamarine" 
                             OnClick="SaveDefaultLP"
                             Disabled="@(String.IsNullOrEmpty(selectedLiquidityProvider))">Save</AntDesign.Button>
                     </Col>
                     <Col Span="12" Class="center-middle">
-                        <AntDesign.Button Class="btn-text bg-color-yellow" OnClick="ResetDefaultLP">Reset</AntDesign.Button>
+                        <AntDesign.Button Class="btn-text bg-color-light-yellow" OnClick="ResetDefaultLP">Reset</AntDesign.Button>
                     </Col>
                 </AntDesign.Row>
             </ActionTemplate>
@@ -61,12 +61,12 @@
                 <AntDesign.Row Class="center-middle">
                     <Col Span="12" Class="center-middle">
                         <AntDesign.Button 
-                            Class="btn-text bg-color-green"
+                            Class="btn-text bg-color-aquamarine"
                             OnClick="SaveDefaultMarkup" 
                             Disabled="@(String.IsNullOrEmpty(selectedMarkupProfile))">Save</AntDesign.Button>
                     </Col>
                     <Col Span="12" Class="center-middle">
-                        <AntDesign.Button Class="btn-text bg-color-yellow" OnClick="ResetDefaultMarkup">Reset</AntDesign.Button>
+                        <AntDesign.Button Class="btn-text bg-color-light-yellow" OnClick="ResetDefaultMarkup">Reset</AntDesign.Button>
                     </Col>
                 </AntDesign.Row>
             </ActionTemplate>
@@ -198,8 +198,7 @@
                 return;
             }
 
-            var fileExtension = imageFile.Name.Substring(imageFile.Name.LastIndexOf('.'));
-            Console.WriteLine($"fileExtension: {fileExtension}");
+            var fileExtension = imageFile.Name.Substring(imageFile.Name.LastIndexOf('.') + 1);
 
             ImageTypes? imageType = fileExtension.ToLower() switch 
             {

@@ -121,14 +121,19 @@ a, .btn-link {
     background-color: SeaGreen !important
 }
 
-.bg-color-teal {
+.bg-color-aquamarine {
+    color: #000 !important;
+    background-color: #69f0ae !important
+}
+
+.bg-color-ligh-yellow {
     color: #000;
-    background-color: Teal !important
+    background-color: #ffd300 !important;
 }
 
 .bg-color-yellow {
     color: #000;
-    background-color: #ffd300 !important;
+    background-color: #ffe082 !important;
 }
 
 .color-green {

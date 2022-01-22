@@ -17,16 +17,7 @@
         <InstrumentsTab/>
 	</TabPane>
     <TabPane Tab="INSTRUMENTS GROUPS" Key="InstrumentGroups" Class="tab-text">
-        <PageHeader Title="Instruments groups">
-            <PageHeaderExtra>
-                <AntDesign.Button OnClick="@(() => isActiveAddGroupForm = true)" Type="@AntDesign.ButtonType.Primary">Add group</AntDesign.Button>
-            </PageHeaderExtra>
-        </PageHeader>
-        <Table DataSource="instrumentGroups" TItem="InstrumentGroupModel">
-            <AntDesign.Column Title="Weight" DataIndex="Weight" TData="int"/>
-            <AntDesign.Column Title="Id" DataIndex="Id" TData="string"/>
-            <AntDesign.Column Title="Name" DataIndex="Name" TData="string"/>
-        </Table>
+        <InstrumentGroupsTab/>
     </TabPane>
     <TabPane Tab="INSTRUMENTS SUBGROUPS" Key="InstrumentSubGroups" Class="tab-text">
         <PageHeader Class="site-page-header" Title="Instruments sub groups">
@@ -42,16 +33,6 @@
         </Table>
     </TabPane>
 </Tabs>
-
-@if (isActiveAddGroupForm)
-{
-    <TradingInstrumentGroupCrudForm OnSubmit="HandleAddGroup" OnClose="HandleClose"/>
-}
-
-@if (isActiveAddSubGroupForm)
-{
-    <TradingInstrumentSubGroupCrudForm Groups="instrumentGroups" OnSubmit="HandleAddSubGroup" OnClose="HandleClose"/>
-}
 
 @code {
     private IEnumerable<TradingInstrumentModel> tradingInstruments;
@@ -76,14 +57,6 @@
         await _subGroupsRepository.UpdateAsync(group);
         instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
         isActiveAddSubGroupForm = false;
-        StateHasChanged();
-    }
-
-    private async void HandleAddGroup(IInstrumentGroup group)
-    {
-        await _groupsRepository.UpdateAsync(group);
-        instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
-        isActiveAddGroupForm = false;
         StateHasChanged();
     }
 

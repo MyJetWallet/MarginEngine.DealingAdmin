@@ -1,0 +1,131 @@
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.TradingGroups
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+
+@inject IInstrumentGroupsRepository groupsRepository;
+@inject IUserMessageService messageService
+@inject AdminAppSettings appSettings
+@inject Logger logger
+
+<PageHeader Class="m-2 p-0" Title="Instruments groups">
+    <PageHeaderExtra>
+        <AntDesign.Button OnClick="ShowNewGroupDialog" Type="@AntDesign.ButtonType.Primary">New Group</AntDesign.Button>
+    </PageHeaderExtra>
+</PageHeader>
+ 
+<Table DataSource="@instrumentGroups"
+       TItem="InstrumentGroupModel"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 180px)"
+       PageSize="999">
+    <RowTemplate>           
+        <AntDesign.Column Title="Id"
+                DataIndex="Id"
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Name"
+                DataIndex="Name"
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Weight 
+                DataIndex="Weight" 
+                TData="string"
+                Sortable/>
+        <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditGroupDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+<Modal Title="@groupEditFormTitle"
+       Visible="@isEditGroupDialogVisible"
+       Closable="@false"
+       OkText="@("Save")"
+       OnOk="()=>SaveGroup()"
+       OnCancel="()=>CloseEditDialog()"
+       Width="480">
+    <Form Model="editedGroup"
+            LabelColSpan="6"
+            WrapperColSpan="18"     
+            ValidateOnChange="@true"
+            ValidateMode="@FormValidateMode.Rules">
+        <FormItem Label="Group Id" Rules=@RequiredRule>
+            <InputText @bind-Value="@context.Id"
+                    Placeholder="Group Id"
+                    Disabled="@(!isNewGroup)"
+                    Rules=@RequiredRule/>
+        </FormItem>
+        <FormItem Label="Name" Required Rules=@RequiredRule>
+            <InputText @bind-Value="@context.Name"
+                    Placeholder="Name"
+                    Rules=@RequiredRule/>
+        </FormItem>
+        <FormItem Label="Weight" Required Rules=@RequiredRule>
+            <AntDesign.InputNumber @bind-Value="@context.Weight"
+                    Placeholder="Weight"
+                    Rules=@RequiredRule/>
+        </FormItem>
+    </Form> 
+</Modal>
+
+@code {
+    private IEnumerable<InstrumentGroupModel> instrumentGroups;
+
+    int _pageSize = 999;
+    private bool isUpdateGroupDialogVisible = false;
+    private InstrumentGroupModel editedGroup = new InstrumentGroupModel();
+    private string groupEditFormTitle = "";
+    private bool isEditGroupDialogVisible;
+    private bool isNewGroup;
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        instrumentGroups = (await groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
+    }
+
+    private void ShowNewGroupDialog()
+    {
+        groupEditFormTitle = "Add New Group";
+        editedGroup = new InstrumentGroupModel();
+        isNewGroup = true;
+        isEditGroupDialogVisible = true;
+    }
+
+    private void ShowEditGroupDialog(InstrumentGroupModel group)
+    {
+        groupEditFormTitle = $"Edit '{group.Id}' Group";
+        editedGroup = InstrumentGroupModel.Create(group);
+        isNewGroup = false;
+        isEditGroupDialogVisible = true;
+    }
+
+    private async void SaveGroup()
+    {
+        if (editedGroup != null)
+        {
+            await groupsRepository.UpdateAsync(editedGroup);
+            await RefreshData();
+            this.StateHasChanged();
+        }
+    }
+
+    private void CloseEditDialog()
+    {
+        isEditGroupDialogVisible = false;
+    }
+}

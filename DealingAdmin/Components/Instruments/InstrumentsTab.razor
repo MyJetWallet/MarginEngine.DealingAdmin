@@ -9,12 +9,13 @@
 @using SimpleTrading.Common.Abstractions.DefaultValues
 @using SimpleTrading.Common.Abstractions.InstrumentsAvatar
 @using SimpleTrading.Common.Abstractions.Images
+@using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
 @using static DealingAdmin.FormatUtils
 
 @inject IInstrumentSubGroupsRepository SubGroupsRepository
 @inject IInstrumentGroupsRepository GroupsRepository
 @inject ITradingInstrumentsRepository InstrumentsRepository
-@inject ITradingInstrumentsAvatarRepository avatarRepository
+@inject TradingInstrumentMyNoSqlRepository avatarRepository
 @inject IDefaultValuesRepository defValuesRepository
 @inject ISwapProfileWriter SwapProfileWriter
 @inject IUserMessageService MessageService

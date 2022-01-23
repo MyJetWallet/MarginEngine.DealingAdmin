@@ -145,9 +145,6 @@ namespace DealingAdmin
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton<IMarkupProfilesRepository>(MyNoSqlServerFactory.CreateMarkupProfilesNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
-            services.AddSingleton((ITradingInstrumentsAvatarRepository)
-                CommonMyNoSqlServerFactory.CreateTradingInstrumentMyNoSqlRepository(
-                    () => settingsModel.DictionariesMyNoSqlServerWriter));
 
             liveDemoServicesMapper.InitService(true,
                services => services.ActiveOrdersReader = MyNoSqlServerFactory.CreateActiveOrdersCacheReader(tcpConnection, true));
@@ -161,6 +158,7 @@ namespace DealingAdmin
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton<IInstrumentSubGroupsRepository>(MyNoSqlServerFactory.CreateInstrumentSubGroupsMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
+
             services.AddSingleton(CommonMyNoSqlServerFactory.CreateTradingInstrumentMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
 

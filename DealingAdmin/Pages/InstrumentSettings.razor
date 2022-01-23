@@ -1,16 +1,7 @@
 @page "/InstrumentSettings"
 
 @using AntDesign
-@using DealingAdmin.Abstractions
-@using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Components.Instruments
-@using DealingAdmin.Components.Instruments.Forms
-@using SimpleTrading.Abstraction.Trading.Instruments
-@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
-
-@inject IInstrumentSubGroupsRepository _subGroupsRepository;
-@inject IInstrumentGroupsRepository _groupsRepository;
-@inject ITradingInstrumentsRepository _instrumentsRepository;
 
 <Tabs Size="@TabSize.Large">
     <TabPane Tab="INSTRUMENTS" Key="Instruments" Class="tab-text">
@@ -20,52 +11,6 @@
         <InstrumentGroupsTab/>
     </TabPane>
     <TabPane Tab="INSTRUMENTS SUBGROUPS" Key="InstrumentSubGroups" Class="tab-text">
-        <PageHeader Class="site-page-header" Title="Instruments sub groups">
-            <PageHeaderExtra>
-                <AntDesign.Button OnClick="@(() => isActiveAddSubGroupForm = true)" Type="@AntDesign.ButtonType.Primary">Add sub group</AntDesign.Button>
-            </PageHeaderExtra>
-        </PageHeader>
-        <Table DataSource="instrumentSubGroups" TItem="InstrumentSubGroupModel">
-            <AntDesign.Column Title="Weight" DataIndex="Weight" TData="int"/>
-            <AntDesign.Column Title="Id" DataIndex="Id" TData="string"/>
-            <AntDesign.Column Title="Name" DataIndex="Name" TData="string"/>
-            <AntDesign.Column Title="Group" DataIndex="GroupId" TData="string"/>
-        </Table>
+       <InstrumentSubGroupsTab/>
     </TabPane>
 </Tabs>
-
-@code {
-    private IEnumerable<TradingInstrumentModel> tradingInstruments;
-    private IEnumerable<InstrumentGroupModel> instrumentGroups;
-    private IEnumerable<InstrumentSubGroupModel> instrumentSubGroups;
-
-    private bool isActiveAddInstrumentForm;
-    private bool isActiveAddGroupForm;
-    private bool isActiveAddSubGroupForm;
-
-    protected override async Task OnInitializedAsync()
-    {
-        instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
-        instrumentGroups = (await _groupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
-        tradingInstruments = (await _instrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
-
-        await base.OnInitializedAsync();
-    }
-
-    private async void HandleAddSubGroup(IInstrumentSubGroup group)
-    {
-        await _subGroupsRepository.UpdateAsync(group);
-        instrumentSubGroups = (await _subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
-        isActiveAddSubGroupForm = false;
-        StateHasChanged();
-    }
-
-    private void HandleClose()
-    {
-        isActiveAddGroupForm = false;
-        isActiveAddSubGroupForm = false;
-        StateHasChanged();
-    }
-
-
-}

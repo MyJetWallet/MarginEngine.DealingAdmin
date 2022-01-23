@@ -80,10 +80,10 @@
         <FormItem Label="Account Id" >
             <Input @bind-Value="@context.AccountId" Disabled="@true" ReadOnly="@true" />
         </FormItem>
-        <FormItem Label="Delta" Required="@true">
+        <FormItem Label="Delta" Required>
             <AntDesign.InputNumber @bind-Value="@context.Delta" />
         </FormItem>
-        <FormItem Label="Comment" Required="@true">
+        <FormItem Label="Comment" Required>
             <Input @bind-Value="@context.Comment" />
         </FormItem>
         <FormItem Label="Operation Type" Required="@true">

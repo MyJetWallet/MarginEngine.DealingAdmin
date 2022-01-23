@@ -7,11 +7,12 @@
 @using System.ComponentModel.DataAnnotations
 
 @inject IInstrumentGroupsRepository groupsRepository;
+@inject IInstrumentSubGroupsRepository subGroupsRepository;
 @inject ISnackbar snackbar
 @inject Logger logger
 
 <Form @ref="editForm"
-      Model="InstrumentGroup"
+      Model="InstrumentSubGroup"
       ValidateOnChange="@true"
       ValidateMode="@FormValidateMode.Rules"
       LabelColSpan="6"
@@ -20,6 +21,29 @@
         <DataAnnotationsValidator></DataAnnotationsValidator>
     </Validator>
     <ChildContent>
+        <FormItem Label="Group" Required Rules=@RequiredIntRule>
+            @if (isNewSubGroup)
+            {
+                <Select @bind-Value="@context.GroupId"
+                    TItemValue="string"
+                    TItem="string"
+                    Placeholder="Group Id"
+                    Disabled="@(!String.IsNullOrEmpty(context.Id))">
+                    <SelectOptions>
+                        @foreach (var item in instrumentGroups)
+                        {
+                            <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Name />
+                        }
+                    </SelectOptions>
+                </Select>
+            }
+            else
+            {
+                <Input @bind-Value="@context.Id"
+                 Placeholder="Group Id"
+                 Disabled="@(true)"/>
+            }
+        </FormItem>
         <FormItem Label="Group Id" Required Rules=@RequiredRule>
              <Input @bind-Value="@context.Id"
                  Placeholder="Group Id"
@@ -50,7 +74,7 @@
  
 @code {
     [Parameter]
-    public InstrumentGroupModel InstrumentGroup { get; set; } = new();
+    public InstrumentSubGroupModel InstrumentSubGroup { get; set; } = new();
 
     [Parameter]
     public EventCallback OnFinish { get; set; }
@@ -62,7 +86,17 @@
     private FormValidationRule[] RequiredIntRule = 
         { new FormValidationRule { Required = true, Type = FormFieldType.Integer } };
 
-    AntDesign.Form<InstrumentGroupModel> editForm;
+    AntDesign.Form<InstrumentSubGroupModel> editForm;
+    private IEnumerable<IInstrumentGroup> instrumentGroups;
+    private bool isNewSubGroup;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isNewSubGroup = String.IsNullOrEmpty(this.InstrumentSubGroup.Id);
+        instrumentGroups = isNewSubGroup
+            ? await groupsRepository.GetAllAsync()
+            : new List<IInstrumentGroup>();
+    }
 
     private async void CloseDialog()
     {
@@ -78,9 +112,9 @@
                 return;
             }
 
-            await groupsRepository.UpdateAsync(InstrumentGroup);
+            await subGroupsRepository.UpdateAsync(InstrumentSubGroup);
             await OnFinish.InvokeAsync();
-            snackbar.Add($"Trading Group {InstrumentGroup.Id} saved", Severity.Success);
+            snackbar.Add($"SubGroup {InstrumentSubGroup.Id} of Group '{InstrumentSubGroup.GroupId}' saved", Severity.Success);
         }
         catch(Exception ex)
         {

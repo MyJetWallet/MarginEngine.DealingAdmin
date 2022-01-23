@@ -115,10 +115,10 @@
                 EnableSearch>
             </Select>
         </FormItem>
-        <FormItem Label="Long %" Required Rules=@RequiredRule>
+        <FormItem Label="Long %" Required Rules=@RequiredIntRule>
             <AntDesign.InputNumber @bind-Value="@context.Long" />
         </FormItem>            
-        <FormItem Label="Short %" Required Rules=@RequiredRule>
+        <FormItem Label="Short %" Required Rules=@RequiredIntRule>
             <AntDesign.InputNumber @bind-Value="@context.Short" />
         </FormItem>
     </Form> 
@@ -137,6 +137,7 @@
     List<string> availableInstruments;
 
     private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+    private FormValidationRule[] RequiredIntRule = { new FormValidationRule { Required = true, Type = FormFieldType.Integer } };
     private FormValidationRule[] CrudApiKeyRule;
 
     int _pageSize = 999;

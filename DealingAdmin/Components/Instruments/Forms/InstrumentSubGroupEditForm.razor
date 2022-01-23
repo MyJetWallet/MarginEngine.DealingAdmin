@@ -27,8 +27,7 @@
                 <Select @bind-Value="@context.GroupId"
                     TItemValue="string"
                     TItem="string"
-                    Placeholder="Group Id"
-                    Disabled="@(!String.IsNullOrEmpty(context.Id))">
+                    Placeholder="Group Id">
                     <SelectOptions>
                         @foreach (var item in instrumentGroups)
                         {
@@ -93,9 +92,7 @@
     protected override async Task OnInitializedAsync()
     {
         isNewSubGroup = String.IsNullOrEmpty(this.InstrumentSubGroup.Id);
-        instrumentGroups = isNewSubGroup
-            ? await groupsRepository.GetAllAsync()
-            : new List<IInstrumentGroup>();
+        instrumentGroups = await groupsRepository.GetAllAsync();
     }
 
     private async void CloseDialog()

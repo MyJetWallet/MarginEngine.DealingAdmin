@@ -30,7 +30,7 @@
     </Validator>
     <ChildContent>
         <FormItem Label="Id" Required Rules=@RequiredRule>
-            <Input @bind-Value="@context.Id" Placeholder="Group Id" Disabled="@(isNewGroup)"/>
+            <Input @bind-Value="@context.Id" Placeholder="Group Id" Disabled="@(!isNewGroup)"/>
         </FormItem>            
         <FormItem Label="Name" Required Rules=@RequiredRule>
             <Input @bind-Value="@context.Name" Placeholder="Name" />

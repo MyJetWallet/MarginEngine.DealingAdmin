@@ -116,6 +116,7 @@
     {
         isEditSubGroupDialogVisible = false;
         await RefreshData();
+        this.StateHasChanged();
     }
 
     private async void DeleteSubGroup(InstrumentSubGroupModel subGroup)

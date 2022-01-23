@@ -23,7 +23,7 @@
         <FormItem Label="Group Id" Required Rules=@RequiredRule>
              <Input @bind-Value="@context.Id"
                  Placeholder="Group Id"
-                 Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
+                 Disabled="@(!isNewGroup)"/>
         </FormItem>           
         <FormItem Label="Name" Required Rules=@RequiredRule>
             <Input @bind-Value="@context.Name" Placeholder="Name" />
@@ -63,6 +63,13 @@
         { new FormValidationRule { Required = true, Type = FormFieldType.Integer } };
 
     AntDesign.Form<InstrumentGroupModel> editForm;
+
+    private bool isNewGroup;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isNewGroup = String.IsNullOrEmpty(this.InstrumentGroup.Id);
+    }
 
     private async void CloseDialog()
     {

@@ -21,7 +21,7 @@
         <DataAnnotationsValidator></DataAnnotationsValidator>
     </Validator>
     <ChildContent>
-        <FormItem Label="Group" Required Rules=@RequiredIntRule>
+        <FormItem Label="Group" Required Rules=@RequiredRule>
             @if (isNewSubGroup)
             {
                 <Select @bind-Value="@context.GroupId"

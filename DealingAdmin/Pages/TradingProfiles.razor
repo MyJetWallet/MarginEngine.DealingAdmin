@@ -16,7 +16,6 @@
 
 <Table DataSource="@tradingProfiles"
        TItem="TradingProfileModel"
-       Loading="@isLoading"
        Bordered="@true"
        Total="0"
        HidePagination="@true"
@@ -61,11 +60,6 @@
 @code {
     private IEnumerable<TradingProfileModel> tradingProfiles;
 
-    int _pageSize = 999;
-
-    private bool isLoading = false;
-    private bool isUpdateProfileDialogVisible = false;
-
     private TradingProfileModel editedProfile;
     private string profileEditFormTitle;
     private bool isEditInstrumentDialogVisible;
@@ -78,12 +72,8 @@
 
     private async Task RefreshData()
     {
-        isLoading = true;
-
          tradingProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
             .TradingProfileRepository.GetAllAsync()).Select(TradingProfileModel.Create);
-
-        isLoading = false;
 
         this.StateHasChanged();
     }

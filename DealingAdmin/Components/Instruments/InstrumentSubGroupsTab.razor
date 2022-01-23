@@ -48,7 +48,7 @@
                 DataIndex="Weight" 
                 TData="int"
                 Sortable/>
-        <ActionColumn Title="Edit" Width="60">            
+        <ActionColumn Title="Edit" Width="120">            
             <Tooltip Title="@("Edit")">
                 <a><i @onclick="()=>ShowEditGroupDialog(context)"
                     class="material-icons color-primary">edit</i></a>
@@ -77,8 +77,6 @@
 @code {
     private IEnumerable<InstrumentSubGroupModel> instrumentSubGroups;
 
-    int _pageSize = 999;
-    private bool isUpdateSubGroupDialogVisible = false;
     private InstrumentSubGroupModel editedSubGroup = new InstrumentSubGroupModel();
     private string subgroupEditFormTitle = "";
     private bool isEditSubGroupDialogVisible;

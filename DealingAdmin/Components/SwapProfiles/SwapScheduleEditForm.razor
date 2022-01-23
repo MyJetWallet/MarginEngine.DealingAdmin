@@ -1,0 +1,112 @@
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Microsoft.AspNetCore.Components
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.Swaps
+@using System.ComponentModel.DataAnnotations
+
+@inject ISwapScheduleWriter swapScheduleWriter
+@inject ISnackbar snackbar
+@inject Logger logger
+
+<Form @ref="editForm"
+      Model="SwapSchedule"
+      ValidateOnChange="@true"
+      ValidateMode="@FormValidateMode.Rules"
+      LabelColSpan="6"
+      WrapperColSpan="12">
+    <Validator>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+    </Validator>
+    <ChildContent>
+        <FormItem Label="Id" Required Rules=@RequiredRule>
+            <Input @bind-Value="@context.Id" Placeholder="Group Id" Disabled="@(isNewSchedule)"/>
+        </FormItem>            
+        <FormItem Label="Name" Required>
+            <Select Mode="default"
+                    @bind-Value="@context.DayOfWeek"
+                    TItemValue="DayOfWeek"
+                    TItem="DayOfWeek">
+                <SelectOptions>
+                    @foreach (var item in Enum.GetValues<DayOfWeek>())
+                    {
+                        <SelectOption
+                            TItemValue="DayOfWeek"
+                            TItem="DayOfWeek"
+                            Value=@item
+                            Label="@item.ToString()"/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        <FormItem Label="Time" Required>
+              <TimePicker @bind-Value="@SwapScheduleTime" TValue="DateTime"/>
+        </FormItem>      
+        <AntDesign.Row Class="center-middle p-3">
+            <Col Span="12">
+                <AntDesign.Button OnClick="SaveSchedule"
+                    Class="btn-text bg-color-aquamarine">
+                    Save
+                </AntDesign.Button>
+            </Col>    
+            <Col Span="12">
+                <AntDesign.Button OnClick="CloseDialog"
+                    Class="btn-text bg-color-light-yellow">
+                    Cancel
+                </AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
+    </ChildContent>
+</Form>
+ 
+@code {
+    [Parameter]
+    public SwapScheduleModel SwapSchedule { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnFinish { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private DateTime SwapScheduleTime { get; set; }
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+    
+    AntDesign.Form<SwapScheduleModel> editForm;
+    private bool isNewSchedule = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isNewSchedule = String.IsNullOrEmpty(SwapSchedule.Id);
+        var dtNow = isNewSchedule
+            ? DateTime.UtcNow.Date
+            : DateTime.UtcNow.Date.Add(SwapSchedule.Time);
+    }
+
+    private async void CloseDialog()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async void SaveSchedule()
+    {
+        try
+        {
+            if (!editForm.Validate())
+            {
+                return;
+            }
+
+            await swapScheduleWriter.AddOrUpdateAsync(SwapSchedule);
+            await OnFinish.InvokeAsync();
+            snackbar.Add($"Swap Schedule '{SwapSchedule.Id}' saved", Severity.Success);
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+}

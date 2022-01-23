@@ -1,1 +1,105 @@
-<div></div>
+@using AntDesign.TableModels
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.Swaps
+
+@inject ISwapScheduleWriter swapScheduleWriter
+@inject IUserMessageService messageService
+@inject Logger logger
+
+<div style="width:750px;">
+<PageHeader Class="m-2 p-0" Title="Swap Schedules">
+    <PageHeaderExtra>
+        <AntDesign.Button OnClick="ShowNewGroupDialog" 
+        Type="@AntDesign.ButtonType.Primary"
+        Class="btn-text">New Schedules</AntDesign.Button>
+    </PageHeaderExtra>
+</PageHeader>
+
+<Table DataSource="@swapSchedules"
+       TItem="SwapScheduleModel"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 120px)"
+       PageSize="999">
+    <RowTemplate>           
+        <AntDesign.Column Title="Id"
+                DataIndex="Id"
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Day Of Week"
+                DataIndex="DayOfWeek"
+                TData="DayOfWeek"
+                Sortable/>
+        <AntDesign.Column Title="Time" 
+                DataIndex="Time" 
+                TData="TimeSpan"
+                Sortable/>
+        <AntDesign.Column Title="Amount"
+                DataIndex="Amount" 
+                TData="int"
+                Sortable/>
+        <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditScheduleDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+</div>
+
+<Modal Title="@scheduleEditFormTitle"
+       Visible="@isEditScheduleDialogVisible"
+       Closable="@false"
+       Footer=null
+       Width="900">
+    <SwapScheduleEditForm
+        SwapSchedule="editedSchedule"
+        OnFinish="CloseEditDialogAndRefresh"
+        OnCancel="CloseEditDialog"/>   
+</Modal>
+
+@code {
+    private List<SwapScheduleModel> swapSchedules;
+
+    private SwapScheduleModel editedSchedule = new SwapScheduleModel();
+    private string scheduleEditFormTitle = "";
+    private bool isEditScheduleDialogVisible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+       swapSchedules = (await swapScheduleWriter.GetAllAsync())
+            .Select(SwapScheduleModel.Create).ToList();
+    }
+
+    private void ShowNewGroupDialog()
+    {
+        scheduleEditFormTitle = "Add New Schedule";
+        editedSchedule = new SwapScheduleModel();
+        isEditScheduleDialogVisible = true;
+    }
+
+    private void ShowEditScheduleDialog(SwapScheduleModel Group)
+    {
+        scheduleEditFormTitle = $"Edit '{Group.Id}' Schedule";
+        editedSchedule = SwapScheduleModel.Create(Group);
+        isEditScheduleDialogVisible = true;
+    }
+
+    private void CloseEditDialog()
+    {
+        isEditScheduleDialogVisible = false;
+    }
+
+    private async void CloseEditDialogAndRefresh()
+    {
+        isEditScheduleDialogVisible = false;
+        await RefreshData();
+    }
+}

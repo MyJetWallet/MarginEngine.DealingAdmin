@@ -6,11 +6,16 @@
 @using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
 @using SimpleTrading.Abstraction.Trading.Swaps
+@using SimpleTrading.Common.Abstractions.DefaultValues
+@using SimpleTrading.Common.Abstractions.InstrumentsAvatar
+@using SimpleTrading.Common.Abstractions.Images
 @using static DealingAdmin.FormatUtils
 
-@inject IInstrumentSubGroupsRepository SubGroupsRepository;
-@inject IInstrumentGroupsRepository GroupsRepository;
-@inject ITradingInstrumentsRepository InstrumentsRepository;
+@inject IInstrumentSubGroupsRepository SubGroupsRepository
+@inject IInstrumentGroupsRepository GroupsRepository
+@inject ITradingInstrumentsRepository InstrumentsRepository
+@inject ITradingInstrumentsAvatarRepository avatarRepository
+@inject IDefaultValuesRepository defValuesRepository
 @inject ISwapProfileWriter SwapProfileWriter
 @inject IUserMessageService MessageService
 @inject Logger logger
@@ -36,7 +41,7 @@
                 TData="string"
                 DataIndex="GroupId"
                 Sortable
-                Filterable/>            
+                Filterable/>
         <AntDesign.Column Title="Id"
                 TData="string"
                 DataIndex="Id"
@@ -56,8 +61,8 @@
                 Filterable/>
         <AntDesign.Column Title="Avatar" 
                 TData="string"
-                Width="90">
-            <Avatar Size="48" Icon="user"/>
+                Width="60">
+            <Image Width="56px" Src="@(GetInstrumentAvatarSrc(context.Id, ImageTypes.SVG).GetAwaiter().GetResult())" />
         </AntDesign.Column>
         <AntDesign.Column Title="Base"
                 DataIndex="Base" 
@@ -140,7 +145,6 @@
     private IEnumerable<InstrumentSubGroupModel> instrumentSubGroups;
     private IEnumerable<ISwapProfile> swapProfiles;
 
-    int _pageSize = 999;
     private bool isLoading = false;
     private TradingInstrumentModel editedInstrument;
     private string instrumentEditFormTitle;
@@ -173,6 +177,35 @@
     {
         isEditInstrumentDialogVisible = false;
         editedInstrument = new TradingInstrumentModel();
+    }
+
+    private async Task<string> GetInstrumentAvatarSrc(string instumentId, ImageTypes imgType)
+    {
+        ITradingInstrumentsAvatar instrumentAvatar = null;
+        var avatarSrc = "";
+
+        try
+        {
+            instrumentAvatar = await avatarRepository.GetInstrumentsAvatarAsync(instumentId, imgType);
+            avatarSrc = instrumentAvatar.Avatar;
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex);
+            logger.Warning(ex, ex.Message);
+            logger.Warning($"Can't read instrument avatar (ID:'{instumentId}') from repository");
+        }
+
+        if (instrumentAvatar == null)
+        {
+            avatarSrc = imgType == ImageTypes.SVG
+                ? await defValuesRepository.GetTradingInstrumentAvatarSvgAsync()
+                : await defValuesRepository.GetTradingInstrumentAvatarPngAsync();
+        }
+
+        return imgType == ImageTypes.SVG
+            ? $"{FormatUtils.ImageSvgDataPrefix}{avatarSrc}"
+            : $"{FormatUtils.ImagePngDataPrefix}{avatarSrc}";
     }
 
     private async void SaveInstrument()

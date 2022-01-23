@@ -22,7 +22,6 @@
 
 <Table DataSource="@tradingGroups"
        TItem="TradingGroupModel"
-       Loading="@isLoading"
        Bordered="@true"
        Total="0"
        HidePagination="@true"
@@ -69,11 +68,6 @@
 @code {
     private List<TradingGroupModel> tradingGroups;
 
-    int _pageSize = 999;
-
-    private bool isLoading = false;
-    private bool isUpdateGroupDialogVisible = false;
-
     private TradingGroupModel editedGroup = new TradingGroupModel();
     private string groupEditFormTitle = "";
     private bool isEditGroupDialogVisible;
@@ -89,12 +83,10 @@
     private async Task RefreshData()
     {
         Console.WriteLine("TradingGroups >> RefreshData"); /// REMOVE AFTER TEST!!!
-        isLoading = true;
 
         tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
            .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
 
-        isLoading = false;
         this.StateHasChanged();
     }
 

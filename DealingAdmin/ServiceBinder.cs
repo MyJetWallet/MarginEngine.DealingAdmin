@@ -134,17 +134,20 @@ namespace DealingAdmin
             services.AddSingleton(MyNoSqlServerFactory.CreateInstrumentSourcesMapsNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton((IDefaultValuesRepository)CommonMyNoSqlServerFactory.CreateDefaultValueMyNoSqlRepository(
-               () => settingsModel.DictionariesMyNoSqlServerWriter));
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton((IDefaultLiquidityProviderWriter)CommonMyNoSqlServerFactory.CreateDefaultValueMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton((IDefaultMarkupProfileWriter)CommonMyNoSqlServerFactory.CreateDefaultValueMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton<ISwapScheduleWriter>(MyNoSqlServerFactory.CreateSwapScheduleMyNoSqlRepository(
-              () => settingsModel.DictionariesMyNoSqlServerWriter));
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton<ISwapProfileWriter>(MyNoSqlServerFactory.CreateSwapProfileMyNoSqlWriter(
-              () => settingsModel.DictionariesMyNoSqlServerWriter));
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton<IMarkupProfilesRepository>(MyNoSqlServerFactory.CreateMarkupProfilesNoSqlRepository(
-              () => settingsModel.DictionariesMyNoSqlServerWriter));
+                () => settingsModel.DictionariesMyNoSqlServerWriter));
+            services.AddSingleton((ITradingInstrumentsAvatarRepository)
+                CommonMyNoSqlServerFactory.CreateTradingInstrumentMyNoSqlRepository(
+                    () => settingsModel.DictionariesMyNoSqlServerWriter));
 
             liveDemoServicesMapper.InitService(true,
                services => services.ActiveOrdersReader = MyNoSqlServerFactory.CreateActiveOrdersCacheReader(tcpConnection, true));

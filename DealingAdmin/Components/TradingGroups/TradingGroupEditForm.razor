@@ -30,7 +30,7 @@
     </Validator>
     <ChildContent>
         <FormItem Label="Id" Required Rules=@RequiredRule>
-            <Input @bind-Value="@context.Id" Placeholder="Group Id" Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
+            <Input @bind-Value="@context.Id" Placeholder="Group Id" Disabled="@(isNewGroup)"/>
         </FormItem>            
         <FormItem Label="Name" Required Rules=@RequiredRule>
             <Input @bind-Value="@context.Name" Placeholder="Name" />
@@ -74,14 +74,16 @@
         <FormItem Label="API Key" Required Rules=@CrudApiKeyRule>
             <InputPassword @bind-Value="@context.TokenKey" />
         </FormItem>
-        <FormItem>
-            <AntDesign.Button Type="@AntDesign.ButtonType.Primary" OnClick="SaveGroup">
-                Save
-            </AntDesign.Button>
-            <AntDesign.Button OnClick="CloseDialog">
-                Cancel
-            </AntDesign.Button>
-        </FormItem>
+        <AntDesign.Row Class="center-middle mt-5">
+            <Col Span="12" Class="center-middle">
+                <AntDesign.Button 
+                    Class="btn-text bg-color-aquamarine"
+                    OnClick="SaveGroup">Save</AntDesign.Button>
+            </Col>
+            <Col Span="12" Class="center-middle">
+                <AntDesign.Button Class="btn-text bg-color-light-yellow" OnClick="CloseDialog">Reset</AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
     </ChildContent>
 </Form>
  
@@ -103,16 +105,15 @@
     private FormValidationRule[] CrudApiKeyRule;
 
     AntDesign.Form<TradingGroupModel> editForm;
+    private bool isNewGroup = true;
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> START"); /// REMOVE AFTER TEST!!!
+        isNewGroup = String.IsNullOrEmpty(TradingGroup.Id);
         tradingProfiles = await liveDemoServices.GetContext(AppState.IsLive)
             .TradingProfileRepository.GetAllAsync();
         swapProfiles = await swapProfileWriter.GetAllAsync();
         markupProfiles = await markupProfilesRepository.GetAllAsync();
-
-        Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> CrudApiKeyRule "); /// REMOVE AFTER TEST!!!
 
         CrudApiKeyRule = new FormValidationRule[]
         {
@@ -124,8 +125,6 @@
                     Message = "API Key is not valid"
                 }
         };
-
-        Console.WriteLine("TradingGroupEditForm  >> OnInitializedAsync >> END"); /// REMOVE AFTER TEST!!!
     }
 
     private async void CloseDialog()

@@ -62,12 +62,9 @@
 @code {
     private IEnumerable<InstrumentGroupModel> instrumentGroups;
 
-    int _pageSize = 999;
-    private bool isUpdateGroupDialogVisible = false;
     private InstrumentGroupModel editedGroup = new InstrumentGroupModel();
     private string groupEditFormTitle = "";
     private bool isEditGroupDialogVisible;
-    private bool isNewGroup;
 
     private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
 
@@ -85,7 +82,6 @@
     {
         groupEditFormTitle = "Add New Group";
         editedGroup = new InstrumentGroupModel();
-        isNewGroup = true;
         isEditGroupDialogVisible = true;
     }
 
@@ -93,7 +89,6 @@
     {
         groupEditFormTitle = $"Edit '{group.Id}' Group";
         editedGroup = InstrumentGroupModel.Create(group);
-        isNewGroup = false;
         isEditGroupDialogVisible = true;
     }
 

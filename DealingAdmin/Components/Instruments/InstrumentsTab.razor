@@ -60,11 +60,6 @@
                 TData="string"
                 Sortable
                 Filterable/>
-        <AntDesign.Column Title="Avatar" 
-                TData="string"
-                Width="60">
-            <Image Width="56px" Src="@(GetInstrumentAvatarSrc(context.Id, ImageTypes.SVG).GetAwaiter().GetResult())" />
-        </AntDesign.Column>
         <AntDesign.Column Title="Base"
                 DataIndex="Base" 
                 TData="string"

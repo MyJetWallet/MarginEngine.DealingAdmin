@@ -34,7 +34,7 @@
     <Col Flex=@("auto")></Col>
     <Col Flex=@("160px")>
         <AntDesign.Button Icon="check"
-            Class="btn-text bg-color-green"
+            Class="btn-text bg-color-aquamarine"
             OnClick="SaveSwapProfile"
             Disabled="@(String.IsNullOrEmpty(ProfileGroup.ProfileId))">Save</AntDesign.Button>
     </Col>
@@ -97,9 +97,7 @@
 <Modal Title="@instrumentEditFormTitle"
        Visible="@isEditInstrumentDialogVisible"
        Closable="@false"
-       OkText="@("Save")"
-       OnOk="()=>SaveInstrument()"
-       OnCancel="()=>CancelEditInstrumentDialog()"
+       Footer=null
        Width="480">
     <Form Model="editedInstrument"        
             LabelColSpan="6"
@@ -121,6 +119,19 @@
         <FormItem Label="Short %" Required Rules=@RequiredIntRule>
             <AntDesign.InputNumber @bind-Value="@context.Short" />
         </FormItem>
+        <AntDesign.Row Class="center-middle p-3">
+            <Col Span="12">
+            </Col>    
+            <Col Span="6">
+                <AntDesign.Button OnClick="SaveInstrument"
+                    Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text">Save</AntDesign.Button>
+            </Col>    
+            <Col Span="6">
+                <AntDesign.Button OnClick="CancelEditInstrumentDialog"
+                    Class="btn-text">Cancel</AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
     </Form> 
 </Modal>
 

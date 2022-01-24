@@ -1,0 +1,84 @@
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Markups
+@using SimpleTrading.Abstraction.Trading.Swaps
+
+@inject IMarkupProfilesRepository markupProfilesRepository
+@inject IUserMessageService messageService
+@inject Logger logger
+@inject NavigationManager NavManager
+
+<div style="width:80%">
+@if (!editFormSwitch)
+{
+    <PageHeader Class="m-0 p-0" Title="Global Markup Profile">
+    </PageHeader>
+
+    <Table DataSource="@globalMarkupProfiles"
+           TItem="MarkupProfileModel"
+           Bordered="@true"
+           Total="0"
+           HidePagination="@true"
+           ScrollY="calc(100vh - 220px)"
+           PageSize="999">
+        <RowTemplate>           
+            <AntDesign.Column Title="Global Markup Profile"
+                DataIndex="ProfileId"
+                TData="string"
+                Sortable
+                Width="200"/>
+            <AntDesign.Column Title="Instruments" TData="string">   
+                @foreach (var instrument in context.MarkupInstruments)
+                {
+                    <Tag PresetColor="PresetColor.Purple">@instrument.InstrumentId</Tag>
+                }
+            </AntDesign.Column>
+            <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditProfile(context)"
+                    class="material-icons color-primary">edit</i></a>
+            </ActionColumn>
+        </RowTemplate>
+    </Table>
+}
+else
+{
+    <EditGlobalMarkupProfile Profile="editedProfile" OnGoBack="CloseEditProfile"/>
+}
+</div>
+
+@code {
+    private List<MarkupProfileModel> globalMarkupProfiles;
+
+    private MarkupProfileModel editedProfile;
+    private string profileEditFormTitle;
+    private bool editFormSwitch = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        globalMarkupProfiles = (await markupProfilesRepository.GetAllAsync())
+            .Select(x => x.ToModel()).ToList();
+        editedProfile = globalMarkupProfiles.FirstOrDefault();
+    }
+
+    private void ShowEditProfile(MarkupProfileModel markupProfile)
+    {
+        profileEditFormTitle = $"Edit '{markupProfile.ProfileId}' Global Markup Profile";
+        editedProfile = markupProfile;
+        editFormSwitch = true;
+    }
+
+    private async void CloseEditProfile()
+    {
+        editFormSwitch = false;
+        await RefreshData();
+    }
+}

@@ -86,6 +86,13 @@
         Console.WriteLine(">>> InstrumentSubGroupEditForm >>> OnInitializedAsync >>> START"); // REMOVE AFTER TEST !!!!
         isNewSubGroup = String.IsNullOrEmpty(this.InstrumentSubGroup.Id);
         instrumentGroups = await groupsRepository.GetAllAsync();
+
+        if (isNewSubGroup)
+        {
+            InstrumentSubGroup.GroupId = instrumentGroups.FirstOrDefault()?.Id;
+        }
+        Console.WriteLine($">>> InstrumentSubGroupEditForm >>> instrumentGroups.Count {instrumentGroups.Count()}"); // REMOVE AFTER TEST !!!!
+        await base.OnInitializedAsync();        
         Console.WriteLine(">>> InstrumentSubGroupEditForm >>> OnInitializedAsync >>> END"); // REMOVE AFTER TEST !!!!
     }
 

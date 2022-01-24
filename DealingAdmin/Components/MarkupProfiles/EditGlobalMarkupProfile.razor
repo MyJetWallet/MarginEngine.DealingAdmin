@@ -4,12 +4,11 @@
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Shared.Services
 @using Serilog.Core
+@using SimpleTrading.Abstraction.Markups
 @using SimpleTrading.Abstraction.Trading.Instruments
 
 @inject ITradingInstrumentsRepository InstrumentsRepository;
-@inject StateManager AppState
-@inject LiveDemoServiceMapper liveDemoServices;
-@inject AdminAppSettings appSettings
+@inject IMarkupProfilesRepository markupProfilesRepository
 @inject ISnackbar snackbar
 @inject Logger logger
 
@@ -34,7 +33,7 @@
     <Col Flex=@("160px")>
         <AntDesign.Button Icon="check"
             Class="btn-text bg-color-aquamarine"
-            OnClick="SaveMarkupProfile"
+            OnClick="SaveGlobalMarkupProfile"
             Disabled="@(String.IsNullOrEmpty(Profile.ProfileId))">Save</AntDesign.Button>
     </Col>
     <Col Flex=@("160px")>
@@ -52,7 +51,7 @@
        ScrollY="calc(100vh - 120px)"
        PageSize="999">
     <TitleTemplate>
-        <PageHeader Title="Profile Instruments" Class="m-0 p-0">
+        <PageHeader Title="Global Profile Instruments" Class="m-0 p-0">
             <PageHeaderExtra>
                  <AntDesign.Button 
                     OnClick="ShowNewInstrumentDialog" 
@@ -144,7 +143,7 @@
 
     private bool isNewProfile = true;
 
-    private string pageTitle = "Add New Markup Profile";
+    private string pageTitle = "";
     private string instrumentEditFormTitle = "";
     private string profileEditFormTitle;
     private bool isEditInstrumentDialogVisible;
@@ -154,25 +153,12 @@
         if (!String.IsNullOrEmpty(Profile.ProfileId))
         {
             profileId = Profile.ProfileId;
-            pageTitle = $"Edit '{profileId}' Markup Profile";
+            pageTitle = $"Edit '{profileId}' Globak Markup Profile";
             isNewProfile = false;
         }
 
-        CrudApiKeyRule = new FormValidationRule[]
-        {
-            new FormValidationRule
-                {
-                    Required = true,
-                    Type = FormFieldType.String,
-                    OneOf = new string[] { appSettings.AdminCrudApiKey },
-                    Message = "API Key is not valid"
-                }
-        };
-
         instrumentIds = (await InstrumentsRepository.GetAllAsync()).Select(x => x.Id).ToList();
         availableInstruments = GetAvailableInstrumentsList();
-
-        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => GoBack());
     }
 
     private List<string> GetAvailableInstrumentsList()
@@ -225,7 +211,7 @@
         };
 
         availableInstruments = GetAvailableInstrumentsList();
-        instrumentEditFormTitle = $"Add New Instrument for Markup Profile {profileId}";
+        instrumentEditFormTitle = $"Add New Instrument for Global Markup Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }
 
@@ -234,7 +220,7 @@
         selectedInstrument = markupItem;
         editedInstrument = MarkupItem.Create(markupItem);
         availableInstruments = GetAvailableInstrumentsList();
-        instrumentEditFormTitle = $"Edit '{markupItem.InstrumentId}' Instrument for Markup Profile {profileId}";
+        instrumentEditFormTitle = $"Edit '{markupItem.InstrumentId}' Instrument for Global Markup Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }
 
@@ -243,12 +229,11 @@
         isEditInstrumentDialogVisible = false;
     }
 
-    private async void SaveMarkupProfile()
+    private async void SaveGlobalMarkupProfile()
     {
         try
         {
-            await liveDemoServices.GetContext(AppState.IsLive)
-                .TradingGroupsMarkupProfilesRepository.UpdateAsync(this.Profile.ToDatabaseModel());
+            await markupProfilesRepository.UpdateAsync(this.Profile.ToDatabaseModel());
 
             snackbar.Add($"Markup Profile '{profileId}' saved", Severity.Success);
         }

@@ -13,6 +13,7 @@
 @inject Logger logger
 @inject NavigationManager NavManager
 
+<div style="width:80%">
 @if (!editFormSwitch)
 {
     <PageHeader Class="m-0 p-0" Title="Markup Profiles">
@@ -28,7 +29,7 @@
            Bordered="@true"
            Total="0"
            HidePagination="@true"
-           ScrollY="calc(100vh - 120px)"
+           ScrollY="calc(100vh - 220px)"
            PageSize="999">
         <RowTemplate>           
             <AntDesign.Column Title="Profile Id"
@@ -53,6 +54,7 @@ else
 {
     <EditMarkupProfile Profile="editedProfile" OnGoBack="CloseEditProfile"/>
 }
+</div>
 
 @code {
     private List<MarkupProfileModel> markupProfiles;

@@ -22,31 +22,23 @@
     </Validator>
     <ChildContent>
         <FormItem Label="Group" Required Rules=@RequiredRule>
-            @if (isNewSubGroup)
-            {
-                <Select @bind-Value="@context.GroupId"
-                    TItemValue="string"
-                    TItem="string"
-                    Placeholder="Group Id">
-                    <SelectOptions>
-                        @foreach (var item in instrumentGroups)
-                        {
-                            <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Name />
-                        }
-                    </SelectOptions>
-                </Select>
-            }
-            else
-            {
-                <Input @bind-Value="@context.Id"
-                 Placeholder="Group Id"
-                 Disabled="@(true)"/>
-            }
+            <Select @bind-Value="@context.GroupId"
+                TItemValue="string"
+                TItem="string"
+                Disabled="@(!isNewSubGroup)"
+                Placeholder="Group Id">
+                <SelectOptions>
+                    @foreach (var item in instrumentGroups)
+                    {
+                        <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Name />
+                    }
+                </SelectOptions>
+            </Select>
         </FormItem>
-        <FormItem Label="Group Id" Required Rules=@RequiredRule>
+        <FormItem Label="SubGroup Id" Required Rules=@RequiredRule>
              <Input @bind-Value="@context.Id"
-                 Placeholder="Group Id"
-                 Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
+                 Placeholder="SubGroup Id"
+                 Disabled="@(!isNewSubGroup)"/>
         </FormItem>           
         <FormItem Label="Name" Required Rules=@RequiredRule>
             <Input @bind-Value="@context.Name" Placeholder="Name" />

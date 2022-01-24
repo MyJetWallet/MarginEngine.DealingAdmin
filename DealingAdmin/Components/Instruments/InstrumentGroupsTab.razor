@@ -13,6 +13,7 @@
 @inject AdminAppSettings appSettings
 @inject Logger logger
 
+<div style="width:750px;">
 <PageHeader Class="m-2 p-0" Title="Instrument Groups">
     <PageHeaderExtra>
         <AntDesign.Button OnClick="ShowNewGroupDialog"         
@@ -47,12 +48,13 @@
         </ActionColumn>
     </RowTemplate>
 </Table>
+</div>
 
 <Modal Title="@groupEditFormTitle"
        Visible="@isEditGroupDialogVisible"
        Closable="@false"
        Footer=null
-       Width="900">
+       Width="600">
     <InstrumentGroupEditForm
         InstrumentGroup="editedGroup"
         OnFinish="CloseEditDialogAndRefresh"

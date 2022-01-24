@@ -74,8 +74,8 @@
 
     private async Task RefreshData()
     {
-       swapSchedules = (await swapScheduleWriter.GetAllAsync())
-            .Select(SwapScheduleModel.Create).ToList();
+        swapSchedules = (await swapScheduleWriter.GetAllAsync())
+             .Select(SwapScheduleModel.Create).ToList();
     }
 
     private void ShowNewGroupDialog()
@@ -101,5 +101,6 @@
     {
         isEditScheduleDialogVisible = false;
         await RefreshData();
+        this.StateHasChanged();
     }
 }

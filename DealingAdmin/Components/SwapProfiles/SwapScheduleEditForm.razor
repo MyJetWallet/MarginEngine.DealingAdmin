@@ -73,14 +73,14 @@
     private DateTime SwapScheduleTime { get; set; }
 
     private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
-    
+
     AntDesign.Form<SwapScheduleModel> editForm;
     private bool isNewSchedule = true;
 
     protected override async Task OnInitializedAsync()
     {
         isNewSchedule = String.IsNullOrEmpty(SwapSchedule.Id);
-        var dtNow = isNewSchedule
+        SwapScheduleTime = isNewSchedule
             ? DateTime.UtcNow.Date
             : DateTime.UtcNow.Date.Add(SwapSchedule.Time);
     }
@@ -99,6 +99,7 @@
                 return;
             }
 
+            SwapSchedule.Time = SwapScheduleTime.TimeOfDay;
             await swapScheduleWriter.AddOrUpdateAsync(SwapSchedule);
             await OnFinish.InvokeAsync();
             snackbar.Add($"Swap Schedule '{SwapSchedule.Id}' saved", Severity.Success);

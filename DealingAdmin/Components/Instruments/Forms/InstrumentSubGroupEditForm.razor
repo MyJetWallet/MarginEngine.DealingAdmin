@@ -83,8 +83,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine(">>> InstrumentSubGroupEditForm >>> OnInitializedAsync >>> START"); // REMOVE AFTER TEST !!!!
         isNewSubGroup = String.IsNullOrEmpty(this.InstrumentSubGroup.Id);
         instrumentGroups = await groupsRepository.GetAllAsync();
+        Console.WriteLine(">>> InstrumentSubGroupEditForm >>> OnInitializedAsync >>> END"); // REMOVE AFTER TEST !!!!
     }
 
     private async void CloseDialog()

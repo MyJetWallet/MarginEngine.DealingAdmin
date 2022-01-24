@@ -74,20 +74,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
-           .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
-
+        await RefreshData();
         AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
     }
 
     private async Task RefreshData()
     {
-        Console.WriteLine("TradingGroups >> RefreshData"); /// REMOVE AFTER TEST!!!
-
         tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
            .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
-
-        this.StateHasChanged();
     }
 
     private void ShowNewGroupDialog()
@@ -115,5 +109,6 @@
     {
         isEditGroupDialogVisible = false;
         await RefreshData();
+        this.StateHasChanged();
     }
 }

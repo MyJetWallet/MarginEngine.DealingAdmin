@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using SimpleTrading.Abstraction.Markups;
 using SimpleTrading.Abstraction.Markups.TradingGroupMarkupProfiles;
 
@@ -9,14 +9,14 @@ namespace DealingAdmin.Abstractions.Models
     {
         public string ProfileId { get; set; }
        
-        public IEnumerable<MarkupItem> MarkupInstruments { get; set; }
+        public List<MarkupItem> MarkupInstruments { get; set; }
 
         public static MarkupProfileModel Create(string profileId, IEnumerable<MarkupItem> items)
         {
             return new MarkupProfileModel
             {
                 ProfileId = profileId,
-                MarkupInstruments = items
+                MarkupInstruments = items.ToList()
             };
         }
     }
@@ -43,9 +43,11 @@ namespace DealingAdmin.Abstractions.Models
 
     public class MarkupItem : IMarkupItem
     {
-        [Required] public string InstrumentId { get; set; }
-        [Required] public int MarkupBid { get; set; }
-        [Required] public int MarkupAsk { get; set; }
+        public string InstrumentId { get; set; }
+        
+        public int MarkupBid { get; set; }
+        
+        public int MarkupAsk { get; set; }
 
         public static MarkupItem Create(string instrumentId, int markupBid, int markupAsk)
         {

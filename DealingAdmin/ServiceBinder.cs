@@ -35,6 +35,7 @@ using SimpleTrading.Abstraction.Trading.Swaps;
 using SimpleTrading.Abstraction.Markups;
 using SimpleTrading.Common.Abstractions.DefaultValues;
 using SimpleTrading.ClientApi.Services;
+using SimpleTrading.Abstraction.Markups.TradingGroupMarkupProfiles;
 
 namespace DealingAdmin
 {
@@ -49,6 +50,8 @@ namespace DealingAdmin
         public ISimpleTradingEngineApi EngineApi { get; set; }
 
         public ITradingGroupsRepository TradingGroupsRepository { get; set; }
+
+        public ITradingGroupsMarkupProfilesRepository TradingGroupsMarkupProfilesRepository { get; set; }
     }
 
     public class LiveDemoServiceMapper
@@ -109,8 +112,6 @@ namespace DealingAdmin
             services.AddSingleton<IQuoteSourceService, QuoteSourceService>();
             services.AddSingleton<ITraderSearchService, TraderSearchService>();
             services.AddSingleton<IAccountNewTradingGroupValidator, AccountNewTradingGroupValidator>();
-
-
         }
 
         public static void InitLiveDemoManager(this IServiceCollection services, LiveDemoServiceMapper mapper)
@@ -187,6 +188,12 @@ namespace DealingAdmin
 
             var demoTradingGroupsMarkupProfilesRepository = MyNoSqlServerFactory.CreateTradingGroupsMarkupProfilesNoSqlRepository(
                () => settingsModel.DictionariesMyNoSqlServerWriter, true);
+
+            liveDemoServicesMapper.InitService(true, services =>
+                services.TradingGroupsMarkupProfilesRepository = liveTradingGroupsMarkupProfilesRepository);
+
+            liveDemoServicesMapper.InitService(false, services =>
+                services.TradingGroupsMarkupProfilesRepository = demoTradingGroupsMarkupProfilesRepository);
 
             return tcpConnection;
         }

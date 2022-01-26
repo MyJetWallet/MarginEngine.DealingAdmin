@@ -295,21 +295,13 @@
         Hours
     }
 
-    private async void ShowEventDetails(object jsonEventData)
+    private async void ShowEventDetails(object base64EncodedData)
     {
         try
         {
-            Console.WriteLine($"----- raw form: {jsonEventData.ToString()}");
-            snackbar.Add($"raw form: {jsonEventData.ToString()}", Severity.Info);
-
-            Console.WriteLine($"----- raw 2: {(string)jsonEventData}");
-            snackbar.Add($"raw 2: {(string)jsonEventData}", Severity.Info);
-
-            var str1 = JsonConvert.ToString(jsonEventData);
-            Console.WriteLine($"----- str1: {str1}");
-            snackbar.Add($"str1: {str1}", Severity.Info);
-
-            await eventDetailsJsonViewer.Render((string)jsonEventData);
+            var byteData = System.Convert.FromBase64String(base64EncodedData.ToString());
+            var decodedJsonData = System.Text.ASCIIEncoding.ASCII.GetString(byteData);
+            await eventDetailsJsonViewer.Render(decodedJsonData);
             isEventDetailsDialogVisible = true;
         }
         catch(Exception ex)
@@ -318,7 +310,6 @@
             snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
             Console.WriteLine(ex);
         }
-
         
     }
 

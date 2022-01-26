@@ -30,7 +30,7 @@
        <span>Internal</span>
     </Col>
     <Col Span="4" class="m-3">
-       <span>@isInternal</span>
+       <span>@isInternal.ToString()</span>
     </Col>
 </AntDesign.Row>
 <AntDesign.Row>
@@ -96,9 +96,7 @@
 
     PersonalDataGrpcModel personalData { get; set; }
 
-    private bool? isInternal { get; set; }
-
-    private bool isLoading = false;
+    private bool isInternal { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,22 +106,16 @@
 
     private async Task RefreshData()
     {
-        isLoading = true;
-
         try
         {
             personalData = (await PersonalDataService.GetByIdAsync(TraderId)).PersonalData;
-            isInternal = (await CrmReader.GetAccountType(this.TraderId))?.IsInternal;
-            this.StateHasChanged();
+            var internalAcc = (await CrmReader.GetAccountType(this.TraderId))?.IsInternal;
+            isInternal = internalAcc.HasValue ? internalAcc.Value : true;
         }
         catch (Exception ex)
         {
             logger.Error(ex, ex.Message);
             Console.WriteLine(ex);
-        }
-        finally
-        {
-            isLoading = false;
         }
     }
 

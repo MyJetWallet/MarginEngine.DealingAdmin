@@ -31,26 +31,27 @@
         PageSize="999">
     <RowTemplate> 
         <AntDesign.Column Title="Account"
+                DataIndex="AccountId"
                 TData="string"
-                @bind-Field="@context.AccountId"
                 Sortable
                 Filterable/>
         <AntDesign.Column Title="Currency"
+                DataIndex="Currency"
                 TData="string"
-                @bind-Field="@context.Currency"
                 Width="120"/>
         <AntDesign.Column Title="Balance"
-                TData="double"
-                @bind-Field="@context.Balance"/>
-        <AntDesign.Column Title="Real Funds"
-                @bind-Field="@context.Balance"/>
+                DataIndex="Balance"
+                TData="double"/>
+        <AntDesign.Column Title="Real Funds" TData="double">
+            @((context.Balance - context.Bonus > 0
+                ? context.Balance - context.Bonus : 0))
+        </AntDesign.Column> 
         <AntDesign.Column Title="Bonus"
-                @bind-Field="@context.Bonus"/>
-        <AntDesign.Column Title="Real Funds"
-                @bind-Field="@context.Balance"/>                
+                DataIndex="Bonus"
+                TData="double"/>              
         <AntDesign.Column Title="Trading Group"
-                TData="string"
-                @bind-Field="@context.TradingGroup"/>
+                DataIndex="TradingGroup"
+                TData="string"/>
         <ActionColumn Title="Actions" Width="120">
             <div>
                 <Tooltip Title="@("Update Balance")">
@@ -167,7 +168,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() =>
+        {
+            RefreshData().GetAwaiter().GetResult();
+            this.StateHasChanged();
+        });
+
         await RefreshData();
     }
 
@@ -200,10 +206,6 @@
         {
             isLoading = false;
         }        
-
-        Console.WriteLine($"Acc Tab -> RefreshData -> StateHasChanged"); /// REMOVE AFTER TEST!!!!
-
-        this.StateHasChanged();
     }
 
     void ShowUpdateBalanceDialog(string accountId)
@@ -281,6 +283,7 @@
         Console.WriteLine($"UpdateBalance Result: ${grpcResponse.Account.Balance}"); /// REMOVE AFTER TEST!!!!
 
         await RefreshData();
+        StateHasChanged();
     }
 
     private async Task UpdateTradingGroup()
@@ -324,5 +327,6 @@
         }
 
         await RefreshData();
+        StateHasChanged();
     }
 }

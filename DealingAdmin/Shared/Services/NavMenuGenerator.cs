@@ -15,7 +15,7 @@ namespace DealingAdmin.Shared.Services
             NavMenuItem.Create("SwapSettings", "Swap Profiles", "swap_horiz"),
             NavMenuItem.Create("Orders", "Orders", "list_alt"),
             NavMenuItem.Create("Candles", "Candles", "candlestick_chart"),
-            NavMenuItem.Create("DebugTools", "Debug Tools", "code"),
+            NavMenuItem.Create("DebugTools", "Debug Tools", "precision_manufacturing"),
             NavMenuItem.Create("EmergencyTools", "Emergency Tools", "warning_amber"),
             NavMenuItem.Create("Defaults", "Defaults", "library_add_check"),
         };

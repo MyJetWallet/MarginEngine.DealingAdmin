@@ -35,6 +35,9 @@ namespace DealingAdmin
         [YamlProperty("DealingAdmin.PersonalDataGrpcServiceUrl")]
         public string PersonalDataGrpcServiceUrl { get; set; }
 
+        [YamlProperty("DealingAdmin.TickHistoryServiceUrl")]
+        public string TickHistoryServiceUrl { get; set; }
+
         [YamlProperty("DealingAdmin.CandlesHistoryServiceUrl")]
         public string CandlesHistoryServiceUrl { get; set; }
 

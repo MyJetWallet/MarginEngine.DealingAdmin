@@ -36,6 +36,7 @@ using SimpleTrading.Abstraction.Markups;
 using SimpleTrading.Common.Abstractions.DefaultValues;
 using SimpleTrading.ClientApi.Services;
 using SimpleTrading.Abstraction.Markups.TradingGroupMarkupProfiles;
+using SimpleTrading.TickHistory.Grpc;
 
 namespace DealingAdmin
 {
@@ -257,6 +258,10 @@ namespace DealingAdmin
             app.AddSingleton(GrpcChannel
                 .ForAddress(settings.TradeLogGrpcServiceUrl)
                 .CreateGrpcService<ITradeLogGrpcService>());
+
+            app.AddSingleton(GrpcChannel
+                .ForAddress(settings.TickHistoryServiceUrl)
+                .CreateGrpcService<ITickHistoryServiceGrpc>());
 
             liveDemoServicesMapper.InitService(true, services => services.EngineApi = GrpcChannel
                 .ForAddress(settings.TradingEngineLiveGrpcServerUrl)

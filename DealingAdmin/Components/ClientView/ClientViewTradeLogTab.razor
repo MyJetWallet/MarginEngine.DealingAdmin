@@ -301,6 +301,14 @@
         {
             var byteData = System.Convert.FromBase64String(base64EncodedData.ToString());
             var decodedJsonData = System.Text.ASCIIEncoding.ASCII.GetString(byteData);
+            snackbar.Add(decodedJsonData, Severity.Info);
+
+            if (eventDetailsJsonViewer == null)
+            {
+                snackbar.Add($"eventDetailsJsonViewer IS NULL!", Severity.Error);
+                return;
+            }
+
             await eventDetailsJsonViewer.Render(decodedJsonData);
             isEventDetailsDialogVisible = true;
         }

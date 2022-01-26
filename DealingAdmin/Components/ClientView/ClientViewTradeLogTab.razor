@@ -5,6 +5,7 @@
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Services
 @using DealingAdmin.Shared.Services
+@using Newtonsoft.Json
 @using SimpleTrading.Abstraction.Caches.ActiveOrders
 @using SimpleTrading.Abstraction.Trading
 @using SimpleTrading.Abstraction.Trading.BalanceOperations
@@ -12,6 +13,8 @@
 @using SimpleTrading.Engine.Grpc.Contracts
 @using SimpleTrading.TradeLog.Grpc
 @using SimpleTrading.TradeLog.Grpc.Contracts
+@using Texnomic.Blazor.JsonViewer
+
 
 @inject StateManager AppState
 @inject LiveDemoServiceMapper LiveDemoServices
@@ -19,6 +22,7 @@
 @inject AdminAppSettings appSettings
 @inject Serilog.Core.Logger logger
 @inject ModalService modalService
+@inject ISnackbar snackbar
 @inject ITradeLogGrpcService TradeLogGrpcService
 
 <div class="mb-2">
@@ -114,7 +118,7 @@
         <ActionColumn Title="Actions" Width="100">
             <div>
                 <Tooltip Title="@("Show Details")">
-                    <a><i @onclick="()=>ShowDetails(context.Data)"
+                    <a><i @onclick="()=>ShowEventDetails(context.Data)"
                           class="material-icons color-primary">manage_search</i></a>
                 </Tooltip>
                 @if (isCreatePositionEvent(context))
@@ -128,6 +132,14 @@
         </ActionColumn>
     </RowTemplate>
 </Table>
+
+<Modal Title="Event Details"
+       Visible="@isEventDetailsDialogVisible"
+       OkText="@("Confirm")"
+       OnOk="()=>CloseEventDetailsDialog()"
+       CancelButtonProps="new AntDesign.ButtonProps(){ Ghost = true }">
+    <JsonViewer @ref="eventDetailsJsonViewer"></JsonViewer>
+</Modal>
 
 <style>
 .ant-table td {
@@ -147,8 +159,8 @@
     int _pageIndex = 1;
     int _pageSize = 200;
     int _total = 0;
-
     private bool isLoading = false;
+    private bool isEventDetailsDialogVisible = false;
 
     DateTime tradeLogDate = DateTime.UtcNow.Date;
     TradeLogTimeUnitsType timeUnitType = TradeLogTimeUnitsType.Minutes;
@@ -156,6 +168,8 @@
 
     UpdateBalanceModel formUpdateBalance = new UpdateBalanceModel();
     TradingAccountModel tradeLogAccount; 
+
+    protected JsonViewer eventDetailsJsonViewer { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -281,10 +295,38 @@
         Hours
     }
 
-    private void ShowDetails(object jsonEventData)
+    private async void ShowEventDetails(object jsonEventData)
     {
-        //TODO: show JSON Viewer
+        try
+        {
+            Console.WriteLine($"----- raw form: {jsonEventData.ToString()}");
+            snackbar.Add($"raw form: {jsonEventData.ToString()}", Severity.Info);
+
+            Console.WriteLine($"----- raw 2: {(string)jsonEventData}");
+            snackbar.Add($"raw 2: {(string)jsonEventData}", Severity.Info);
+
+            var str1 = JsonConvert.ToString(jsonEventData);
+            Console.WriteLine($"----- str1: {str1}");
+            snackbar.Add($"str1: {str1}", Severity.Info);
+
+            await eventDetailsJsonViewer.Render((string)jsonEventData);
+            isEventDetailsDialogVisible = true;
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+            Console.WriteLine(ex);
+        }
+
+        
     }
+
+    private void CloseEventDetailsDialog()
+    {
+        isEventDetailsDialogVisible = false;
+    }
+
 
     private async Task RestoreActivePosition(object jsonEventData)
     {

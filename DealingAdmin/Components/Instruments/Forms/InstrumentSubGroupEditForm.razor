@@ -78,13 +78,13 @@
         { new FormValidationRule { Required = true, Type = FormFieldType.Integer } };
 
     AntDesign.Form<InstrumentSubGroupModel> editForm;
-    private IEnumerable<IInstrumentGroup> instrumentGroups;
+    private List<IInstrumentGroup> instrumentGroups = new List<IInstrumentGroup>();
     private bool isNewSubGroup;
 
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine(">>> InstrumentSubGroupEditForm >>> OnInitializedAsync >>> START"); // REMOVE AFTER TEST !!!!
-        instrumentGroups = await groupsRepository.GetAllAsync();
+        instrumentGroups = (await groupsRepository.GetAllAsync()).ToList();
          Console.WriteLine(">>> InstrumentSubGroupEditForm >>> OnInitializedAsync >>> p-2"); // REMOVE AFTER TEST !!!!
         isNewSubGroup = String.IsNullOrEmpty(this.InstrumentSubGroup.Id);
 

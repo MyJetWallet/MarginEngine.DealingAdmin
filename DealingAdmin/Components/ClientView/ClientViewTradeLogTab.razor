@@ -6,6 +6,7 @@
 @using DealingAdmin.Services
 @using DealingAdmin.Shared.Services
 @using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
 @using SimpleTrading.Abstraction.Caches.ActiveOrders
 @using SimpleTrading.Abstraction.Trading
 @using SimpleTrading.Abstraction.Trading.BalanceOperations
@@ -13,8 +14,6 @@
 @using SimpleTrading.Engine.Grpc.Contracts
 @using SimpleTrading.TradeLog.Grpc
 @using SimpleTrading.TradeLog.Grpc.Contracts
-@using Texnomic.Blazor.JsonViewer
-
 
 @inject StateManager AppState
 @inject LiveDemoServiceMapper LiveDemoServices
@@ -138,7 +137,7 @@
        OkText="@("Confirm")"
        OnOk="()=>CloseEventDetailsDialog()"
        CancelButtonProps="new AntDesign.ButtonProps(){ Ghost = true }">
-    <JsonViewer @ref="eventDetailsJsonViewer"></JsonViewer>
+    <TextArea Placeholder="Event Details" AutoSize Value="@eventDetailsText" ReadOnly />
 </Modal>
 
 <style>
@@ -165,11 +164,10 @@
     DateTime tradeLogDate = DateTime.UtcNow.Date;
     TradeLogTimeUnitsType timeUnitType = TradeLogTimeUnitsType.Minutes;
     int tradeLogTimeUnits = 10;
+    private string eventDetailsText = "";
 
     UpdateBalanceModel formUpdateBalance = new UpdateBalanceModel();
     TradingAccountModel tradeLogAccount; 
-
-    protected JsonViewer eventDetailsJsonViewer { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -297,19 +295,14 @@
 
     private async void ShowEventDetails(object base64EncodedData)
     {
+        eventDetailsText = "";
+
         try
         {
             var byteData = System.Convert.FromBase64String(base64EncodedData.ToString());
-            var decodedJsonData = System.Text.ASCIIEncoding.ASCII.GetString(byteData);
-            snackbar.Add(decodedJsonData, Severity.Info);
-
-            if (eventDetailsJsonViewer == null)
-            {
-                snackbar.Add($"eventDetailsJsonViewer IS NULL!", Severity.Error);
-                return;
-            }
-
-            await eventDetailsJsonViewer.Render(decodedJsonData);
+            var jsonDecodedData = System.Text.ASCIIEncoding.ASCII.GetString(byteData);
+            JObject jsonObj = JObject.Parse(jsonDecodedData);
+            eventDetailsText = jsonObj.ToString();
             isEventDetailsDialogVisible = true;
         }
         catch(Exception ex)

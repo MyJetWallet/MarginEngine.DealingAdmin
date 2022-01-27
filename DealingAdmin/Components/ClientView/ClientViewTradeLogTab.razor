@@ -132,17 +132,42 @@
     </RowTemplate>
 </Table>
 
+    <ModalContainer>
+        <div class="event-details-container">
+            <TextArea Placeholder="Event Details" AutoSize Value="@eventDetailsText" ReadOnly />
+        </div>
+    </ModalContainer>
+
 <Modal Title="Event Details"
        Visible="@isEventDetailsDialogVisible"
-       OkText="@("Confirm")"
-       OnOk="()=>CloseEventDetailsDialog()"
        CancelButtonProps="new AntDesign.ButtonProps(){ Ghost = true }">
-    <TextArea Placeholder="Event Details" AutoSize Value="@eventDetailsText" ReadOnly />
+    <ModalContainer>
+        <div class="event-details-container">
+            <TextArea Placeholder="Event Details" AutoSize Value="@eventDetailsText" ReadOnly />
+        </div>
+    </ModalContainer>
+    <ModalFooter>        
+        <AntDesign.Button
+            Type="@AntDesign.ButtonType.Primary"
+            OnClick="()=>CloseEventDetailsDialog()"
+            Class="btn-text">Close</AntDesign.Button>
+    </ModalFooter>
 </Modal>
 
 <style>
 .ant-table td {
     padding: 5px 10px !important
+}
+
+.event-details-container {
+  max-height: calc(100vh - 320px);
+  max-width:900px;
+}
+
+.event-details-content {
+    height:224px;
+    overflow:auto;
+    background:#fff;
 }
 </style>
 

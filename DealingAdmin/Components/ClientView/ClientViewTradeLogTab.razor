@@ -134,18 +134,16 @@
 
 <Modal Title="Event Details"
        Visible="@isEventDetailsDialogVisible"
+       Closable=@false
+       Footer=null
        CancelButtonProps="new AntDesign.ButtonProps(){ Ghost = true }">
-    <ChildContent>
-        <div class="event-details-container">
-            <TextArea Placeholder="Event Details" AutoSize Value="@eventDetailsText" ReadOnly />
-        </div>
-        <ModalFooter>        
-            <AntDesign.Button
-                Type="@AntDesign.ButtonType.Primary"
-                OnClick="()=>CloseEventDetailsDialog()"
-                Class="btn-text">Close</AntDesign.Button>
-        </ModalFooter>
-    </ChildContent>
+    <div class="event-details-container">
+        <TextArea Placeholder="Event Details" AutoSize Value="@eventDetailsText" ReadOnly />
+    </div>
+    <AntDesign.Button
+        Type="@AntDesign.ButtonType.Primary"
+        OnClick="()=>CloseEventDetailsDialog()"
+        Class="btn-text">Close</AntDesign.Button>
 </Modal>
 
 <style>

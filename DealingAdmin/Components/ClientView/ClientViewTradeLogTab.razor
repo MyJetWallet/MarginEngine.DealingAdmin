@@ -137,8 +137,10 @@
        Closable=@false
        Footer=null
        CancelButtonProps="new AntDesign.ButtonProps(){ Ghost = true }">
-    <div class="event-details-container">
-        <TextArea Placeholder="Event Details" AutoSize Value="@eventDetailsText" ReadOnly />
+    <div class="event-details-content">
+        <TextArea Placeholder="Event Details" 
+            AutoSize Value="@eventDetailsText"
+            ReadOnly />
     </div>
     <AntDesign.Button
         Type="@AntDesign.ButtonType.Primary"
@@ -151,14 +153,12 @@
     padding: 5px 10px !important
 }
 
-.event-details-container {
-  max-height: calc(100vh - 320px);
-  max-width:900px;
-}
-
 .event-details-content {
+    max-height: calc(100vh - 320px);
+    max-width:900px;
     height:224px;
-    overflow:auto;
+    overflow: scroll;
+    overflow-y: scroll;
     background:#fff;
 }
 </style>

@@ -91,6 +91,12 @@ a, .btn-link {
     vertical-align: middle !important;
 }
 
+.content-left {
+    text-align: end !important;
+    align-content: end !important;
+    vertical-align: middle !important;
+}
+
 .simple-badge {
     border-radius: 10px !important;
     background-color: #000;

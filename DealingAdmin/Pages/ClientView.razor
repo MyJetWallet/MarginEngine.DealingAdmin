@@ -20,7 +20,11 @@
         <Input @bind-Value="@searchPhrase" />
     </Col>
     <Col Xs="12" Sm="12" Md="6" Lg="2" Xl="2" class="m-3">
-        <AntDesign.Button Icon="search" OnClick="@OnSearch" Disabled="@(String.IsNullOrEmpty(searchPhrase))">
+        <AntDesign.Button OnClick="@OnSearch"
+            Type="@AntDesign.ButtonType.Primary"
+            Disabled="@(String.IsNullOrEmpty(searchPhrase))"
+            Class="btn-text ">
+            <i class="material-icons-outlined mx-1">person_search</i>
             <span>Search</span>
         </AntDesign.Button>
     </Col>   

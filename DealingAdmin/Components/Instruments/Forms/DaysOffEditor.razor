@@ -17,12 +17,12 @@
     </ChildContent>
 </AntList>
 <AntDesign.Row>
-    <Col Flex=@("160px") Class="no-wrap">
-        <span>From: </span>
+    <Col Flex=@("270px") Class="no-wrap mx-2">
+        <span class="px-1">From:</span>
         <Select Mode="default"
                 title="asdasd"
                 @bind-Value="newItem.DowFrom"
-                Style="width:80px"
+                Style="width:90px"
                 DropdownMaxWidth="80"
                 TItemValue="DayOfWeek"
                 TItem="DayOfWeek">
@@ -37,15 +37,17 @@
                 }
             </SelectOptions>
         </Select>
+        <TimePicker @bind-Value="newItemTimeFrom"
+                    TValue="DateTime"
+                    Format="hh:mm"
+                    Style="width:90px"
+                    Class="px-1"/>
     </Col>
-    <Col Flex=@("90px") Class="px-1">
-        <TimePicker @bind-Value="newItemTimeFrom" TValue="DateTime" Format="hh:mm"/>
-    </Col>
-    <Col Flex=@("160px") Class="no-wrap mx-2">
-        <span>To: </span>
+    <Col Flex=@("270px") Class="no-wrap mx-2">
+        <span class="px-1">To: </span>
         <Select Mode="default"
                 @bind-Value="newItem.DowTo"
-                Style="width:80px"
+                Style="width:90px"
                 DropdownMaxWidth="80"
                 TItemValue="DayOfWeek"
                 TItem="DayOfWeek">
@@ -60,9 +62,10 @@
                 }
             </SelectOptions>
         </Select>
-    </Col>
-    <Col Flex=@("90px") Class="px-1">
-        <TimePicker @bind-Value="newItemTimeTo" TValue="DateTime" Format="hh:mm"/>
+        <TimePicker @bind-Value="newItemTimeTo"
+                    TValue="DateTime" 
+                    Format="hh:mm" 
+                    Class="px-1"/>
     </Col>
     <Col Flex=@("auto") Class="mx-2 center-middle">
         <AntDesign.Button OnClick="()=>AddItem()" Color="AntDesign.Color.Green1">+</AntDesign.Button>

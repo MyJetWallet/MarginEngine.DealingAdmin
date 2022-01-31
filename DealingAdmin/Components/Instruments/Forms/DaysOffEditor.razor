@@ -6,10 +6,10 @@
 @using SimpleTrading.Abstractions.Common.InstrumentsAvatar
 @using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
 
-<AntList DataSource="@Instrument.DaysOff" Size="small"> 
+<AntList DataSource="@Instrument.DaysOff" Size="small" Bordered="@true"> 
     <ChildContent Context="item">
         <ListItem>
-            <div>
+            <div class="start-middle">
                 <span>@(FormatUtils.GetDayOffText(item))</span>
                 <a @onclick="()=>RemoveItem(item)"><i class="material-icons color-crimson mx-1">indeterminate_check_box</i></a>
             </div>
@@ -17,8 +17,8 @@
     </ChildContent>
 </AntList>
 <AntDesign.Row>
-    <Col Flex=@("120px") Class="no-wrap">
-        <span>From:</span>
+    <Col Flex=@("160px") Class="no-wrap">
+        <span>From: </span>
         <Select Mode="default"
                 title="asdasd"
                 @bind-Value="newItem.DowFrom"
@@ -36,11 +36,11 @@
             </SelectOptions>
         </Select>
     </Col>
-    <Col Flex=@("90px") Class="mx-1">
+    <Col Flex=@("90px") Class="px-1">
         <TimePicker @bind-Value="newItemTimeFrom" TValue="DateTime" Format="hh:mm"/>
     </Col>
-    <Col Flex=@("120px") Class="no-wrap mx-2">
-        <span>To:</span>
+    <Col Flex=@("160px") Class="no-wrap mx-2">
+        <span>To: </span>
         <Select Mode="default"
                 @bind-Value="newItem.DowTo"
                 TItemValue="DayOfWeek"
@@ -57,7 +57,7 @@
             </SelectOptions>
         </Select>
     </Col>
-    <Col Flex=@("90px") Class="mx-1">
+    <Col Flex=@("90px") Class="px-1">
         <TimePicker @bind-Value="newItemTimeTo" TValue="DateTime" Format="hh:mm"/>
     </Col>
     <Col Flex=@("auto") Class="mx-2 center-middle">

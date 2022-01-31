@@ -91,7 +91,13 @@ a, .btn-link {
     vertical-align: middle !important;
 }
 
-.content-left {
+.start-middle {
+    text-align: start !important;
+    align-content: start !important;
+    vertical-align: middle !important;
+}
+
+.end-middle {
     text-align: end !important;
     align-content: end !important;
     vertical-align: middle !important;

@@ -14,43 +14,39 @@
 
 <PageHeader Class="m-0 p-0" Title="@pageTitle"/>
 <AntDesign.Row>
-    <Col Flex=@("320px")>
+    <Col Flex=@("320px") Class="px-2">
         Profile Id:
         <Input @bind-Value="@TradingProfile.Id"
                 Placeholder="Profile Id"
-                Style="width:300px"
+                Style="width:240px"
                 Disabled="@(!isNewProfile)"
                 Rules=@RequiredRule/>
     </Col>
-    <Col Flex=@("160px")>
+    <Col Flex=@("160px") Class="px-2">
         Margin Call %
         <Input @bind-Value="@TradingProfile.MarginCallPercent"
                 Placeholder="Margin Call %"
-                Style="width:300px"
                 Disabled="@(!isNewProfile)"
                 Rules=@RequiredRule/>
     </Col>
-    <Col Flex=@("160px")>
+    <Col Flex=@("160px") Class="px-2">
         Stop Out %
         <Input @bind-Value="@TradingProfile.StopOutPercent"
                 Placeholder="Stop Out %"
-                Style="width:300px"
                 Disabled="@(!isNewProfile)"
                 Rules=@RequiredRule/>
     </Col>
-    <Col Flex=@("160px")>
+    <Col Flex=@("160px") Class="px-2">
         Stop Out %
         <Input @bind-Value="@TradingProfile.StopOutPercent"
                 Placeholder="Stop Out %"
-                Style="width:300px"
                 Disabled="@(!isNewProfile)"
                 Rules=@RequiredRule/>
     </Col>
-    <Col Flex=@("160px")>
+    <Col Flex=@("160px") Class="px-2">
         Topping Up %
         <Input @bind-Value="@TradingProfile.PositionToppingUpPercent"
                 Placeholder="Topping Up %"
-                Style="width:300px"
                 Disabled="@(!isNewProfile)"
                 Rules=@RequiredRule/>
     </Col>
@@ -92,21 +88,21 @@
                 DataIndex="Id"
                 Sortable/>
         <AntDesign.Column Title="Operation Volume" TData="string">
-            <p>Max: @context.MaxOperationVolume</p>
-            <p>Min: @context.MinOperationVolume</p>
+            <div>Max: @context.MaxOperationVolume</div>
+            <div>Min: @context.MinOperationVolume</div>
         </AntDesign.Column>
         <AntDesign.Column Title="Max Position Volume"
                 TData="double"
                 DataIndex="MaxPositionVolume"
                 Sortable/>
         <AntDesign.Column Title="Open Position Delay" TData="string">
-            <p>Max: <Tag PresetColor="@PresetColor.Red">@context.OpenPositionMaxDelayMs</Tag> ms</p>
-            <p>Min: <Tag PresetColor="@PresetColor.Green">@context.OpenPositionMinDelayMs</Tag> ms</p>
+            <div>Max: <Tag PresetColor="@PresetColor.Red">@context.OpenPositionMaxDelayMs</Tag> ms</div>
+            <div>Min: <Tag PresetColor="@PresetColor.Green">@context.OpenPositionMinDelayMs</Tag> ms</div>
         </AntDesign.Column>
         <AntDesign.Column Title="Slippage" TData="string">
-            <p><Checkbox Checked="@context.TpSlippage" Disabled="@true">Take Profit</Checkbox></p>
-            <p><Checkbox Checked="@context.SlSlippage" Disabled="@true">Stop Loss</Checkbox></p>
-            <p><Checkbox Checked="@context.OpenPositionSlippage" Disabled="@true">Open Position</Checkbox></p>
+            <div><Checkbox Checked="@context.TpSlippage">Take Profit</Checkbox></div>
+            <div><Checkbox Checked="@context.SlSlippage" Disabled="@true"></Checkbox>Stop Loss</div>
+            <div><Checkbox Checked="@context.OpenPositionSlippage" Class="no-click">Open Position</Checkbox></div>
         </AntDesign.Column>
         <AntDesign.Column Title="Leverages" TData="string">
             <span>@(String.Join(" ", context.Leverages))</span>
@@ -208,7 +204,7 @@
         {
             Id = availableInstruments.FirstOrDefault()
         };
-        
+
         instrumentEditFormTitle = $"Add New Instrument for Trading Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }
@@ -221,7 +217,7 @@
         instrumentEditFormTitle = $"Edit '{profileItem.Id}' Instrument for Trading Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }
-    
+
     private void CloneInstrument(TradingProfileInstrumentModel profileItem)
     {
         selectedInstrument = null;
@@ -268,5 +264,9 @@
     {
         await OnGoBack.InvokeAsync();
     }
-}
+
+    private void RemainBoolValue(bool newValue)
+    {
+        
+    }
 }

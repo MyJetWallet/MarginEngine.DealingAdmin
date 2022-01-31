@@ -82,6 +82,10 @@ a, .btn-link {
     display: none !important;
 }
 
+.no-click {
+    pointer-events: none;
+}
+
 .vertical-baseline {
     vertical-align: baseline;
 }

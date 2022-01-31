@@ -35,12 +35,6 @@
                 Placeholder="Stop Out %"/>
     </Col>
     <Col Flex=@("220px") Class="px-2">
-        Stop Out %
-        <Input @bind-Value="@TradingProfile.StopOutPercent"
-                Style="width:80px"
-                Placeholder="Stop Out %"/>
-    </Col>
-    <Col Flex=@("220px") Class="px-2">
         Topping Up %
         <Input @bind-Value="@TradingProfile.PositionToppingUpPercent"
                 Style="width:80px"
@@ -209,7 +203,6 @@
 
         editedInstrument = new TradingProfileInstrumentModel 
         {
-            Id = availableInstruments.FirstOrDefault(),
             Leverages = new int[] { }
         };
 
@@ -260,8 +253,6 @@
             selectedInstrument.TpSlippage = editedInstrument.TpSlippage;
             selectedInstrument.OpenPositionSlippage = editedInstrument.OpenPositionSlippage;
             selectedInstrument.StopOutPercent = editedInstrument.StopOutPercent;
-
-            snackbar.Add($"Trading Profile '{TradingProfile.Id}' saved", Severity.Success);
         }
         else
         {

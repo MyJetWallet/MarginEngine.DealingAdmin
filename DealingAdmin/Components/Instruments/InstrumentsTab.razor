@@ -157,7 +157,10 @@
     private void ShowNewInstrumentDialog()
     {
         instrumentEditFormTitle = "Add New Instrument";
-        editedInstrument = new TradingInstrumentModel();
+        editedInstrument = new TradingInstrumentModel()
+            {
+                DaysOff = new List<TradingInstrumentDayOffModel>()
+            };
         isEditInstrumentDialogVisible = true;
     }
 

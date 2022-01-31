@@ -14,8 +14,7 @@
 @inject Logger logger
 @inject NavigationManager NavManager
 
-<PageHeader Class="m-0 p-0" Title="@pageTitle">
-</PageHeader>
+<PageHeader Class="m-0 p-0" Title="@pageTitle"/>
 <AntDesign.Row>
     <Col Span="16">
         <Form Model="ProfileGroup"        
@@ -229,13 +228,14 @@
     private void ShowNewInstrumentDialog()
     {
         selectedInstrument = null;
+        availableInstruments = GetAvailableInstrumentsList();
+
         editedInstrument = new SwapProfileModel 
         {
             Id = profileId,
-            InstrumentId = instrumentIds.First() 
+            InstrumentId = availableInstruments.FirstOrDefault()
         };
         
-        availableInstruments = GetAvailableInstrumentsList();
         instrumentEditFormTitle = $"Add New Instrument for Swap Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }

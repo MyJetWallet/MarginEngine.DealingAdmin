@@ -9,7 +9,7 @@
 
 @if (!editFormSwitch)
 {
-    <PageHeader Class="m-0 p-0" Title="Swap Profiles">
+    <PageHeader Class="m-2 p-0" Title="Swap Profiles">
         <PageHeaderExtra>
             <AntDesign.Button OnClick="ShowNewProfile"
                 Type="@AntDesign.ButtonType.Primary"
@@ -52,7 +52,6 @@ else
     private List<SwapGroupProfile> swapGroupProfiles;
 
     private SwapGroupProfile editedProfile;
-    private string profileEditFormTitle;
     private bool editFormSwitch = false;
 
     protected override async Task OnInitializedAsync()
@@ -96,7 +95,6 @@ else
 
     private void ShowNewProfile()
     {
-        profileEditFormTitle = "Add New Profile";
         editedProfile = new SwapGroupProfile
             {
                 ProfileId = "",
@@ -107,7 +105,6 @@ else
 
     private void ShowEditProfile(SwapGroupProfile groupProfile)
     {
-        profileEditFormTitle = $"Edit '{groupProfile.ProfileId}' Profile";
         editedProfile = groupProfile;
         editFormSwitch = true;
     }

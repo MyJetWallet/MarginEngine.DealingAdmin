@@ -35,37 +35,26 @@ namespace DealingAdmin.Abstractions.Models
 
     public class TradingProfileInstrumentModel : ITradingProfileInstrument
     {
-        [Required]
         public string Id { get; set; }
 
-        [Required]
         public double MinOperationVolume { get; set; }
 
-        [Required]
         public double MaxOperationVolume { get; set; }
 
-        [Required]
         public double MaxPositionVolume { get; set; }
 
-        [Required]
         public int OpenPositionMinDelayMs { get; set; }
 
-        [Required]
         public int OpenPositionMaxDelayMs { get; set; }
 
-        [Required]
         public bool TpSlippage { get; set; }
 
-        [Required]
         public bool SlSlippage { get; set; }
         
-        [Required]
         public bool IsTrending { get; set; }
 
-        [Required]
         public bool OpenPositionSlippage { get; set; }
 
-        [Required]
         public int[] Leverages { get; set; }
 
         public double? StopOutPercent { get; set; }

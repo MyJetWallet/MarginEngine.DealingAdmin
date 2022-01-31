@@ -219,12 +219,13 @@
     private void ShowNewInstrumentDialog()
     {
         selectedInstrument = null;
+        availableInstruments = GetAvailableInstrumentsList();
+
         editedInstrument = new MarkupItem 
         {
-            InstrumentId = instrumentIds.First() 
+            InstrumentId = availableInstruments.FirstOrDefault() 
         };
-
-        availableInstruments = GetAvailableInstrumentsList();
+        
         instrumentEditFormTitle = $"Add New Instrument for Markup Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }

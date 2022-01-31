@@ -16,8 +16,8 @@
         </ListItem>
     </ChildContent>
 </AntList>
-<div class="grid-container-dayoff-new-item no-wrap">
-    <div>
+<AntDesign.Row>
+    <Col Flex=@("200px")>
         <span>From:</span>
         <Select Mode="default"
                 @bind-Value="newItem.DowFrom"
@@ -34,11 +34,11 @@
                 }
             </SelectOptions>
         </Select>
-    </div>
-    <div>
+    </Col>
+    <Col Flex=@("100px")>
         <TimePicker @bind-Value="newItemTimeFrom" TValue="DateTime" Format="hh:mm"/>
-    </div>
-    <div>
+    </Col>
+    <Col Flex=@("200px")>
         <span>To:</span>
         <Select Mode="default"
                 @bind-Value="newItem.DowTo"
@@ -55,20 +55,16 @@
                 }
             </SelectOptions>
         </Select>
-    </div>
-    <div>
+    </Col>
+    <Col Flex=@("100px")>
         <TimePicker @bind-Value="newItemTimeTo" TValue="DateTime" Format="hh:mm"/>
-    </div>
-    <div class="center-middle">
+    </Col>
+    <Col class="center-middle" Flex=@("auto")>
         <AntDesign.Button OnClick="()=>AddItem()" Color="AntDesign.Color.Green1">+</AntDesign.Button>
-     </div>
-</div>
- 
+    </Col>
+</AntDesign.Row>
+
 @code {
-
-    private DateTime newItemTimeFrom { get; set; }
-    private DateTime newItemTimeTo { get; set; }
-
     [Parameter]
     public TradingInstrumentModel Instrument { get; set; } = new();
 
@@ -76,6 +72,9 @@
     public EventCallback<TradingInstrumentModel> InstrumentChanged { get; set; }
 
     TradingInstrumentDayOffModel newItem = new TradingInstrumentDayOffModel();
+    
+    private DateTime newItemTimeFrom { get; set; }
+    private DateTime newItemTimeTo { get; set; }
 
     private void RemoveItem(TradingInstrumentDayOffModel item)
     {

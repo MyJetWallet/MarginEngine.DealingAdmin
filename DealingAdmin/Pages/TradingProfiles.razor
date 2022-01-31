@@ -3,103 +3,115 @@
 @using AntDesign.TableModels
 @using System.Text.Json
 @using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.TradingProfiles
 @using DealingAdmin.Shared.Services
 
 @inject StateManager AppState
 @inject LiveDemoServiceMapper liveDemoServices;
 
-<PageHeader Class="m-0 p-0" Title="Trading Profiles">
-    <PageHeaderExtra>
-        <AntDesign.Button OnClick="ShowNewProfileDialog" Type="@AntDesign.ButtonType.Primary">New Profile</AntDesign.Button>
-    </PageHeaderExtra>
-</PageHeader>
+@if (!editFormSwitch)
+{
+    <PageHeader Class="m-2 p-0" Title="Trading Profiles">
+        <PageHeaderExtra>
+            <AntDesign.Button OnClick="ShowNewProfile" Type="@AntDesign.ButtonType.Primary">New Profile</AntDesign.Button>
+        </PageHeaderExtra>
+    </PageHeader>
 
-<Table DataSource="@tradingProfiles"
-       TItem="TradingProfileModel"
-       Bordered="@true"
-       Total="0"
-       HidePagination="@true"
-       ScrollY="calc(100vh - 120px)"
-       PageSize="999">
-    <RowTemplate>           
-        <AntDesign.Column Title="Id"
-                DataIndex="Id"
-                TData="string"
-                Sortable
-                Width="200"/>
-        <AntDesign.Column Title="Margin Call %" 
-                DataIndex="MarginCallPercent" 
-                TData="int"
-                Sortable
-                Width="100"/>
-        <AntDesign.Column Title="Stop out %"
-                DataIndex="StopOutPercent" 
-                TData="int"
-                Sortable
-                Width="100"/>
-        <AntDesign.Column Title="Topping up %"
-                DataIndex="PositionToppingUpPercent"
-                TData="int"
-                Sortable
-                Width="100"/>
-        <AntDesign.Column Title="Instruments"
-                TData="string">
-            @foreach (var instrument in context.Instruments)
-            {
-                <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>
-            }
-        </AntDesign.Column>    
-        <ActionColumn Title="Edit" Width="60">
-                <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
+    <Table DataSource="@tradingProfiles"
+           TItem="TradingProfileModel"
+           Bordered="@true"
+           Total="0"
+           HidePagination="@true"
+           ScrollY="calc(100vh - 120px)"
+           PageSize="999">
+        <RowTemplate>           
+            <AntDesign.Column Title="Id"
+                    DataIndex="Id"
+                    TData="string"
+                    Sortable
+                    Width="200"/>
+            <AntDesign.Column Title="Margin Call %" 
+                    DataIndex="MarginCallPercent" 
+                    TData="int"
+                    Sortable
+                    Width="100"/>
+            <AntDesign.Column Title="Stop out %"
+                    DataIndex="StopOutPercent" 
+                    TData="int"
+                    Sortable
+                    Width="100"/>
+            <AntDesign.Column Title="Topping up %"
+                    DataIndex="PositionToppingUpPercent"
+                    TData="int"
+                    Sortable
+                    Width="100"/>
+            <AntDesign.Column Title="Instruments"
+                    TData="string">
+                @foreach (var instrument in context.Instruments)
+                {
+                    <Tag PresetColor="PresetColor.Purple">@instrument.Id</Tag>
+                }
+            </AntDesign.Column>
+            <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditProfile(context)"
                     class="material-icons color-primary">edit</i></a>
-        </ActionColumn>
-    </RowTemplate>
-</Table>
-
+            </ActionColumn>
+        </RowTemplate>
+    </Table>
+}
+else
+{
+    <EditTradingProfile TradingProfile="editedProfile" OnGoBack="CloseEditProfile"/>
+}
 
 @code {
     private IEnumerable<TradingProfileModel> tradingProfiles;
 
     private TradingProfileModel editedProfile;
-    private string profileEditFormTitle;
-    private bool isEditInstrumentDialogVisible;
+    private bool editFormSwitch = false;
 
     protected override async Task OnInitializedAsync()
     {
         await RefreshData();
-        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() =>
+        {
+            RefreshData().GetAwaiter().GetResult();
+            this.StateHasChanged();
+        });
     }
 
     private async Task RefreshData()
     {
-         tradingProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
-            .TradingProfileRepository.GetAllAsync()).Select(TradingProfileModel.Create);
+        tradingProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
+        .TradingProfileRepository.GetAllAsync()).Select(TradingProfileModel.Create);
 
+        editedProfile = new TradingProfileModel
+        {
+            Id = "",
+            Instruments = new List<TradingProfileInstrumentModel>()
+        };
+    }
+
+    private void ShowNewProfile()
+    {
+        editedProfile = new TradingProfileModel
+            {
+                Id = "",
+                Instruments = new List<TradingProfileInstrumentModel>()
+            };
+        editFormSwitch = true;
+    }
+
+    private void ShowEditProfile(TradingProfileModel groupProfile)
+    {
+        editedProfile = groupProfile;
+        editFormSwitch = true;
+    }
+
+    private async void CloseEditProfile()
+    {
+        editFormSwitch = false;
+        await RefreshData();
         this.StateHasChanged();
-    }
-
-    void OnChange(QueryModel<TradingProfileModel> query)
-    {
-        Console.WriteLine(JsonSerializer.Serialize(query));
-    }
-
-    private void ShowNewProfileDialog()
-    {
-        profileEditFormTitle = "Add New Instrument";
-        editedProfile = new TradingProfileModel();
-        isEditInstrumentDialogVisible = true;
-    }
-
-    private void ShowEditInstrumentDialog(TradingProfileModel profile)
-    {
-        profileEditFormTitle = $"Edit '{profile.Id}' Profile";
-        editedProfile = profile;
-        isEditInstrumentDialogVisible = true;
-    }
-
-    private void CloseEditProfileDialog()
-    {
-        isEditInstrumentDialogVisible = false;
-        editedProfile = new TradingProfileModel();
     }
 }

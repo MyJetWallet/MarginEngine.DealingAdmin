@@ -18,7 +18,7 @@
 @inject TradingInstrumentMyNoSqlRepository avatarRepository
 @inject IDefaultValuesRepository defValuesRepository
 @inject ISwapProfileWriter SwapProfileWriter
-@inject IUserMessageService MessageService
+@inject ISnackbar snackbar
 @inject Logger logger
 
 <PageHeader Class="m-2 p-0" Title="Instruments">
@@ -131,8 +131,7 @@
         Instrument="editedInstrument"
         InstrumentGroups="instrumentGroups" 
         SubGroups="instrumentSubGroups"
-        SwapProfiles="swapProfiles"
-        />   
+        SwapProfiles="swapProfiles"/>   
 </Modal>
 
 @code {
@@ -210,13 +209,14 @@
         {
             await InstrumentsRepository.UpdateAsync(editedInstrument);
             tradingInstruments = (await InstrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
-            await MessageService.SuccessAsync("Instrument saved");
+            isEditInstrumentDialogVisible = false;
+            snackbar.Add($"Instrument '{editedInstrument.Id}' saved", Severity.Success);
             StateHasChanged();
         }
         catch(Exception ex)
         {
             logger.Error(ex, ex.Message);
-            await MessageService.ErrorAsync($"Error occured: {ex.Message}");
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
         }
     }
 }

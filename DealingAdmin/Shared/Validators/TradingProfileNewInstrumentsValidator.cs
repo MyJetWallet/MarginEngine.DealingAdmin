@@ -1,6 +1,5 @@
 using DealingAdmin.Abstractions;
 using DealingAdmin.Abstractions.Models;
-using DealingAdmin.Shared.Services;
 using Serilog.Core;
 using System;
 using System.Collections.Generic;
@@ -12,16 +11,13 @@ namespace DealingAdmin.Validators
     public class TradingProfileNewInstrumentsValidator : ITradingProfileNewInstrumentsValidator
     {
         private readonly LiveDemoServiceMapper _liveDemoServices;
-        private readonly IStDataReader _stDataReader;
         private readonly Logger _logger;
 
         public TradingProfileNewInstrumentsValidator(
             LiveDemoServiceMapper liveDemoServices,
-            IStDataReader stDataReader,
             Logger logger)
         {
             _liveDemoServices = liveDemoServices;
-            _stDataReader = stDataReader;
             _logger = logger;
         }
 
@@ -48,7 +44,9 @@ namespace DealingAdmin.Validators
                     .Where(group => group.TradingProfileId == profileId)?.Select(x => x.Id).ToList();
 
                 var profileActivePositionsInstruments =
-                    (await _stDataReader.GetActivePositionsInstrumentsByTradingGroups(boundTradingGroups)).ToList();
+                    (await _liveDemoServices.GetContext(isLive).StReader
+                        .GetActivePositionsInstrumentsByTradingGroups(boundTradingGroups)).ToList();
+
                 usedInstruments.AddRange(deletedInstruments.Intersect(profileActivePositionsInstruments));
 
                 if (usedInstruments.Count > 0)
@@ -57,8 +55,9 @@ namespace DealingAdmin.Validators
                             + $"{Environment.NewLine} {String.Join(", ", usedInstruments.ToArray())}";
                 }
 
-                var allPendingOrdersInstruments =
-                    (await _stDataReader.GetPendingOrdersInstrumentsByTradingGroups(boundTradingGroups)).ToList();
+                var allPendingOrdersInstruments = (await _liveDemoServices.GetContext(isLive).StReader.
+                    GetPendingOrdersInstrumentsByTradingGroups(boundTradingGroups)).ToList();
+
                 usedInstruments.AddRange(deletedInstruments.Intersect(allPendingOrdersInstruments));
 
                 if (usedInstruments.Count > 0)
@@ -67,8 +66,9 @@ namespace DealingAdmin.Validators
                             + $"{Environment.NewLine} {String.Join(", ", usedInstruments.ToArray())}";
                 }
 
-                var closedPositionsInstruments =
-                    (await _stDataReader.GetClosedPositionsInstrumentsByTradingGroups(boundTradingGroups)).ToList();
+                var closedPositionsInstruments = (await _liveDemoServices.GetContext(isLive).StReader.
+                    GetClosedPositionsInstrumentsByTradingGroups(boundTradingGroups)).ToList();
+
                 usedInstruments.AddRange(deletedInstruments.Intersect(closedPositionsInstruments));
 
                 if (usedInstruments.Count > 0)

@@ -226,7 +226,6 @@
     {
         selectedInstrument = profileItem;
         editedInstrument = TradingProfileInstrumentModel.Create(profileItem);
-        Console.WriteLine($">>> EditTradingProfile >>> ShowEditInstrumentDialog >> editedInstrument.Leverages.Count = {editedInstrument.Leverages.Count()}");
         availableInstruments = GetAvailableInstrumentsList();
         instrumentEditFormTitle = $"Edit '{profileItem.Id}' Instrument for Trading Profile {profileId}";
         isEditInstrumentDialogVisible = true;
@@ -248,24 +247,22 @@
 
     private void SaveInstrument()
     {
-        Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> editedInstrument.Leverages.Count = {editedInstrument.Leverages.Count()}");
-        snackbar.Add($"SaveInstrument > edited.Leverages.Count = {editedInstrument.Leverages.Count()}", Severity.Info);
-
         if (selectedInstrument != null)
         {
-            Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> BEFORE >> selectedInstrument.Leverages.Count = {selectedInstrument.Leverages.Count()}");
-            snackbar.Add($"SaveInstrument >> BEFORE >> selected.Leverages.Count = {selectedInstrument.Leverages.Count()}", Severity.Info);
-            
+            snackbar.Add($"SaveInstrument >> selected '{selectedInstrument.Id}' Leverages BEFORE: {selectedInstrument.Leverages.Count()}");
+            snackbar.Add($"SaveInstrument >> Original Leverages BEFORE: {TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id).Leverages.Count()}", Severity.Info);
             selectedInstrument = TradingProfileInstrumentModel.Create(editedInstrument);
-            
-            Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> AFTER >> selectedInstrument.Leverages.Count = {selectedInstrument.Leverages.Count()}");
-            snackbar.Add($"SaveInstrument >> AFTER >> selected.Leverages.Count = {selectedInstrument.Leverages.Count()}", Severity.Info);
+            snackbar.Add($"SaveInstrument >> selected '{selectedInstrument.Id}' Leverages AFTER: {selectedInstrument.Leverages.Count()}");
+            snackbar.Add($"SaveInstrument >> Original Leverages AFTER: {TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id).Leverages.Count()}", Severity.Info);
+
+            var editedItem = TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id);
+            editedItem = TradingProfileInstrumentModel.Create(editedInstrument);
+            snackbar.Add($"Original Leverages AFTER-222: {TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id).Leverages.Count()}", Severity.Info);            
+
+            snackbar.Add($"Trading Profile '{TradingProfile.Id}' saved", Severity.Success);
         }
         else
         {
-            Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> NEW ONE >> selectedInstrument.Leverages.Count = {editedInstrument.Leverages.Count()}");
-            snackbar.Add($"SaveInstrument >> NEW ONE >> selected.Leverages.Count = {editedInstrument.Leverages.Count()}", Severity.Info);
-
             TradingProfile.Instruments.Add(editedInstrument);
         }
 

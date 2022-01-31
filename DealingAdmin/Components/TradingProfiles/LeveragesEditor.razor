@@ -30,13 +30,13 @@
 
     private void RemoveItem(int item)
     {
-        this.Instrument.Leverages.Remove(item);
-        this.StateHasChanged();
+        this.Instrument.Leverages = this.Instrument.Leverages.Where(x => x != item).ToArray();
     }
 
     private void AddItem()
     {
-        this.Instrument.Leverages.Append(newItem);
-        this.StateHasChanged();
+        var list = this.Instrument.Leverages.ToList();
+        list.Add(newItem);
+        this.Instrument.Leverages = list.ToArray();
     }
 }

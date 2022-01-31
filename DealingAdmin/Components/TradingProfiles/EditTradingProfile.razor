@@ -3,6 +3,7 @@
 @using DealingAdmin.Shared.Services
 @using Serilog.Core
 @using SimpleTrading.Abstraction.Trading.Instruments
+@using Microsoft.AspNetCore.Components
 
 @inject StateManager AppState
 @inject LiveDemoServiceMapper liveDemoServices
@@ -14,35 +15,35 @@
 
 <PageHeader Class="m-0 p-0" Title="@pageTitle"/>
 <AntDesign.Row>
-    <Col Flex=@("320px") Class="px-2">
+    <Col Flex=@("360px") Class="px-2">
         Profile Id:
         <Input @bind-Value="@TradingProfile.Id"
                 Placeholder="Profile Id"
-                Style="width:240px"
+                Style="width:220px"
                 Disabled="@(!isNewProfile)"/>
     </Col>
     <Col Flex=@("220px") Class="px-2">
         Margin Call %
         <Input @bind-Value="@TradingProfile.MarginCallPercent"
-                Style="width:40px"
+                Style="width:80px"
                 Placeholder="Margin Call %"/>
     </Col>
     <Col Flex=@("220px") Class="px-2">
         Stop Out %
         <Input @bind-Value="@TradingProfile.StopOutPercent"
-                Style="width:40px"
+                Style="width:80px"
                 Placeholder="Stop Out %"/>
     </Col>
     <Col Flex=@("220px") Class="px-2">
         Stop Out %
         <Input @bind-Value="@TradingProfile.StopOutPercent"
-                Style="width:40px"
+                Style="width:80px"
                 Placeholder="Stop Out %"/>
     </Col>
     <Col Flex=@("220px") Class="px-2">
         Topping Up %
         <Input @bind-Value="@TradingProfile.PositionToppingUpPercent"
-                Style="width:40px"
+                Style="width:80px"
                 Placeholder="Topping Up %"/>
     </Col>
     <Col Flex=@("auto")>
@@ -96,8 +97,8 @@
         </AntDesign.Column>
         <AntDesign.Column Title="Slippage" TData="string">
             <div class="no-click"><Checkbox Checked="@context.TpSlippage">Take Profit</Checkbox></div>
-            <div class="no-click"><Checkbox Checked="@context.SlSlippage" Class="no-click"></Checkbox>- Stop Loss</div>
-            <div><Checkbox Checked="@context.OpenPositionSlippage" Class="no-click">Open Position</Checkbox></div>
+            <div class="no-click"><Checkbox Checked="@context.SlSlippage">Stop Loss</Checkbox></div>
+            <div class="no-click"><Checkbox Checked="@context.OpenPositionSlippage">Open Position</Checkbox></div>
         </AntDesign.Column>
         <AntDesign.Column Title="Leverages" TData="string">
             <span>@(String.Join(" ", context.Leverages))</span>
@@ -125,6 +126,18 @@
     </RowTemplate>
 </Table>
 
+<Modal Title="@instrumentEditFormTitle"
+       Visible="@isEditInstrumentDialogVisible"
+       Closable="@false"
+       Footer=null
+       Width="480">
+    <TradingProfileInstrumentEditForm
+            Instrument="@editedInstrument"
+            AvailableInstruments=@availableInstruments
+            OnSave="@SaveInstrument"
+            OnCancel="@CancelEditInstrumentDialog" />       
+</Modal>
+
 @code {
     [Parameter]
     public TradingProfileModel TradingProfile { get; set; }
@@ -133,7 +146,7 @@
     public EventCallback OnGoBack { get; set; }
 
     TradingProfileInstrumentModel selectedInstrument;
-    TradingProfileInstrumentModel editedInstrument = new TradingProfileInstrumentModel();
+    TradingProfileInstrumentModel editedInstrument;
     List<string> instrumentIds;
     List<string> availableInstruments;
 
@@ -146,7 +159,6 @@
 
     private string pageTitle = "Add New Trading Profile";
     private string instrumentEditFormTitle = "";
-    private string profileEditFormTitle;
     private bool isEditInstrumentDialogVisible;
 
     protected override async Task OnInitializedAsync()
@@ -197,11 +209,17 @@
 
         editedInstrument = new TradingProfileInstrumentModel 
         {
-            Id = availableInstruments.FirstOrDefault()
+            Id = availableInstruments.FirstOrDefault(),
+            Leverages = new int[] { }
         };
 
         instrumentEditFormTitle = $"Add New Instrument for Trading Profile {profileId}";
         isEditInstrumentDialogVisible = true;
+    }
+
+    private void CancelEditInstrumentDialog()
+    {
+        isEditInstrumentDialogVisible = false;
     }
 
     private void ShowEditInstrumentDialog(TradingProfileInstrumentModel profileItem)
@@ -258,10 +276,5 @@
     private async void GoBack()
     {
         await OnGoBack.InvokeAsync();
-    }
-
-    private void RemainBoolValue(bool newValue)
-    {
-        
     }
 }

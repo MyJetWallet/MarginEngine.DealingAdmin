@@ -87,7 +87,6 @@
     private void RemoveItem(TradingInstrumentDayOffModel item)
     {
         this.Instrument.DaysOff.Remove(item);
-        // this.StateHasChanged();
     }
 
     private void AddItem()
@@ -100,7 +99,6 @@
 
     public async Task UpdateInstrumentDayOffs()
     {
-        Console.WriteLine("UpdateInstrumentDayOffs call");
         await InstrumentChanged.InvokeAsync(Instrument);
     }
 }

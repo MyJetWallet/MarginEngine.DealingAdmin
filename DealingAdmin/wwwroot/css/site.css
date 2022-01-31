@@ -83,7 +83,7 @@ a, .btn-link {
 }
 
 .no-click {
-    pointer-events: none;
+    pointer-events: none !important;
 }
 
 .vertical-baseline {

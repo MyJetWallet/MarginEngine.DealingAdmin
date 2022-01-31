@@ -19,36 +19,31 @@
         <Input @bind-Value="@TradingProfile.Id"
                 Placeholder="Profile Id"
                 Style="width:240px"
-                Disabled="@(!isNewProfile)"
-                Rules=@RequiredRule/>
+                Disabled="@(!isNewProfile)"/>
     </Col>
-    <Col Flex=@("160px") Class="px-2">
+    <Col Flex=@("220px") Class="px-2">
         Margin Call %
         <Input @bind-Value="@TradingProfile.MarginCallPercent"
-                Placeholder="Margin Call %"
-                Disabled="@(!isNewProfile)"
-                Rules=@RequiredRule/>
+                Style="width:40px"
+                Placeholder="Margin Call %"/>
     </Col>
-    <Col Flex=@("160px") Class="px-2">
+    <Col Flex=@("220px") Class="px-2">
         Stop Out %
         <Input @bind-Value="@TradingProfile.StopOutPercent"
-                Placeholder="Stop Out %"
-                Disabled="@(!isNewProfile)"
-                Rules=@RequiredRule/>
+                Style="width:40px"
+                Placeholder="Stop Out %"/>
     </Col>
-    <Col Flex=@("160px") Class="px-2">
+    <Col Flex=@("220px") Class="px-2">
         Stop Out %
         <Input @bind-Value="@TradingProfile.StopOutPercent"
-                Placeholder="Stop Out %"
-                Disabled="@(!isNewProfile)"
-                Rules=@RequiredRule/>
+                Style="width:40px"
+                Placeholder="Stop Out %"/>
     </Col>
-    <Col Flex=@("160px") Class="px-2">
+    <Col Flex=@("220px") Class="px-2">
         Topping Up %
         <Input @bind-Value="@TradingProfile.PositionToppingUpPercent"
-                Placeholder="Topping Up %"
-                Disabled="@(!isNewProfile)"
-                Rules=@RequiredRule/>
+                Style="width:40px"
+                Placeholder="Topping Up %"/>
     </Col>
     <Col Flex=@("auto")>
     </Col>
@@ -96,12 +91,12 @@
                 DataIndex="MaxPositionVolume"
                 Sortable/>
         <AntDesign.Column Title="Open Position Delay" TData="string">
-            <div>Max: <Tag PresetColor="@PresetColor.Red">@context.OpenPositionMaxDelayMs</Tag> ms</div>
-            <div>Min: <Tag PresetColor="@PresetColor.Green">@context.OpenPositionMinDelayMs</Tag> ms</div>
+            <div>Max: @context.OpenPositionMaxDelayMs ms</div>
+            <div>Min: @context.OpenPositionMinDelayMs ms</div>
         </AntDesign.Column>
         <AntDesign.Column Title="Slippage" TData="string">
-            <div><Checkbox Checked="@context.TpSlippage">Take Profit</Checkbox></div>
-            <div><Checkbox Checked="@context.SlSlippage" Disabled="@true"></Checkbox>Stop Loss</div>
+            <div class="no-click"><Checkbox Checked="@context.TpSlippage">Take Profit</Checkbox></div>
+            <div class="no-click"><Checkbox Checked="@context.SlSlippage" Class="no-click"></Checkbox>- Stop Loss</div>
             <div><Checkbox Checked="@context.OpenPositionSlippage" Class="no-click">Open Position</Checkbox></div>
         </AntDesign.Column>
         <AntDesign.Column Title="Leverages" TData="string">

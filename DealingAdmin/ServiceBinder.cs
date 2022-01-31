@@ -113,6 +113,7 @@ namespace DealingAdmin
             services.AddSingleton<IQuoteSourceService, QuoteSourceService>();
             services.AddSingleton<ITraderSearchService, TraderSearchService>();
             services.AddSingleton<IAccountNewTradingGroupValidator, AccountNewTradingGroupValidator>();
+            services.AddSingleton<ITradingProfileNewInstrumentsValidator, TradingProfileNewInstrumentsValidator>();
         }
 
         public static void InitLiveDemoManager(this IServiceCollection services, LiveDemoServiceMapper mapper)

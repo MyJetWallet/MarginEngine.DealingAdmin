@@ -249,16 +249,23 @@
     private void SaveInstrument()
     {
         Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> editedInstrument.Leverages.Count = {editedInstrument.Leverages.Count()}");
+        snackbar.Add($"SaveInstrument > edited.Leverages.Count = {editedInstrument.Leverages.Count()}", Severity.Info);
 
         if (selectedInstrument != null)
         {
             Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> BEFORE >> selectedInstrument.Leverages.Count = {selectedInstrument.Leverages.Count()}");
+            snackbar.Add($"SaveInstrument >> BEFORE >> selected.Leverages.Count = {selectedInstrument.Leverages.Count()}", Severity.Info);
+            
             selectedInstrument = TradingProfileInstrumentModel.Create(editedInstrument);
+            
             Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> AFTER >> selectedInstrument.Leverages.Count = {selectedInstrument.Leverages.Count()}");
+            snackbar.Add($"SaveInstrument >> AFTER >> selected.Leverages.Count = {selectedInstrument.Leverages.Count()}", Severity.Info);
         }
         else
         {
             Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> NEW ONE >> selectedInstrument.Leverages.Count = {editedInstrument.Leverages.Count()}");
+            snackbar.Add($"SaveInstrument >> NEW ONE >> selected.Leverages.Count = {editedInstrument.Leverages.Count()}", Severity.Info);
+
             TradingProfile.Instruments.Add(editedInstrument);
         }
 

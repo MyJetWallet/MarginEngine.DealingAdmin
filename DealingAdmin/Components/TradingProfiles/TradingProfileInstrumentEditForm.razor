@@ -4,6 +4,8 @@
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
 @using SimpleTrading.Abstraction.Trading.Settings
 
+@inject ISnackbar snackbar
+
 <Form @ref="editForm" 
       Model="Instrument"        
       LabelColSpan="12"
@@ -93,6 +95,7 @@
         }
 
         Console.WriteLine($">>>>>> EditForm OnInitializedAsync >> Leverages.Count = {Instrument.Leverages.Count()}");
+        snackbar.Add($"EditForm OnInit >> Leverages.Count = {Instrument.Leverages.Count()}", Severity.Info);
     }
 
     private async void SaveInstrument()
@@ -100,11 +103,14 @@
         if (!editForm.Validate())
         {
             Console.WriteLine(">> TradingProfileInstrumentEditForm >> SaveInstrument >> NOT Validate");
+            snackbar.Add("EditForm >> SaveInstrument >> NOT Validate", Severity.Warning);
             return;
         }
 
         Console.WriteLine(">> TradingProfileInstrumentEditForm >> SaveInstrument >> InvokeAsync SAVE");
         Console.WriteLine($">>>>>> SaveInstrument >> Leverages.Count = {Instrument.Leverages.Count()}");
+        snackbar.Add($"SaveInstrument >> Leverages.Count = {Instrument.Leverages.Count()}", Severity.Info);
+
         await OnSave.InvokeAsync();
     }
 

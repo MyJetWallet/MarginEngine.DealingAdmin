@@ -22,7 +22,7 @@
 @code {
     [Parameter]
     public TradingProfileInstrumentModel Instrument { get; set; } = new();
-    
+
     [Parameter]
     public EventCallback<TradingProfileInstrumentModel> InstrumentChanged { get; set; }
 
@@ -31,10 +31,12 @@
     private void RemoveItem(int item)
     {
         this.Instrument.Leverages.Remove(item);
+        this.StateHasChanged();
     }
 
     private void AddItem()
     {
         this.Instrument.Leverages.Append(newItem);
+        this.StateHasChanged();
     }
 }

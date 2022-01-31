@@ -24,21 +24,24 @@
     </Col>
     <Col Flex=@("220px") Class="px-2">
         Margin Call %
-        <Input @bind-Value="@TradingProfile.MarginCallPercent"
-                Style="width:80px"
-                Placeholder="Margin Call %"/>
+        <AntDesign.InputNumber
+                @bind-Value="@TradingProfile.MarginCallPercent"
+                TValue="double"
+                Style="width:80px" />
     </Col>
     <Col Flex=@("220px") Class="px-2">
         Stop Out %
-        <Input @bind-Value="@TradingProfile.StopOutPercent"
-                Style="width:80px"
-                Placeholder="Stop Out %"/>
+        <AntDesign.InputNumber 
+                @bind-Value="@TradingProfile.StopOutPercent"
+                TValue="double"
+                Style="width:80px"/>
     </Col>
     <Col Flex=@("220px") Class="px-2">
         Topping Up %
-        <Input @bind-Value="@TradingProfile.PositionToppingUpPercent"
-                Style="width:80px"
-                Placeholder="Topping Up %"/>
+        <AntDesign.InputNumber
+                @bind-Value="@TradingProfile.PositionToppingUpPercent"
+                TValue="double"
+                Style="width:80px"/>
     </Col>
     <Col Flex=@("auto")>
     </Col>
@@ -108,7 +111,7 @@
             </Tooltip>
             <Tooltip Title="@("Clone")">
                 <a><i @onclick="()=>CloneInstrument(context)"
-                    class="material-icons color-green">content_copy</i></a>
+                    class="material-icons color-aquamarine">content_copy</i></a>
             </Tooltip>
             <Tooltip Title="@("Delete")">
                 <Popconfirm Title="Are you sure?" OkText="Confirm" CancelText="Cancel">
@@ -264,6 +267,12 @@
 
     protected async Task SaveTradingProfile()
     {
+        if (String.IsNullOrEmpty(TradingProfile.Id))
+        {
+            snackbar.Add("Profile ID is empty", Severity.Warning);
+            return;
+        }
+
         var profileNewInstrumentsValidatorErrorMessage =
             await profileNewInstrumentsValidator.ValidateTradingProfileNewInstruments(TradingProfile, AppState.IsLive);
 

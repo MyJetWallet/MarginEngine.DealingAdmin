@@ -153,8 +153,11 @@ a, .btn-link {
 }
 
 .color-green {
-    color: #000;
     color: SeaGreen !important
+}
+
+.color-aquamarine {
+    color: #69f0ae !important
 }
 
 .color-crimson {

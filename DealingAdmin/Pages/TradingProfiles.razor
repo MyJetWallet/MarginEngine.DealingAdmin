@@ -53,8 +53,14 @@
                 }
             </AntDesign.Column>
             <ActionColumn Title="Edit" Width="60">
-                <a><i @onclick="()=>ShowEditProfile(context)"
-                    class="material-icons color-primary">edit</i></a>
+                <Tooltip Title="@("Edit")">
+                    <a><i @onclick="()=>ShowEditProfile(context)"
+                        class="material-icons color-primary">edit</i></a>
+                </Tooltip>
+                <Tooltip Title="@("Clone")">
+                    <a><i @onclick="()=>CloneProfile(context)"
+                        class="material-icons color-aquamarine">content_copy</i></a>
+                </Tooltip>
             </ActionColumn>
         </RowTemplate>
     </Table>
@@ -105,6 +111,13 @@ else
     private void ShowEditProfile(TradingProfileModel groupProfile)
     {
         editedProfile = groupProfile;
+        editFormSwitch = true;
+    }
+
+    private void CloneProfile(TradingProfileModel groupProfile)
+    {
+        editedProfile = TradingProfileModel.Create(groupProfile);
+        editedProfile.Id = String.Empty;
         editFormSwitch = true;
     }
 

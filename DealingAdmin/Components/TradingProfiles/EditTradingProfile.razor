@@ -249,15 +249,17 @@
     {
         if (selectedInstrument != null)
         {
-            snackbar.Add($"SaveInstrument >> selected '{selectedInstrument.Id}' Leverages BEFORE: {selectedInstrument.Leverages.Count()}");
-            snackbar.Add($"SaveInstrument >> Original Leverages BEFORE: {TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id).Leverages.Count()}", Severity.Info);
-            selectedInstrument = TradingProfileInstrumentModel.Create(editedInstrument);
-            snackbar.Add($"SaveInstrument >> selected '{selectedInstrument.Id}' Leverages AFTER: {selectedInstrument.Leverages.Count()}");
-            snackbar.Add($"SaveInstrument >> Original Leverages AFTER: {TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id).Leverages.Count()}", Severity.Info);
-
-            var editedItem = TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id);
-            editedItem = TradingProfileInstrumentModel.Create(editedInstrument);
-            snackbar.Add($"Original Leverages AFTER-222: {TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id).Leverages.Count()}", Severity.Info);            
+            selectedInstrument.IsTrending = editedInstrument.IsTrending;
+            selectedInstrument.Leverages = editedInstrument.Leverages;
+            selectedInstrument.MaxOperationVolume = editedInstrument.MaxOperationVolume;
+            selectedInstrument.MinOperationVolume = editedInstrument.MinOperationVolume;
+            selectedInstrument.MaxPositionVolume = editedInstrument.MaxPositionVolume;
+            selectedInstrument.OpenPositionMaxDelayMs = editedInstrument.OpenPositionMaxDelayMs;
+            selectedInstrument.OpenPositionMinDelayMs = editedInstrument.OpenPositionMinDelayMs;
+            selectedInstrument.SlSlippage = editedInstrument.SlSlippage;
+            selectedInstrument.TpSlippage = editedInstrument.TpSlippage;
+            selectedInstrument.OpenPositionSlippage = editedInstrument.OpenPositionSlippage;
+            selectedInstrument.StopOutPercent = editedInstrument.StopOutPercent;
 
             snackbar.Add($"Trading Profile '{TradingProfile.Id}' saved", Severity.Success);
         }

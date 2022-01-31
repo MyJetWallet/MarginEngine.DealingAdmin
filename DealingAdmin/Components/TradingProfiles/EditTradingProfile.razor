@@ -131,67 +131,11 @@
        Closable="@false"
        Footer=null
        Width="720">
-    <Form @ref="editForm" 
-          Model="editedInstrument"        
-          LabelColSpan="10"
-          WrapperColSpan="14"
-          ValidateOnChange="@true"
-          ValidateMode="@FormValidateMode.Rules">
-        <Validator>
-            <DataAnnotationsValidator></DataAnnotationsValidator>
-        </Validator>
-        <ChildContent>
-            <FormItem Label="Instrument Id" Rules=@RequiredRule>
-                <Select DataSource="@availableInstruments"
-                    @bind-Value="@context.Id"
-	                TItemValue="string"
-	                TItem="string"
-                    Disabled="@(!isNewInstrument)"
-                    EnableSearch>
-                </Select>
-            </FormItem>
-            <FormItem Label="Max Position Volume" Required Rules=@RequiredNumberRule>
-                <Input @bind-Value="context.MaxPositionVolume" Placeholder="Max Position Volume" TValue="double"/>
-            </FormItem>
-            <FormItem Label="Min Operation Volume" Required Rules=@RequiredNumberRule>
-                <Input @bind-Value="context.MinOperationVolume" Placeholder="Min Operation Volume" TValue="double"/>
-            </FormItem>
-            <FormItem Label="Max Operation Volume" Required Rules=@RequiredNumberRule>
-                <Input @bind-Value="context.MaxOperationVolume" Placeholder="Max Operation Volume" TValue="double"/>
-            </FormItem>
-            <FormItem Label="Open Position Max Delay" Required Rules=@RequiredIntRule>             
-                <Input @bind-Value="context.OpenPositionMaxDelayMs" Placeholder="Open Position Max Delay (ms)" TValue="int"/>
-            </FormItem>
-            <FormItem Label="Stop out %" Required>
-                <Input @bind-Value="context.StopOutPercent" Placeholder="Stop out %" TValue="double?"/>
-            </FormItem>
-            <FormItem Label="Leverages">
-                <LeveragesEditor @bind-Instrument="@context"/>
-            </FormItem>        
-            <FormItem Label="Take Profit Slippage" Required>
-                <Checkbox Checked="@context.TpSlippage" @bind-Value="context.TpSlippage"/>
-            </FormItem>       
-            <FormItem Label="Stop Loss Slippage" Required>
-                <Checkbox Checked="@context.SlSlippage" @bind-Value="context.SlSlippage"/>
-            </FormItem>       
-            <FormItem Label="Slippage on Open Positions" Required>
-                <Checkbox Checked="@context.OpenPositionSlippage" @bind-Value="context.OpenPositionSlippage"/>
-            </FormItem>
-            <AntDesign.Row Class="center-middle p-3">
-                <Col Span="12">
-                </Col>    
-                <Col Span="6">
-                    <AntDesign.Button OnClick="SaveInstrument"
-                        Type="@AntDesign.ButtonType.Primary"
-                        Class="btn-text">Save</AntDesign.Button>
-                </Col>    
-                <Col Span="6">
-                    <AntDesign.Button OnClick="CancelEditInstrumentDialog"
-                        Class="btn-text">Cancel</AntDesign.Button>
-                </Col>
-            </AntDesign.Row>
-        </ChildContent>
-    </Form>
+    <TradingProfileInstrumentEditForm
+            Instrument="@editedInstrument"
+            AvailableInstruments=@availableInstruments
+            OnSave="@SaveInstrument"
+            OnCancel="@CancelEditInstrumentDialog" />       
 </Modal>
 
 @code {
@@ -206,11 +150,8 @@
     List<string> instrumentIds;
     List<string> availableInstruments;
 
-    AntDesign.Form<TradingProfileInstrumentModel> editForm;
-
     private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
     private FormValidationRule[] RequiredIntRule = { new FormValidationRule { Required = true, Type = FormFieldType.Integer } };
-    private FormValidationRule[] RequiredNumberRule = { new FormValidationRule { Required = true, Type = FormFieldType.Number } };
 
     private string profileId { get; set; }
 
@@ -219,7 +160,6 @@
     private string pageTitle = "Add New Trading Profile";
     private string instrumentEditFormTitle = "";
     private bool isEditInstrumentDialogVisible;
-    private bool isNewInstrument = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -265,7 +205,6 @@
     private void ShowNewInstrumentDialog()
     {
         selectedInstrument = null;
-        isNewInstrument = true;
         availableInstruments = GetAvailableInstrumentsList();
 
         editedInstrument = new TradingProfileInstrumentModel 
@@ -286,7 +225,6 @@
     private void ShowEditInstrumentDialog(TradingProfileInstrumentModel profileItem)
     {
         selectedInstrument = profileItem;
-        isNewInstrument = false;
         editedInstrument = TradingProfileInstrumentModel.Create(profileItem);
         availableInstruments = GetAvailableInstrumentsList();
         instrumentEditFormTitle = $"Edit '{profileItem.Id}' Instrument for Trading Profile {profileId}";
@@ -309,11 +247,6 @@
 
     private void SaveInstrument()
     {
-        if (!editForm.Validate())
-        {
-            return;
-        }
-
         if (selectedInstrument != null)
         {
             snackbar.Add($"SaveInstrument >> selected '{selectedInstrument.Id}' Leverages BEFORE: {selectedInstrument.Leverages.Count()}");
@@ -321,6 +254,10 @@
             selectedInstrument = TradingProfileInstrumentModel.Create(editedInstrument);
             snackbar.Add($"SaveInstrument >> selected '{selectedInstrument.Id}' Leverages AFTER: {selectedInstrument.Leverages.Count()}");
             snackbar.Add($"SaveInstrument >> Original Leverages AFTER: {TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id).Leverages.Count()}", Severity.Info);
+
+            var editedItem = TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id);
+            editedItem = TradingProfileInstrumentModel.Create(editedInstrument);
+            snackbar.Add($"Original Leverages AFTER-222: {TradingProfile.Instruments.First(x => x.Id == selectedInstrument.Id).Leverages.Count()}", Severity.Info);            
 
             snackbar.Add($"Trading Profile '{TradingProfile.Id}' saved", Severity.Success);
         }

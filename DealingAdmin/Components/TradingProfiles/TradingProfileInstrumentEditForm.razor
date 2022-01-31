@@ -91,15 +91,20 @@
         {
             isNewInstrument = true;
         }
+
+        Console.WriteLine($">>>>>> EditForm OnInitializedAsync >> Leverages.Count = {Instrument.Leverages.Count()}");
     }
 
     private async void SaveInstrument()
     {
         if (!editForm.Validate())
         {
+            Console.WriteLine(">> TradingProfileInstrumentEditForm >> SaveInstrument >> NOT Validate");
             return;
         }
 
+        Console.WriteLine(">> TradingProfileInstrumentEditForm >> SaveInstrument >> InvokeAsync SAVE");
+        Console.WriteLine($">>>>>> SaveInstrument >> Leverages.Count = {Instrument.Leverages.Count()}");
         await OnSave.InvokeAsync();
     }
 

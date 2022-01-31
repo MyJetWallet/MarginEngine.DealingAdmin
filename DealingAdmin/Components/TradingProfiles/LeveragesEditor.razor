@@ -30,13 +30,17 @@
 
     private void RemoveItem(int item)
     {
+        Console.WriteLine($">> LeveragesEditor >>>> BEFORE RemoveItem [{item}] >> Leverages.Count = {Instrument.Leverages.Count()}");
         this.Instrument.Leverages = this.Instrument.Leverages.Where(x => x != item).ToArray();
+        Console.WriteLine($">> LeveragesEditor >>>> AFTER RemoveItem [{item}] >> Leverages.Count = {Instrument.Leverages.Count()}");
     }
 
     private void AddItem()
     {
+        Console.WriteLine($">> LeveragesEditor >>>> BEFORE AddItem [{newItem}] >> Leverages.Count = {Instrument.Leverages.Count()}");
         var list = this.Instrument.Leverages.ToList();
         list.Add(newItem);
         this.Instrument.Leverages = list.ToArray();
+        Console.WriteLine($">> LeveragesEditor >>>> AFTER AddItem [{newItem}] >> Leverages.Count = {Instrument.Leverages.Count()}");
     }
 }

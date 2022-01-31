@@ -226,6 +226,7 @@
     {
         selectedInstrument = profileItem;
         editedInstrument = TradingProfileInstrumentModel.Create(profileItem);
+        Console.WriteLine($">>> EditTradingProfile >>> ShowEditInstrumentDialog >> editedInstrument.Leverages.Count = {editedInstrument.Leverages.Count()}");
         availableInstruments = GetAvailableInstrumentsList();
         instrumentEditFormTitle = $"Edit '{profileItem.Id}' Instrument for Trading Profile {profileId}";
         isEditInstrumentDialogVisible = true;
@@ -247,12 +248,17 @@
 
     private void SaveInstrument()
     {
+        Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> editedInstrument.Leverages.Count = {editedInstrument.Leverages.Count()}");
+
         if (selectedInstrument != null)
         {
+            Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> BEFORE >> selectedInstrument.Leverages.Count = {selectedInstrument.Leverages.Count()}");
             selectedInstrument = TradingProfileInstrumentModel.Create(editedInstrument);
+            Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> AFTER >> selectedInstrument.Leverages.Count = {selectedInstrument.Leverages.Count()}");
         }
         else
         {
+            Console.WriteLine($">>> EditTradingProfile >>> SaveInstrument >> NEW ONE >> selectedInstrument.Leverages.Count = {editedInstrument.Leverages.Count()}");
             TradingProfile.Instruments.Add(editedInstrument);
         }
 

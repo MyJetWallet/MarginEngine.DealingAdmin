@@ -23,16 +23,17 @@
            ScrollY="calc(100vh - 160px)">
         <RowTemplate> 
             <AntDesign.Column Title="Instrument"
-                    Field="@context.Name"
+                    @bind-Field="@context.Name"
                     TData="string"
                     Width="140"
-                    Sortable
-                    Filterable/>
+                    Filters="instrumentFilters" 
+                    Sortable/>
             <AntDesign.Column Title="Asset Group"
-                    Field="@context.AssetGroup"
+                    @bind-Field="@context.AssetGroup"
                     TData="InstrumentAssetGroup"
                     Width="200"
-                    Sortable
+                    SorterCompare="@((a,b) => (int)a - (int)b)"
+                    SortDirections="new[] { AntDesign.SortDirection.Descending, AntDesign.SortDirection.Ascending }"
                     Filterable>
                     <span>@context.AssetGroupName</span>
             </AntDesign.Column>
@@ -74,10 +75,17 @@
 
     private bool isLoading = false;
 
+    List<TableFilter<string>> instrumentFilters;
+
     protected override async Task OnInitializedAsync()
     {
         await RefreshData();
-        AppJobService.CommonUpdateEvent += async () => await InvokeAsync(() => RefreshData());
+
+        AppJobService.CommonUpdateEvent += async () => await InvokeAsync(() =>
+        {
+            RefreshData().GetAwaiter().GetResult();
+            this.StateHasChanged();
+        });
     }
 
     private async Task RefreshData()
@@ -94,6 +102,8 @@
         GridData = GetActiveInstruments(InstrumentsCache.GetAll())
             .Select(x => TradingInstrumentAssetGroupModel.Create(x)).ToList();
 
+        instrumentFilters = new List<TableFilter<string>>();
+
         var sourceMaps = (await QuoteSourceService.GetInstrumentSourcesMaps()).ToList();
 
         foreach(var instr in GridData)
@@ -105,9 +115,9 @@
                 : await DefaultLpWriter.GetAsync();
 
             dictInstrumentProviderMaps.Add(instr.Id, providerId);
-        }
 
-        this.StateHasChanged();
+            instrumentFilters.Add(new TableFilter<string> { Text = instr.Name, Value = instr.Name });
+        }
 
         isLoading = false;
     }

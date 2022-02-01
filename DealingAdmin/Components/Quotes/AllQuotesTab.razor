@@ -21,11 +21,11 @@
            ScrollY="calc(100vh - 160px)">
         <RowTemplate> 
             <AntDesign.Column Title="Instrument"
-                    Field="@context.Name"
+                    @bind-Field="@context.Name"
                     TData="string"
                     Width="140"
-                    Sortable
-                    Filterable/>
+                    Filters="instrumentFilters"
+                    Sortable/>
             <AntDesign.Column Title="Quotes"  
                     Field="@context.Id">
                 <TitleTemplate>
@@ -62,6 +62,8 @@
     private Dictionary<string, string> dictInstrumentProviderMaps
         = new Dictionary<string, string>();
 
+    List<TableFilter<string>> instrumentFilters;
+
     protected override async Task OnInitializedAsync()
     {
         liquidityProvidersList = (await LpReader.GetLiquidityProviders()).ToList();
@@ -69,6 +71,8 @@
         GridData = InstrumentsCache.GetAll().Select(x => InstrumentQuoteModel.Create(x)).ToList();
 
         var sourceMaps = (await QuoteSourceService.GetInstrumentSourcesMaps()).ToList();
+
+        instrumentFilters = new List<TableFilter<string>>();
 
         foreach(var instr in GridData)
         {
@@ -79,6 +83,8 @@
                 : await DefaultLpWriter.GetAsync();
 
             dictInstrumentProviderMaps.Add(instr.Id, providerId);
+
+            instrumentFilters.Add(new TableFilter<string> { Text = instr.Name, Value = instr.Name });
         }
     }
 }

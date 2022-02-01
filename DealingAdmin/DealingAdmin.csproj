@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-		<Version>0.5.2</Version>
+		<Version>3.0.1</Version>
     </PropertyGroup>
     
     <ItemGroup>
@@ -50,5 +50,9 @@
       </None>
     </ItemGroup>
     
-    <ProjectExtensions><VisualStudio><UserProperties wwwroot_4css_4bootstrap_4bootstrap_1min_1css_1map__JsonSchema="" /></VisualStudio></ProjectExtensions>
+    <ProjectExtensions>
+		<VisualStudio>
+			<UserProperties wwwroot_4css_4bootstrap_4bootstrap_1min_1css_1map__JsonSchema=""/>
+		</VisualStudio>
+	</ProjectExtensions>
 </Project>

@@ -2,7 +2,7 @@ name: Release Service
 
 on:
   push:
-    tags: "2.*"
+    tags: "3.*"
 
 jobs:
   build:

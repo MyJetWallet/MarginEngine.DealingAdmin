@@ -7,66 +7,77 @@
 @using SimpleTrading.Abstractions.Common.InstrumentsAvatar
 @using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
 
-<Form Model="Instrument"        
-      LabelColSpan="6"
-      WrapperColSpan="18">
-    <FormItem Label="Id" Required>
-        <Input @bind-Value="@context.Id" Placeholder="Instrument Id" Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
-    </FormItem>            
-    <FormItem Label="Weight" Required>
-        <Input @bind-Value="@context.Weight" TValue="int?" Placeholder="Weight" />
-    </FormItem>
-    <FormItem Label="Name" Required>
-        <Input @bind-Value="@context.Name" Placeholder="Name" />
-    </FormItem>
-    <FormItem Label="Base" Required>
-        <Input @bind-Value="@context.Base" Placeholder="Base" />
-    </FormItem>
-    <FormItem Label="Quote" Required>
-        <Input @bind-Value="@context.Quote" Placeholder="Quote" />
-    </FormItem>
-    <FormItem Label="Digits" Required>
-        <Input @bind-Value="@context.Digits" TValue="int" Placeholder="Digits" />
-    </FormItem>
-    <FormItem Label="TickSize" Required>
-        <Input @bind-Value="@context.TickSize" TValue="double" Placeholder="Tick Size" />
-    </FormItem>
-    <FormItem Label="Swap Schedule" Required>
-        <Select @bind-Value="@Instrument.SwapScheduleId"
-                TItemValue="string"
-                TItem="string">
-            <SelectOptions>
-                @foreach (var item in SwapProfiles)
-                {
-                    <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Id/>
-                }
-            </SelectOptions>
-        </Select>
-    </FormItem>
-    <FormItem Label="Trading Group">
-         <Select @bind-Value="@Instrument.GroupId"
-                TItemValue="string"
-                TItem="string">
-            <SelectOptions>
-                @foreach (var item in InstrumentGroups)
-                {
-                    <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Name/>
-                }
-            </SelectOptions>
-        </Select>
-    </FormItem>
-    <FormItem Label="Days Off">
-        <DaysOffEditor @bind-Instrument="@context"/>
-    </FormItem>
-    <FormItem Label="Day Timeout" Required>
-        <Input @bind-Value="@context.DayTimeout" TValue="int?" Placeholder="Day Timeout" />
-    </FormItem>
-    <FormItem Label="Night Timeout" Required>
-        <Input @bind-Value="@context.NightTimeout" TValue="int?" Placeholder="Night Timeout" />
-    </FormItem>
-    <FormItem Label="API Key" Required>
-        <InputPassword @bind-Value="@context.TokenKey" />
-    </FormItem>
+@inject AdminAppSettings appSettings
+@inject ISnackbar snackbar
+
+<Form @ref="editForm"
+        Model="Instrument" 
+        ValidateOnChange="@true"
+        ValidateMode="@FormValidateMode.Rules"       
+        LabelColSpan="6"
+        WrapperColSpan="18">
+    <Validator>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+    </Validator>
+    <ChildContent>
+        <FormItem Label="Id" Required Rules=@RequiredRule>
+            <Input @bind-Value="@context.Id" Placeholder="Instrument Id" Disabled="@(!String.IsNullOrEmpty(context.Id))"/>
+        </FormItem>            
+        <FormItem Label="Weight" Required>
+            <Input @bind-Value="@context.Weight" TValue="int?" Placeholder="Weight" />
+        </FormItem>
+        <FormItem Label="Name" Required Rules=@RequiredRule>
+            <Input @bind-Value="@context.Name" Placeholder="Name" />
+        </FormItem>
+        <FormItem Label="Base" Required Rules=@RequiredRule>
+            <Input @bind-Value="@context.Base" Placeholder="Base" />
+        </FormItem>
+        <FormItem Label="Quote" Required Rules=@RequiredRule>
+            <Input @bind-Value="@context.Quote" Placeholder="Quote" />
+        </FormItem>
+        <FormItem Label="Digits" Required>
+            <Input @bind-Value="@context.Digits" TValue="int" Placeholder="Digits" />
+        </FormItem>
+        <FormItem Label="TickSize" Required>
+            <Input @bind-Value="@context.TickSize" TValue="double" Placeholder="Tick Size" />
+        </FormItem>
+        <FormItem Label="Swap Schedule">
+            <Select @bind-Value="@Instrument.SwapScheduleId"
+                    TItemValue="string"
+                    TItem="string">
+                <SelectOptions>
+                    @foreach (var item in SwapProfiles)
+                    {
+                        <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Id/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        <FormItem Label="Trading Group" Required Rules=@RequiredRule>
+             <Select @bind-Value="@Instrument.GroupId"
+                    TItemValue="string"
+                    TItem="string">
+                <SelectOptions>
+                    @foreach (var item in InstrumentGroups)
+                    {
+                        <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Name/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        <FormItem Label="Days Off">
+            <DaysOffEditor @bind-Instrument="@context"/>
+        </FormItem>
+        <FormItem Label="Day Timeout">
+            <Input @bind-Value="@context.DayTimeout" TValue="int?" Placeholder="Day Timeout" />
+        </FormItem>
+        <FormItem Label="Night Timeout">
+            <Input @bind-Value="@context.NightTimeout" TValue="int?" Placeholder="Night Timeout" />
+        </FormItem>
+        <FormItem Label="API Key" Required  Rules=@CrudApiKeyRule>
+            <InputPassword @bind-Value="@context.TokenKey" />
+        </FormItem>
+    </ChildContent>
 </Form>
  
 @code {
@@ -85,8 +96,32 @@
     [Parameter]
     public IEnumerable<IInstrumentSubGroup> SubGroups { get; set; }
 
+    AntDesign.Form<TradingInstrumentModel> editForm;
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+    private FormValidationRule[] CrudApiKeyRule;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CrudApiKeyRule = new FormValidationRule[]
+        {
+            new FormValidationRule
+            {
+                Required = true,
+                Type = FormFieldType.String,
+                OneOf = new string[] { appSettings.AdminCrudApiKey },
+                Message = "API Key is not valid"
+            }
+        };
+    }
+
     public async Task UpdateEditedInstrument()
     {
+        if (!editForm.Validate())
+        {
+            return;
+        }
+
         await InstrumentChanged.InvokeAsync(Instrument);
     }
 }

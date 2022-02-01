@@ -36,9 +36,15 @@
                     <Tag PresetColor="PresetColor.Purple">@instrument.InstrumentId</Tag>
                 }
             </AntDesign.Column>
-            <ActionColumn Title="Edit" Width="60">
-                <a><i @onclick="()=>ShowEditProfile(context)"
-                    class="material-icons color-primary">edit</i></a>
+            <ActionColumn Title="Edit" Width="120">
+                <Tooltip Title="@("Edit")">
+                    <a><i @onclick="()=>ShowEditProfile(context)"
+                        class="material-icons color-primary">edit</i></a>
+                </Tooltip>
+                <Tooltip Title="@("Clone")">
+                    <a><i @onclick="()=>CloneProfile(context)"
+                        class="material-icons color-aquamarine">content_copy</i></a>
+                </Tooltip>
             </ActionColumn>
         </RowTemplate>
     </Table>
@@ -106,6 +112,17 @@ else
     private void ShowEditProfile(SwapGroupProfile groupProfile)
     {
         editedProfile = groupProfile;
+        editFormSwitch = true;
+    }
+
+    private void CloneProfile(SwapGroupProfile groupProfile)
+    {
+        editedProfile = new SwapGroupProfile
+            {
+                ProfileId = "",
+                Instruments = groupProfile.Instruments
+            };
+        editedProfile.Instruments.ForEach(x => x.Id = "");
         editFormSwitch = true;
     }
 

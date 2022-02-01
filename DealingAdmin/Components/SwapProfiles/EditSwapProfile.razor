@@ -273,12 +273,13 @@
         try
         {
             int errorCount = 0;
+            var instruments = await InstrumentsRepository.GetAllAsync();
 
             foreach (var item in ProfileGroup.Instruments)
             {
-                var instruments = await InstrumentsRepository.GetAllAsync();
+                item.Id = ProfileGroup.ProfileId;
 
-                if (instruments.All(itm => itm.Id != item.InstrumentId))
+                if (instruments.All(inst => inst.Id != item.InstrumentId))
                 {
                     snackbar.Add($"Instrument {item.InstrumentId} is not found", Severity.Error);
                     errorCount++;

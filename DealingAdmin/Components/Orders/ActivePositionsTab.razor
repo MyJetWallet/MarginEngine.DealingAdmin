@@ -7,12 +7,14 @@
 @using DealingAdmin.Shared.Services
 @using SimpleTrading.Abstraction.Caches.ActiveOrders
 @using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Engine.Grpc.Contracts
 
 @inject StateManager AppState
 @inject LiveDemoServiceMapper LiveDemoServices
 @inject IAccountTypeFilter AccTypeFilter
 @inject IInstrumentsCache InstrumentsCache
-@inject IUserMessageService MessageService
+@inject AdminAppSettings appSettings
+@inject ISnackbar snackbar
 
 <div id="ActivePositionsRegion">
     <div class="mb-2">
@@ -132,12 +134,38 @@
             </AntDesign.Column>
             <ActionColumn Title="Close" Width="66">
                 <div>
-                    <a @onclick="()=>Close(context.Id)"><i class="material-icons color-crimson mx-1">cancel</i></a>
+                    <a @onclick="()=>ShowClosePositionDialog(context)"><i class="material-icons color-crimson mx-1">cancel</i></a>
                 </div>
             </ActionColumn>
         </RowTemplate>
     </Table>
 </div>
+
+<Modal Title="@closePositionDialogTitle"
+       Visible="@isEditInstrumentDialogVisible"
+       Closable="@false"
+       OkText="@("Confirm")"
+       OnOk=@ClosePosition
+       OnCancel=@HideClosePositionDialog
+       Width="720">
+    <b>Confirm closing position:</b>
+    <Form @ref="closePositionForm"
+          Model="closePositionToken"
+          ValidateOnChange="@true"
+          ValidateMode="@FormValidateMode.Rules"       
+          LabelColSpan="10"
+          WrapperColSpan="14">
+        <Validator>
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+        </Validator>
+        <ChildContent>
+            <FormItem Label="API Key" Required Rules=@CrudApiKeyRule>
+                <InputPassword @bind-Value="@context" />
+            </FormItem>
+        </ChildContent>
+    </Form>
+</Modal>
+
 
 <style>
 .ant-table td {
@@ -157,12 +185,30 @@
     int _total = 0;
 
     private bool isLoading = false;
-
     private bool stopPriceRefresh = false;
+    private bool isEditInstrumentDialogVisible = false;
+    private string closePositionDialogTitle;
+    private string closePositionToken;
+
+    AntDesign.Form<string> closePositionForm;
+    ActivePositionViewModel positionToClose;
+    private FormValidationRule[] CrudApiKeyRule;
 
     protected override async Task OnInitializedAsync()
     {
         await RefreshData();
+
+        CrudApiKeyRule = new FormValidationRule[]
+        {
+            new FormValidationRule
+            {
+                Required = true,
+                Type = FormFieldType.String,
+                OneOf = new string[] { appSettings.AdminCrudApiKey },
+                Message = "API Key is not valid"
+            }
+        };
+
         AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
     }
 
@@ -172,10 +218,47 @@
         await RefreshData();
     }
 
-    private Task Close(long positionId)
+    private void ShowClosePositionDialog(ActivePositionViewModel pos)
     {
-        Console.WriteLine($"Closing Position #{positionId}");
-        return Task.CompletedTask;
+        closePositionDialogTitle = $"Close ${pos.Instrument} position: ${pos.Id}";
+        positionToClose = pos;
+        closePositionToken = "";
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void HideClosePositionDialog()
+    {
+        isEditInstrumentDialogVisible = false;
+    }
+
+    private async void ClosePosition()
+    {
+        if (positionToClose == null)
+        {
+            return;
+        }
+
+        if (closePositionToken != appSettings.AdminCrudApiKey)
+        {
+            snackbar.Add("Api Key is not valid", Severity.Error);
+            return;
+        }
+
+        var contract = new ClosePositionGrpcRequestContract
+        {
+            TraderId = positionToClose.TraderId,
+            AccountId = positionToClose.AccountId,
+            PositionId = positionToClose.Id,
+            ProcessId = "Dealing-Admin-" + Guid.NewGuid(),
+            Reason = CloseReasonGrpc.AdminAction
+        };
+
+        var grpcResponse = await LiveDemoServices.GetContext(AppState.IsLive)
+            .EngineApi.ClosePositionAsync(contract);
+
+        snackbar.Add($"Close Position - API result: {grpcResponse.Result.ToString()}", Severity.Info);
+
+        isEditInstrumentDialogVisible = false;
     }
 
     private async Task RefreshData()

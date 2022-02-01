@@ -1,0 +1,178 @@
+﻿@page "/ClientView"
+
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.ClientView
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Engine.Grpc.Contracts
+
+@inject LiveDemoServiceMapper LiveDemoServices
+@inject ITraderSearchService traderSearchService
+
+<PageTitle>Client View</PageTitle>
+
+<AntDesign.Row>
+    <Col Xs="16" Sm="12" Md="6" Lg="6" Xl="4" class="m-3">    
+        <span class="text-bold m-1">Search by TraderId / AccountId / E-mail:</span>
+    </Col>    
+    <Col Xs="24" Sm="24" Md="18" Lg="14" Xl="6" class="m-3">
+        <Input @bind-Value="@searchPhrase" />
+    </Col>
+    <Col Xs="12" Sm="12" Md="6" Lg="2" Xl="2" class="m-3">
+        <AntDesign.Button OnClick="@OnSearch"
+            Type="@AntDesign.ButtonType.Primary"
+            Disabled="@(String.IsNullOrEmpty(searchPhrase))"
+            Class="btn-text ">Search</AntDesign.Button>
+    </Col>   
+</AntDesign.Row>
+
+@if (traderMultiBrands)
+{
+    <div class="text-bold m-1">
+        Trader's Email is registered in a few brands:
+    </div>
+    <Tabs OnChange="@OnBrandTabSelect" DefaultActiveKey="@SelectedBrandTabKey" Animated="@false">
+        @foreach(var brand in traderBrands)
+        {
+            <TabPane Tab="@brand.Brand.ToUpper()" Key="@brand.Brand" Class="tab-text">
+	        </TabPane>
+        }
+    </Tabs>
+}
+@if (traderNotFound.HasValue && traderNotFound.Value)
+{
+     <div class="text-red px-2">@($"Trader with data {searchPhrase} was not found")</div>
+}
+else if (traderNotFound.HasValue && !traderNotFound.Value)
+{
+    <Tabs OnChange="@OnTabSelect" DefaultActiveKey="@SelectedTabKey" Animated="@false">
+        <TabPane Tab="ACCOUNTS" Key="Accounts" Class="tab-text">
+            <ClientViewAccountsTab TraderId="@activeBrandTab?.TraderId"/>
+	    </TabPane>
+        <TabPane Tab="TRADE LOG" Key="TradeLog" Class="tab-text">
+             <ClientViewTradeLogTab TraderId="@activeBrandTab?.TraderId" />
+        </TabPane>
+        <TabPane Tab="CLIENT PROFILE" Key="ClientProfile" Class="tab-text">
+             <ClientViewProfileTab TraderId="@activeBrandTab?.TraderId" />
+        </TabPane>
+    </Tabs>
+}
+
+@code {
+    private string SelectedBrandTabKey { get; set; }
+    private string SelectedTabKey { get; set; }
+
+    private string searchPhrase = String.Empty;
+
+    private bool? traderNotFound = null;
+    private bool traderMultiBrands = false;
+
+    private List<TraderBrandSearchModel> traderBrands = new List<TraderBrandSearchModel>();
+
+    private TraderBrandSearchModel activeBrandTab { get; set; }
+
+    string updateBalanceApiKey = String.Empty;
+    string updateTradingGroupApiKey = String.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SelectedTabKey = "Accounts";
+    }
+
+    private async Task OnSearch()
+    {
+        if (string.IsNullOrEmpty(searchPhrase))
+        {
+            return;
+        }
+
+        traderBrands = new List<TraderBrandSearchModel>();
+        activeBrandTab = null;
+
+        Console.WriteLine($"OnSearch -> searchPhrase: '{searchPhrase}'"); /// REMOVE AFTER TEST!!!!
+
+        if (IsEmail(searchPhrase))
+        {
+            Console.WriteLine("OnSearch -> IsEmail"); /// REMOVE AFTER TEST!!!!
+
+            var tradersData = await traderSearchService.GetTraderDataByEmail(searchPhrase);
+
+            if (tradersData.Count > 0)
+            {
+                Console.WriteLine("OnSearch -> tradersData.Count > 0"); /// REMOVE AFTER TEST!!!!
+                traderBrands = tradersData.Select(x => TraderBrandSearchModel.FromTraderBrand(x, false)).ToList();
+            }
+        }
+        else
+        {
+            Console.WriteLine("OnSearch -> GetTraderDataByAnyId"); /// REMOVE AFTER TEST!!!!
+            traderBrands = await traderSearchService.GetTraderDataByAnyId(searchPhrase);
+        }
+
+        if (traderBrands.Any())
+        {
+            traderNotFound = false;
+
+            Console.WriteLine("OnSearch -> traderBrands.Any"); /// REMOVE AFTER TEST!!!!
+
+            if (traderBrands.Count > 1)
+            {
+                traderMultiBrands = true;
+                Console.WriteLine("OnSearch -> traderMultiBrands"); /// REMOVE AFTER TEST!!!!
+
+                activeBrandTab = traderBrands.FirstOrDefault(x => x.SearchMatch);
+            }
+
+            if (activeBrandTab == null)
+            {
+                Console.WriteLine("OnSearch -> activeBrandTab == null)"); /// REMOVE AFTER TEST!!!!
+                activeBrandTab = traderBrands.First();
+            }
+
+            Console.WriteLine($"OnSearch -> SelectedBrandTabKey (activeBrandTab.Brand = '{activeBrandTab?.Brand}')"); /// REMOVE AFTER TEST!!!!
+            SelectedBrandTabKey = activeBrandTab.Brand;
+
+            Console.WriteLine("OnSearch -> RefreshData"); /// REMOVE AFTER TEST!!!!
+            RefreshData();
+        }
+        else
+        {
+            traderNotFound = true;
+            StateHasChanged();
+        }
+    }
+
+    private bool IsEmail(string str)
+    {
+        return str.Contains("@");
+    }
+
+    private bool IsAccountId(string str)
+    {
+        return str.Length == 15;
+    }
+
+    private void OnBrandTabSelect(string brandTab)
+    {
+        Console.WriteLine($"ClientView => OnBrandTabSelect -> brandTab = '{brandTab}')"); /// REMOVE AFTER TEST!!!!
+        SelectedBrandTabKey = brandTab;
+        activeBrandTab = traderBrands.First(x => x.Brand == brandTab);
+        RefreshData();
+    }
+
+    private void OnTabSelect(string tab)
+    {
+        SelectedTabKey = tab;
+        StateHasChanged();
+    }
+
+    private void RefreshData()
+    {
+        Console.WriteLine($"ClientView => RefreshData -> activeBrandTab.TraderId = '{activeBrandTab?.TraderId}')"); /// REMOVE AFTER TEST!!!!
+        string updateBalanceApiKey = String.Empty;
+        string updateTradingGroupApiKey = String.Empty;
+        StateHasChanged();
+        Console.WriteLine($"ClientView => RefreshData -> DONE"); /// REMOVE AFTER TEST!!!!
+    }
+}

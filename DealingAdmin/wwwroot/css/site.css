@@ -12,14 +12,58 @@ a, .btn-link {
     color: #0071c1;
 }
 
-.btn-primary {
+.font-18 {
+    font-size: 18px;
+}
+
+.ant-table td {
+    padding: 5px 10px !important
+}
+
+.ant-table th {
+    padding: 5px 10px !important
+}
+
+.btn-text {
+    font-size: .75rem !important;
+    font-weight: 500 !important;
+    letter-spacing: .0892857143em !important;
+    text-indent: .0892857143em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+}
+
+.tab-text {
+    font-size: .875rem !important;
+    font-weight: 500 !important;
+    letter-spacing: .0892857143em !important;
+    text-transform: uppercase !important;
+}
+
+.btn-primary-color {
     color: #fff;
     background-color: #1b6ec2;
     border-color: #1861ac;
 }
 
-.content {
-    padding-top: 1.1rem;
+.color-primary {
+    color: #1b6ec2;
+}
+
+.grid-container-price-profit {
+    display: grid !important;
+    grid-template-columns: 150px 80px;
+}
+
+.grid-container-lp-quote-line {
+    display: grid !important;
+    grid-template-columns: 1fr 4fr 5fr 4fr 5fr 4fr 5fr 4fr 5fr;
+}
+
+.grid-container-dayoff-new-item {
+    display: grid !important;
+    grid-template-columns: 5fr 4fr 5fr 4fr 2fr
+    column-gap: 10px;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -32,6 +76,124 @@ a, .btn-link {
 
 .validation-message {
     color: red;
+}
+
+.display-none {
+    display: none !important;
+}
+
+.no-click {
+    pointer-events: none !important;
+}
+
+.vertical-baseline {
+    vertical-align: baseline;
+}
+
+.center-middle {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+.start-middle {
+    text-align: start !important;
+    align-content: start !important;
+    vertical-align: middle !important;
+}
+
+.end-middle {
+    text-align: end !important;
+    align-content: end !important;
+    vertical-align: middle !important;
+}
+
+.simple-badge {
+    border-radius: 10px !important;
+    background-color: #000;
+    color: #fff;
+    display: inline-block;
+    vertical-align: baseline;
+    padding-right: .6em;
+    padding-left: .6em;
+    border-radius: 20rem;
+    font-family: Roboto,sans-serif;
+    font-weight: 300;
+    text-align: center;
+    text-indent: 0;
+    letter-spacing: 0;
+    white-space: nowrap
+}
+
+.no-wrap {
+    white-space: nowrap;
+}
+
+.text-bold {
+    font-weight: bold
+}
+
+.bg-color-green {
+    color: #000;
+    background-color: SeaGreen !important
+}
+
+.bg-color-aquamarine {
+    color: #000 !important;
+    background-color: #69f0ae !important
+}
+
+.bg-color-light-yellow {
+    color: #000 !important;
+    background-color: #ffd300 !important;
+}
+
+.bg-color-yellow {
+    color: #000;
+    background-color: #ffe082 !important;
+}
+
+.color-green {
+    color: SeaGreen !important
+}
+
+.color-aquamarine {
+    color: #69f0ae !important
+}
+
+.color-crimson {
+    color: Crimson !important
+}
+
+.color-darkred {
+    color: DarkRed !important
+}
+
+.color-orange {
+    color: orange !important
+}
+
+.color-teal {
+    color: teal !important
+}
+
+.badge-primary {
+    color: #fff !important;
+    background-color: #004daa !important
+}
+
+.badge-green {
+    color: #fff !important;
+    background-color: SeaGreen !important
+}
+
+.badge-red {
+    color: #fff !important;
+    background-color: DarkRed !important
+}
+
+.badge-orange {
+    color: #fff !important;
+    background-color: #cc5700 !important
 }
 
 #blazor-error-ui {

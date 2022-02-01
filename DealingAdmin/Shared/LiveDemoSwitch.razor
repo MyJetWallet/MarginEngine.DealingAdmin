@@ -1,0 +1,82 @@
+﻿@using DealingAdmin.Shared.Services
+
+@inject StateManager AppState
+
+<div id="live-demo-switch" class="text-center switch-box">
+    <button @onclick="SetLive" class="@($"switch-btn {(IsLive ? "live-btn-active" : "switch-btn-inactive")}")">LIVE</button>
+    <button @onclick="SetDemo" class="@($"switch-btn {(IsLive ? "switch-btn-inactive" : "demo-btn-active")}")">DEMO</button>
+</div>
+
+<style>
+.switch-box {
+    vertical-align: central;
+    margin-top: 1rem !important;
+}
+
+.switch-btn {
+    width: 60px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    display: inline-block;
+    vertical-align: baseline;
+    padding-right: .6em;
+    padding-left: .6em;
+    font-family: Roboto,sans-serif !important;
+    font-size: .75rem !important;
+    font-weight: 700 !important;
+    letter-spacing: .0892857143em;
+    text-indent: .0892857143em;
+    text-transform: uppercase;
+    text-align: center;
+    text-indent: 0 !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap
+}
+
+.switch-btn:hover {
+  box-shadow: 0 0 11px rgba(33,33,33,.2) !important
+}
+
+.live-btn-active {
+    background-color: #81c784 !important
+}
+
+.demo-btn-active {
+    background-color: #ffd54f !important
+}
+
+.switch-btn-inactive {
+    background-color: #eee !important
+}
+</style>
+ 
+@code {
+    private bool IsLive { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLive = AppState.IsLive;
+    }
+
+    void SetLive()
+    {
+        if (IsLive)
+        {
+            return;
+        }
+
+        IsLive = true;
+        AppState.SetLive();
+    }
+
+    void SetDemo()
+    {
+        if (!IsLive)
+        {
+            return;
+        }
+
+        IsLive = false;
+        AppState.SetDemo();
+    }
+}

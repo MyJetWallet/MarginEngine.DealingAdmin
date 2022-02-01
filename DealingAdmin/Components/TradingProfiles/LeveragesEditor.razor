@@ -1,0 +1,42 @@
+@using DealingAdmin.Abstractions.Models
+
+<AntList DataSource="@Instrument.Leverages" Size="small" Bordered="@true"> 
+    <ChildContent Context="item">
+        <ListItem>
+            <div class="start-middle">
+                <span>@item</span>
+                <a @onclick="()=>RemoveItem(item)"><i class="material-icons color-crimson mx-1">indeterminate_check_box</i></a>
+            </div>
+        </ListItem>
+    </ChildContent>
+</AntList>
+<AntDesign.Row>
+    <Col Flex=@("200px") Class="no-wrap mx-2">
+        New Leverage: <AntDesign.InputNumber @bind-Value="newItem" Placeholder="New Leverage" TValue="int"/>
+    </Col>
+    <Col Flex=@("auto") Class="mx-2 start-middle">
+        <AntDesign.Button OnClick="()=>AddItem()" Color="AntDesign.Color.Green1">+</AntDesign.Button>
+    </Col>
+</AntDesign.Row>
+
+@code {
+    [Parameter]
+    public TradingProfileInstrumentModel Instrument { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<TradingProfileInstrumentModel> InstrumentChanged { get; set; }
+
+    int newItem;
+
+    private void RemoveItem(int item)
+    {
+        this.Instrument.Leverages = this.Instrument.Leverages.Where(x => x != item).ToArray();
+    }
+
+    private void AddItem()
+    {
+        var list = this.Instrument.Leverages.ToList();
+        list.Add(newItem);
+        this.Instrument.Leverages = list.ToArray();
+    }
+}

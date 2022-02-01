@@ -1,0 +1,114 @@
+@page "/TradingGroups"
+
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.TradingGroups
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper liveDemoServices;
+@inject IUserMessageService messageService
+@inject AdminAppSettings appSettings
+@inject Logger logger
+
+<PageHeader Class="m-2 p-0" Title="Trading Groups">
+    <PageHeaderExtra>
+        <AntDesign.Button OnClick="ShowNewGroupDialog" Type="@AntDesign.ButtonType.Primary">New Group</AntDesign.Button>
+    </PageHeaderExtra>
+</PageHeader>
+
+<Table DataSource="@tradingGroups"
+       TItem="TradingGroupModel"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 120px)"
+       PageSize="999">
+    <RowTemplate>           
+        <AntDesign.Column Title="Id"
+                DataIndex="Id"
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Name"
+                DataIndex="Name"
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Trading Profile Id" 
+                DataIndex="TradingProfileId" 
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Markup Profile Id"
+                DataIndex="MarkupProfileId" 
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Swap Profile Id"
+                DataIndex="SwapProfileId"
+                TData="string"/>
+        <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditGroupDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+<Modal Title="@groupEditFormTitle"
+       Visible="@isEditGroupDialogVisible"
+       Closable="@false"
+       Footer=null
+       Width="900">
+    <TradingGroupEditForm
+        TradingGroup="editedGroup"
+        OnFinish="CloseEditDialogAndRefresh"
+        OnCancel="CloseEditDialog"/>   
+</Modal>
+
+@code {
+    private List<TradingGroupModel> tradingGroups;
+
+    private TradingGroupModel editedGroup = new TradingGroupModel();
+    private string groupEditFormTitle = "";
+    private bool isEditGroupDialogVisible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+    }
+
+    private async Task RefreshData()
+    {
+        tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
+           .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
+    }
+
+    private void ShowNewGroupDialog()
+    {
+        groupEditFormTitle = "Add New Group";
+        editedGroup = new TradingGroupModel();
+        isEditGroupDialogVisible = true;
+    }
+
+    private void ShowEditGroupDialog(TradingGroupModel Group)
+    {
+        Console.WriteLine("TradingGroups >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
+        groupEditFormTitle = $"Edit '{Group.Id}' Group";
+        editedGroup = TradingGroupModel.Create(Group);
+        isEditGroupDialogVisible = true;
+        Console.WriteLine("TradingGroups >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
+    }
+
+    private void CloseEditDialog()
+    {
+        isEditGroupDialogVisible = false;
+    }
+
+    private async void CloseEditDialogAndRefresh()
+    {
+        isEditGroupDialogVisible = false;
+        await RefreshData();
+        this.StateHasChanged();
+    }
+}

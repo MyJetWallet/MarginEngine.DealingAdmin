@@ -1,18 +1,18 @@
 ﻿@page "/Candles"
 
 @using AntDesign
-@using DealingAdmin.Components.CandlesTabs
+@using DealingAdmin.Components.Candles
 
 <PageTitle>Candles</PageTitle>
 
 <Tabs TabBarStyle="" OnChange="@OnTabSelect" DefaultActiveKey="@SelectedTabKey" Animated="@false">
-    <TabPane Tab="UPLOAD" Key="CandlesUpload" ForceRender="true">
+    <TabPane Tab="UPLOAD" Key="CandlesUpload" Class="tab-text">
         <CandlesUploadTab/>
 	</TabPane>
-    <TabPane Tab="VERIFY" Key="CandlesVerify" ForceRender="true">
+    <TabPane Tab="VERIFY" Key="CandlesVerify" Class="tab-text">
         <CandlesVerifyTab/>
     </TabPane>
-    <TabPane Tab="EDIT" Key="CandlesEdit" ForceRender="true">
+    <TabPane Tab="EDIT" Key="CandlesEdit" Class="tab-text">
         <CandlesEditTab/>
     </TabPane>
 </Tabs>

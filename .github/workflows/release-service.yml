@@ -2,7 +2,7 @@ name: Release Service
 
 on:
   push:
-    tags: "2.*"
+    tags: "3.*"
 
 jobs:
   build:
@@ -54,7 +54,7 @@ jobs:
         build_args: app_version=dealing.admin:${{ steps.extract_branch.outputs.branch }},app_compilation_date=${{ steps.current-time.outputs.formattedTime }}
 
 
-#  update_version:
+#  update_version_st_kube:
 #    needs: build
 #    runs-on: ubuntu-latest
 #    steps:
@@ -65,20 +65,4 @@ jobs:
 #        ref: uat        
 #        token: ${{ secrets.UAT_GIT_TOKEN }}
 #    - run: |
-#        pattern=myjetwallet.service.indexprices:.*$
-#        imagename=myjetwallet.service.indexprices:${GITHUB_REF#refs/tags/}
-#        reg=$"s/${pattern}/${imagename}/g"
-#        echo $reg
-#        find . -type f -name "deployment.*" -print0 -exec sed -i -r $reg {} \;
-#        git config user.name github-actions
-#        git config user.email github-actions@github.com
-#        git commit -a -m "Update version of service myjetwallet.service.indexprices"
-#        pattern=myjetwallet.service.indexprices.job:.*$
-#        imagename=myjetwallet.service.indexprices.job:${GITHUB_REF#refs/tags/}
-#        reg=$"s/${pattern}/${imagename}/g"
-#        echo $reg
-#        find . -type f -name "deployment.*" -print0 -exec sed -i -r $reg {} \;
-#        git config user.name github-actions
-#        git config user.email github-actions@github.com
-#        git commit -a -m "Update version of service myjetwallet.service.indexprices.job"
-#        git push
+#        imagename=margin/dealing.admin:${GITHUB_REF#refs/tags/}

@@ -1,0 +1,139 @@
+﻿@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services 
+@using System.IO
+@using System.Diagnostics 
+@using SimpleTrading.PersonalData.Abstractions.PersonalData
+@using SimpleTrading.PersonalData.Grpc
+@using SimpleTrading.PersonalData.Grpc.Models
+ 
+@inject StateManager AppState
+@inject IPersonalDataServiceGrpc PersonalDataService
+@inject ICrmDataReader CrmReader
+@inject IAccountTypeFilter AccTypeFilter
+@inject Serilog.Core.Logger logger
+
+
+<Title Level="4">Client profile</Title>
+
+<AntDesign.Row>
+    <Col Span="2" class="m-3">
+       <span>Trader ID</span>
+    </Col>
+    <Col Span="4" class="m-3">
+       <span>@TraderId</span>
+    </Col>
+</AntDesign.Row>
+<AntDesign.Row>
+    <Col Span="2" class="m-3">
+       <span>Internal</span>
+    </Col>
+    <Col Span="4" class="m-3">
+       <span>@isInternal.ToString()</span>
+    </Col>
+</AntDesign.Row>
+<AntDesign.Row>
+    <Col Span="2" class="m-3">
+       <span>Email</span>
+    </Col>
+    <Col Span="4" class="m-3">
+       <span>@personalData?.Email</span>
+    </Col>
+</AntDesign.Row>
+<AntDesign.Row>
+    <Col Span="2" class="m-3">
+       <span>Full Name</span>
+    </Col>
+    <Col Span="4" class="m-3">
+       <span>@($"{personalData?.FirstName} {personalData?.LastName}")</span>
+    </Col>
+</AntDesign.Row>
+<AntDesign.Row>
+    <Col Span="2" class="m-3">
+       <span>Phone</span>
+    </Col>
+    <Col Span="4" class="m-3">
+       <span>@personalData?.Phone</span>
+    </Col>
+</AntDesign.Row>
+<AntDesign.Row>
+    <Col Span="2" class="m-3">
+       <span>Date of Birth</span>
+    </Col>
+    <Col Span="4" class="m-3">
+       <span>@personalData?.DateOfBirth</span>
+    </Col>
+</AntDesign.Row>
+<AntDesign.Row>
+    <Col Span="2" class="m-3">
+       <span>KYC</span>
+    </Col>
+    <Col Span="4" class="m-3">
+       <span>@GetKycText()</span>
+    </Col>
+</AntDesign.Row>
+<AntDesign.Row>
+    <Col Span="2" class="m-3">
+       <span>Brand</span>
+    </Col>
+    <Col class="m-3">
+       <span>@personalData?.BrandId</span>
+    </Col>
+</AntDesign.Row>
+<AntDesign.Row>
+    <Col Span="2" class="m-3">
+       <span> Platform Type</span>
+    </Col>
+    <Col Span="4" class="m-3">
+       <span>@personalData?.PlatformType</span>
+    </Col>
+</AntDesign.Row>
+
+@code {
+    [Parameter]
+    public string TraderId { get; set; }
+
+    PersonalDataGrpcModel personalData { get; set; }
+
+    private bool isInternal { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        try
+        {
+            personalData = (await PersonalDataService.GetByIdAsync(TraderId)).PersonalData;
+            var internalAcc = (await CrmReader.GetAccountType(this.TraderId))?.IsInternal;
+            isInternal = internalAcc.HasValue ? internalAcc.Value : true;
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            Console.WriteLine(ex);
+        }
+    }
+
+    private string GetKycText() 
+    {
+        if (personalData == null)
+        {
+            return String.Empty;
+        }
+
+        return personalData.KYC switch
+        {
+            PersonalDataKYCEnum.NotVerified => "Not Verified",
+            PersonalDataKYCEnum.OnVerification => "On Verification",
+            PersonalDataKYCEnum.Restricted => "Restricted",
+            PersonalDataKYCEnum.Verified => "Verified",
+            _ => String.Empty
+        };
+    }
+}
+

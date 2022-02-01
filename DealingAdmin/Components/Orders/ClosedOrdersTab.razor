@@ -1,0 +1,256 @@
+﻿@using System.ComponentModel
+@using AntDesign.TableModels
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
+@using DealingAdmin.Shared.Services
+@using System.Collections.Generic
+@using SimpleTrading.Abstraction.Trading.Settings
+
+@inject StateManager AppState
+@inject IUserMessageService MsgService
+@inject LiveDemoServiceMapper LiveDemoServices
+@inject IAccountTypeFilter AccTypeFilter
+@inject IInstrumentsCache InstrumentsCache
+
+<div id="ClosedPositionsRegion">
+    <div class="mb-2">
+        <AntDesign.Row>
+            <Col Span="4" Class="text-nowrap">
+                <span class="text-bold mx-2">Accounts:</span>               
+                <Select Mode="default"
+                        Value="AccountsTypeFilter"
+                        TItemValue="AccountType"
+                        TItem="AccountType"
+                        Style="width: 120px;"
+                        OnSelectedItemChanged="AccountsTypeFilterChanged">
+                    <SelectOptions>
+                        @foreach (var item in Enum.GetValues<AccountType>())
+                        {
+                            <SelectOption
+                                TItemValue="AccountType"
+                                TItem="AccountType"
+                                Value=@item
+                                Label="@item.ToString()"/>
+                        }
+                    </SelectOptions>
+                </Select>
+            </Col>
+            <Col Span="6" Class="text-nowrap align-content-end">
+                <span class="text-bold mx-2">From Date:</span>                 
+                <DatePicker
+                    @bind-Value="@dateFrom"
+                    TValue="DateTime"
+                    AllowClear="false"
+                    Picker="@DatePickerType.Date"/>
+
+            </Col>
+            <Col Span="6" Class="text-nowrap align-content-start">
+                <span class="text-bold mx-2">To Date:</span>                 
+                <DatePicker
+                    @bind-Value="@dateTo"
+                    TValue="DateTime"
+                    AllowClear="false"
+                    Picker="@DatePickerType.Date"/>
+
+            </Col>
+            <Col Span="4">
+                  <AntDesign.Button Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text"
+                    OnClick="()=>LoadData()">Load Data</AntDesign.Button>
+            </Col>
+        </AntDesign.Row>       
+    </div>
+    <Table DataSource="@GridData"
+           TItem="ClosedPositionViewModel"
+           Loading="@isLoading"
+           Bordered="@true"
+           Total="_total"
+           ScrollY="calc(100vh - 260px)"
+           @bind-PageIndex="_pageIndex"
+           @bind-PageSize="_pageSize">
+        <RowTemplate> 
+            <AntDesign.Column Ellipsis
+                    TData="long"
+                    Title="Id"
+                    @bind-Field="@context.Id"
+                    Width="90"
+                    Sortable
+                    Filterable>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Account"
+                    TData="string"
+                    @bind-Field="@context.AccountId"
+                    Width="130"
+                    Sortable
+                    Filterable/>
+            <AntDesign.Column Title="Open Date"
+                    TData="DateTime"
+                    @bind-Field="@context.OpenDate"
+                    Width="240"
+                    Format="yyyy-MM-dd"
+                    Sortable>
+                <div style="font-family: Nunito Sans,-apple-system,BlinkMacSystemFont,Helvetica Neue,sans-serif;">
+                    <div><Icon Type="plus-circle" Theme="outline" /> @FormatUtils.DateTimeNamedWithMsFormat(context.Created)</div>
+                    <div><Icon Type="check-circle" Theme="outline" /> @FormatUtils.DateTimeNamedWithMsFormat(context.OpenDate)</div>
+                    <div><Icon Type="close-circle" Theme="outline" /> @FormatUtils.DateTimeNamedWithMsFormat(context.CloseDate)</div>
+                    <OrderCloseReason CloseReason="context.CloseReason" />
+                </div>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Open BidAsk"
+                    Field="@context.Id"
+                    Width="150">
+                <OrderBidAsk BidAsk="context.OpenPriceBidAsk" Digits="context.InstrumentDigits"></OrderBidAsk>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Price"
+                    Field="@context.ClosePrice">
+                <OrderClosePrice Order="context"></OrderClosePrice>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Close BidAsk"
+                    Field="@context.Id"
+                    Width="150">
+                <OrderBidAsk BidAsk="context.OpenPriceBidAsk" Digits="context.InstrumentDigits"></OrderBidAsk>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Operation"
+                    Field="@context.Operation"
+                    Width="96">
+                <OrderOperation Operation="context.Operation" OrderType="context.OpenOrderType"></OrderOperation>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Instrument"
+                    TData="string"
+                    @bind-Field="@context.Instrument"
+                    Sortable
+                    Filterable/>
+            <AntDesign.Column Title="Investment"
+                    TData="double"
+                    @bind-Field="@context.InvestmentAmount"
+                    Width="100"
+                    Sortable>
+                <div>@($"{context.InvestmentAmount.ToString("F0")} x 1:{context.Leverage }")</div>
+                <div>@($"V: {(context.InvestmentAmount * context.Leverage).ToString("F0")}")</div>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Take Profit / Stop Loss"
+                    TData="double?"
+                    @bind-Field="@context.TakeProfitInCurrency"
+                    Width="100">
+                <div>@($"TP: {GetOrderTakeProfit(context)}")</div>
+                  <div>@($"SL: {GetOrderStopLoss(context)}")</div>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Refill %"
+                    TData="double"
+                    @bind-Field="@context.ToppingUpPercent"
+                    Width="60"
+                    Sortable>
+                <div>@((context.ToppingUpPercent > 0 ? $"{context.ToppingUpPercent.ToString("F0")}%" : "-"))</div>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Refill Amount"
+                    TData="double"
+                    @bind-Field="@context.ReservedFundsForToppingUp"
+                    Width="80"
+                    Sortable>
+                <div>@((context.ReservedFundsForToppingUp > 0 ? context.ReservedFundsForToppingUp.ToString("F2") : "-"))</div>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Profit"
+                    Field="@context.Profit"
+                    Filterable
+                    Sortable>
+                <div>
+                    <span class="simple-badge @(GetOrderProfitBadgeColor(context.Profit))">@context.Profit.ToString("F2")</span>
+                </div>
+            </AntDesign.Column>
+        </RowTemplate>
+    </Table>
+</div>
+
+<style>
+.ant-table td {
+    padding: 5px 10px !important
+}
+</style>
+
+@code
+{
+    private AccountType AccountsTypeFilter = AccountType.Real;
+
+    public List<ClosedPositionViewModel> GridData
+        = new List<ClosedPositionViewModel>();
+
+    DateTime dateFrom = DateTime.UtcNow.Date;
+    DateTime dateTo = DateTime.UtcNow.Date.AddDays(-1);
+
+    int _pageIndex = 1;
+    int _pageSize = 200;
+    int _total = 0;
+
+    private bool isLoading { get; set; } = true;
+
+    private bool stopPriceRefresh { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => LoadData());
+    }
+
+    private async void AccountsTypeFilterChanged(AccountType selectedAccType)
+    {
+        AccountsTypeFilter = selectedAccType;
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+
+        var closedOrders = (await LiveDemoServices.GetContext(AppState.IsLive).StReader.GetClosedPositionsAsync(dateFrom, dateTo));
+
+        GridData =  (await AccTypeFilter.FilterPositions(closedOrders, AccountsTypeFilter))
+            .Select(x => ClosedPositionViewModel.Create(x,
+                InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+
+        isLoading = false;
+
+        this.StateHasChanged();
+    }
+
+    private string GetOrderTakeProfit(ClosedPositionViewModel order)
+    {
+        if (order.TakeProfitInCurrency.HasValue) {
+            return order.TakeProfitInCurrency.Value.ToString("F2");
+        }
+
+        if (order.TakeProfitRate.HasValue) {
+            return $"rate: ${order.TakeProfitRate.Value.ToString("F2")}";
+        }
+
+        return "-";
+    }
+
+    private string GetOrderStopLoss(ClosedPositionViewModel order)
+    {
+        if (order.StopLossInCurrency.HasValue) {
+            return order.StopLossInCurrency.Value.ToString("F2");
+        }
+
+        if (order.StopLossRate.HasValue) {
+            return $"rate: ${order.StopLossRate.Value.ToString("F2")}";
+        }
+
+        return "-";
+    }
+
+    private string GetOrderProfitBadgeColor(double profit)
+    {
+        if (profit > 0)
+        {
+            return "badge-green";
+        }
+        else if (profit < 0)
+        {
+            return "badge-red";
+        }
+
+        return "badge-gray";
+    }
+}

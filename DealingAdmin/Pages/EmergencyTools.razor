@@ -1,0 +1,31 @@
+﻿@page "/EmergencyTools"
+
+@using AntDesign
+@using DealingAdmin.Components.Quotes
+
+<PageTitle>Emergency Tools</PageTitle>
+
+<Tabs TabBarStyle="" OnChange="@OnTabSelect" DefaultActiveKey="@SelectedTabKey" Animated="@false">
+    <TabPane Tab="ALL QUOTES" Key="AllQuotes" Class="tab-text">
+        <AllQuotesTab/>
+	</TabPane>
+    <TabPane Tab="ACTIVE QUOTES" Key="ActiveQuotes" Class="tab-text">
+        <ActiveQuotesTab/>
+    </TabPane>
+</Tabs>
+
+@code {
+    private string SelectedTabKey { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        SelectedTabKey = "ActivePositionss";
+        await base.OnInitializedAsync();
+    }
+
+    private void OnTabSelect(string tab)
+    {
+        SelectedTabKey = tab;
+        StateHasChanged();
+    }
+}

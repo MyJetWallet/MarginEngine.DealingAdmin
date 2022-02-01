@@ -1,0 +1,251 @@
+@using AntDesign
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Markups
+@using SimpleTrading.Abstraction.Trading.Instruments
+
+@inject ITradingInstrumentsRepository InstrumentsRepository;
+@inject IMarkupProfilesRepository markupProfilesRepository
+@inject ISnackbar snackbar
+@inject Logger logger
+
+<PageHeader Class="m-0 p-0" Title="@pageTitle">
+</PageHeader>
+<AntDesign.Row>
+    <Col Span="16">
+        <Form Model="Profile"        
+                ValidateOnChange="@true"
+                ValidateMode="@FormValidateMode.Rules">
+            <FormItem Label="Profile Id" Rules=@RequiredRule>
+                <Input @bind-Value="@context.ProfileId"
+                        Placeholder="Profile Id"
+                        Style="width:300px"
+                        Size="@InputSize.Large" 
+                        Disabled="@(!isNewProfile)"
+                        Rules=@RequiredRule/>
+            </FormItem>            
+        </Form>
+    </Col>
+    <Col Flex=@("auto")></Col>
+    <Col Flex=@("160px")>
+        <AntDesign.Button Icon="check"
+            Class="btn-text bg-color-aquamarine"
+            OnClick="SaveGlobalMarkupProfile"
+            Disabled="@(String.IsNullOrEmpty(Profile.ProfileId))">Save</AntDesign.Button>
+    </Col>
+    <Col Flex=@("160px")>
+        <AntDesign.Button Icon="arrow-left"
+            Class="btn-text bg-color-yellow"
+            OnClick="GoBack">Back</AntDesign.Button>
+    </Col>
+</AntDesign.Row>
+
+<Table DataSource="@Profile.MarkupInstruments"
+       TItem="MarkupItem"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 120px)"
+       PageSize="999">
+    <TitleTemplate>
+        <PageHeader Title="Global Profile Instruments" Class="m-0 p-0">
+            <PageHeaderExtra>
+                 <AntDesign.Button 
+                    OnClick="ShowNewInstrumentDialog" 
+                    Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text">Add Instrument</AntDesign.Button>
+            </PageHeaderExtra>
+        </PageHeader>
+    </TitleTemplate>
+    <RowTemplate>           
+        <AntDesign.Column Title="Instrument Id"
+                TData="string"
+                DataIndex="InstrumentId"
+                Sortable/>
+        <AntDesign.Column Title="Markup Bid"
+                TData="int"
+                DataIndex="MarkupBid"
+                Sortable/>
+        <AntDesign.Column Title="Markup Ask"
+                TData="int"
+                DataIndex="MarkupAsk"
+                Sortable/>
+        <ActionColumn Title="Actions">
+            <Tooltip Title="@("Edit")">
+                <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+            </Tooltip>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+<Modal Title="@instrumentEditFormTitle"
+       Visible="@isEditInstrumentDialogVisible"
+       Closable="@false"
+       Footer=null
+       Width="480">
+    <Form Model="editedInstrument"
+            LabelColSpan="6"
+            WrapperColSpan="18"     
+            ValidateOnChange="@true"
+            ValidateMode="@FormValidateMode.Rules">
+        <FormItem Label="Instrument Id" Rules=@RequiredRule>
+            <Select DataSource="@availableInstruments"
+                @bind-Value="@context.InstrumentId"
+	            TItemValue="string"
+	            TItem="string"
+                Disabled="@(selectedInstrument != null)"
+                EnableSearch>
+            </Select>
+        </FormItem>
+        <FormItem Label="Markup Bid" Required Rules=@RequiredIntRule>
+            <AntDesign.InputNumber @bind-Value="@context.MarkupBid" />
+        </FormItem>            
+        <FormItem Label="Markup Ask" Required Rules=@RequiredIntRule>
+            <AntDesign.InputNumber @bind-Value="@context.MarkupAsk" />
+        </FormItem>
+        <AntDesign.Row Class="center-middle p-3">
+            <Col Span="12">
+            </Col>    
+            <Col Span="6">
+                <AntDesign.Button OnClick="SaveInstrument"
+                    Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text">Save</AntDesign.Button>
+            </Col>    
+            <Col Span="6">
+                <AntDesign.Button OnClick="CancelEditInstrumentDialog"
+                    Class="btn-text">Cancel</AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
+    </Form>
+</Modal>
+
+@code {
+    [Parameter]
+    public MarkupProfileModel Profile { get; set; }
+
+    [Parameter]
+    public EventCallback OnGoBack { get; set; }
+
+    MarkupItem selectedInstrument;
+    MarkupItem editedInstrument = new MarkupItem();
+    List<string> instrumentIds;
+    List<string> availableInstruments;
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+    private FormValidationRule[] RequiredIntRule = { new FormValidationRule { Required = true, Type = FormFieldType.Integer } };
+    private FormValidationRule[] CrudApiKeyRule;
+
+    private string profileId { get; set; }
+
+    private bool isNewProfile = true;
+
+    private string pageTitle = "";
+    private string instrumentEditFormTitle = "";
+    private string profileEditFormTitle;
+    private bool isEditInstrumentDialogVisible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!String.IsNullOrEmpty(Profile.ProfileId))
+        {
+            profileId = Profile.ProfileId;
+            pageTitle = $"Edit '{profileId}' Globak Markup Profile";
+            isNewProfile = false;
+        }
+
+        instrumentIds = (await InstrumentsRepository.GetAllAsync()).Select(x => x.Id).ToList();
+        availableInstruments = GetAvailableInstrumentsList();
+    }
+
+    private List<string> GetAvailableInstrumentsList()
+    {
+        var resultSet = new List<string>();
+
+        if (selectedInstrument != null)
+        {
+            resultSet.Add(selectedInstrument.InstrumentId);
+        }
+        else if (Profile.MarkupInstruments.Any()) 
+        {
+            foreach(var instId in instrumentIds)
+            {
+                if (!Profile.MarkupInstruments.Where(x => x.InstrumentId == instId).Any())
+                {
+                    resultSet.Add(instId);
+                }
+            }
+        }
+        else
+        {
+            resultSet.AddRange(instrumentIds);
+        }
+
+        return resultSet;
+    }
+
+    private void SaveInstrument()
+    {
+        if (selectedInstrument != null)
+        {
+            selectedInstrument.MarkupBid = editedInstrument.MarkupBid;
+            selectedInstrument.MarkupAsk = editedInstrument.MarkupAsk;
+        }
+        else
+        {
+            Profile.MarkupInstruments.Add(editedInstrument);
+        }
+
+        isEditInstrumentDialogVisible = false;
+    }
+
+    private void ShowNewInstrumentDialog()
+    {
+        selectedInstrument = null;
+        editedInstrument = new MarkupItem 
+        {
+            InstrumentId = instrumentIds.First() 
+        };
+
+        availableInstruments = GetAvailableInstrumentsList();
+        instrumentEditFormTitle = $"Add New Instrument for Global Markup Profile {profileId}";
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void ShowEditInstrumentDialog(MarkupItem markupItem)
+    {
+        selectedInstrument = markupItem;
+        editedInstrument = MarkupItem.Create(markupItem);
+        availableInstruments = GetAvailableInstrumentsList();
+        instrumentEditFormTitle = $"Edit '{markupItem.InstrumentId}' Instrument for Global Markup Profile {profileId}";
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void CancelEditInstrumentDialog()
+    {
+        isEditInstrumentDialogVisible = false;
+    }
+
+    private async void SaveGlobalMarkupProfile()
+    {
+        try
+        {
+            await markupProfilesRepository.UpdateAsync(this.Profile.ToDatabaseModel());
+
+            snackbar.Add($"Markup Profile '{profileId}' saved", Severity.Success);
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async void GoBack()
+    {
+        await OnGoBack.InvokeAsync();
+    }
+}

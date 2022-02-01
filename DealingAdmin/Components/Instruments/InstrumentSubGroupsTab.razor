@@ -1,0 +1,144 @@
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.Instruments.Forms
+@using DealingAdmin.Components.TradingGroups
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+
+@inject IInstrumentGroupsRepository groupsRepository;
+@inject IInstrumentSubGroupsRepository subGroupsRepository;
+@inject IUserMessageService messageService
+@inject AdminAppSettings appSettings
+@inject ISnackbar snackbar
+@inject Logger logger
+
+<div style="width:750px;">
+<PageHeader Class="mb-2 p-0" Title="Instrument SubGroups">
+    <PageHeaderExtra>
+        <AntDesign.Button
+            OnClick="ShowNewGroupDialog"
+            Type="@AntDesign.ButtonType.Primary"
+            Class="btn-text">New SubGroup</AntDesign.Button>
+    </PageHeaderExtra>
+</PageHeader>
+ 
+<Table DataSource="@instrumentSubGroups"
+       TItem="InstrumentSubGroupModel"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 180px)"
+       PageSize="999">
+    <RowTemplate>
+        <AntDesign.Column Title="Group"
+                DataIndex="GroupId"
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Id"
+                DataIndex="Id"
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Name"
+                DataIndex="Name"
+                TData="string"
+                Sortable/>
+        <AntDesign.Column Title="Weight"
+                DataIndex="Weight" 
+                TData="int"
+                Sortable/>
+        <ActionColumn Title="Edit" Width="120">            
+            <Tooltip Title="@("Edit")">
+                <a><i @onclick="()=>ShowEditGroupDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+            </Tooltip>
+            <Tooltip Title="@("Delete")">
+                <Popconfirm Title="Are you sure?" OkText="Confirm" CancelText="Cancel">
+                    <a><i @onclick="()=>DeleteSubGroup(context)"
+                        class="material-icons color-crimson">delete_outline</i></a>
+                </Popconfirm>
+            </Tooltip>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+</div>
+
+<Modal Title="@subgroupEditFormTitle"
+       Visible="@isEditSubGroupDialogVisible"
+       Closable="@false"
+       Footer=null
+       Width="600">
+    <InstrumentSubGroupEditForm
+        InstrumentSubGroup="editedSubGroup"
+        OnFinish="CloseEditDialogAndRefresh"
+        OnCancel="CloseEditDialog"/>
+</Modal>
+
+@code {
+    private IEnumerable<InstrumentSubGroupModel> instrumentSubGroups;
+
+    private InstrumentSubGroupModel editedSubGroup = new InstrumentSubGroupModel();
+    private string subgroupEditFormTitle = "";
+    private bool isEditSubGroupDialogVisible;
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        instrumentSubGroups = (await subGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
+    }
+
+    private void ShowNewGroupDialog()
+    {
+        Console.WriteLine(">>> InstrumentSubGroupsTab >>> ShowNewGroupDialog >>> START"); // REMOVE AFTER TEST !!!!
+        subgroupEditFormTitle = "Add New SubGroup";
+        editedSubGroup = new InstrumentSubGroupModel();
+        isEditSubGroupDialogVisible = true;
+        Console.WriteLine(">>> InstrumentSubGroupsTab >>> ShowNewGroupDialog >>> END"); // REMOVE AFTER TEST !!!!
+    }
+
+    private void ShowEditGroupDialog(InstrumentSubGroupModel group)
+    {
+        Console.WriteLine(">>> InstrumentSubGroupsTab >>> ShowEditGroupDialog >>> START"); // REMOVE AFTER TEST !!!!
+        subgroupEditFormTitle = $"Edit '{group.Id}' Group";
+        editedSubGroup = InstrumentSubGroupModel.Create(group);
+        isEditSubGroupDialogVisible = true;
+        Console.WriteLine(">>> InstrumentSubGroupsTab >>> ShowEditGroupDialog >>> END"); // REMOVE AFTER TEST !!!!
+    }
+
+    private void CloseEditDialog()
+    {
+        isEditSubGroupDialogVisible = false;
+    }
+
+    private async void CloseEditDialogAndRefresh()
+    {
+        isEditSubGroupDialogVisible = false;
+        await RefreshData();
+        this.StateHasChanged();
+    }
+
+    private async void DeleteSubGroup(InstrumentSubGroupModel subGroup)
+    {
+        try
+        {
+            await subGroupsRepository.DeleteAsync(subGroup.GroupId, subGroup.Id);
+            logger.Information($"Trading SubGroup '{subGroup.Id}' was deleted from '{subGroup.GroupId}' Group");
+            snackbar.Add($"Trading SubGroup '{subGroup.Id}' was deleted from '{subGroup.GroupId}' Group", Severity.Info);
+            await RefreshData();
+            this.StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+}

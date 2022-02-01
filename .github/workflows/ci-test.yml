@@ -51,21 +51,15 @@ jobs:
 
 
 
-#  restart:
-#    runs-on: self-hosted
-#    needs: build
-#    steps:
-#    - name: Restart service
-#      uses: Myjetwallet/kube-restart-pods@master
-#      env:
-#        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA__ST_TEST }}
-#        NAMESPACE: ${{ secrets.KUBE_TEST_NAMESPACE }}
-#        POD: indexprices
-#    - name: Restart job
-#      uses: Myjetwallet/kube-restart-pods@master
-#      env:
-#        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA__ST_TEST }}
-#        NAMESPACE: ${{ secrets.KUBE_TEST_NAMESPACE }}
-#        POD: indexprices-job
+  restart:
+    runs-on: self-hosted
+    needs: build
+    steps:
+    - name: Restart pod
+      uses: Myjetwallet/kube-restart-pods@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA__MARGINTRADING_TEST }}
+        NAMESPACE: simple-trading
+        POD: dealing-admin
 
 

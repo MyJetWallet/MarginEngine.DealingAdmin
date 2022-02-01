@@ -1,0 +1,179 @@
+﻿@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.Settings
+@using System.ComponentModel.DataAnnotations
+@using SimpleTrading.TickHistory.Grpc
+@using SimpleTrading.TickHistory.Grpc.Contracts
+
+@inject ITickHistoryServiceGrpc tickHistoryGrpc
+@inject IInstrumentsCache InstrumentsCache
+@inject ISnackbar snackbar
+@inject Logger logger
+
+<Title Level="4">Price Checker</Title>
+<AntDesign.Row>
+    <Col Span="12">
+        <AntDesign.Row>
+            <div class="m-1">Instrument:</div>
+            <Select
+                DataSource="@instrumentIds"
+                @bind-Value="@instrumentId"
+		        TItemValue="string"
+		        TItem="string"
+                EnableSearch>
+            </Select>
+        </AntDesign.Row>
+        <AntDesign.Row>
+            <Col Span="12" class="m-3">
+                <div class="m-1">DateTime From:</div>
+                <DatePicker @bind-Value="@priceDateTimeFrom" ShowTime="@true"/>
+            </Col>
+            <Col Span="12" class="m-3">
+                <div class="m-1">DateTime To:</div>
+                <DatePicker @bind-Value="@priceDateTimeTo" ShowTime="@true"/>
+            </Col>
+        </AntDesign.Row>
+        <AntDesign.Row>
+            <Col Span="8" class="m-3">
+                <div class="m-1">Bid/Ask</div>
+                <Select Mode="default"
+                        @bind-Value="@bidAskType"
+                        TItemValue="BidAskType"
+                        TItem="BidAskType">
+                    <SelectOptions>
+                        @foreach (var item in Enum.GetValues<BidAskType>())
+                        {
+                            <SelectOption
+                                TItemValue="BidAskType"
+                                TItem="BidAskType"
+                                Value=@item
+                                Label="@item.ToString()"/>
+                        }
+                    </SelectOptions>
+                </Select>
+            </Col>
+            <Col Span="8" class="m-3">
+                <div class="m-1">Above/Below</div>
+                <Select Mode="default"
+                        @bind-Value="@aboveBelowType"
+                        TItemValue="AboveBelowType"
+                        TItem="AboveBelowType">
+                    <SelectOptions>
+                        @foreach (var item in Enum.GetValues<AboveBelowType>())
+                        {
+                            <SelectOption
+                                TItemValue="AboveBelowType"
+                                TItem="AboveBelowType"
+                                Value=@item
+                                Label="@item.ToString()"/>
+                        }
+                    </SelectOptions>
+                </Select>
+            </Col>
+            <Col Span="8" class="m-3">
+                <div class="m-1">Rate</div>
+                <AntDesign.InputNumber @bind-Value="@priceRate" TValue="double" />
+            </Col>
+        </AntDesign.Row>
+        <AntDesign.Row Class="center-middle p-3">
+            <Col Span="18">
+            </Col>    
+            <Col Span="6">
+                <AntDesign.Button
+                    OnClick="@LoadPriceHistory"
+                    Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text">
+                    Load Price History
+                </AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
+    </Col>
+    <Col Span="12">      
+        <Table DataSource="@tickHistory"
+                Title="Tick History"
+                TItem="FullTickHistory"
+                Bordered="@true"
+                Total="0"
+                ScrollY="calc(100vh - 200px)"
+                PageSize="200">
+            <AntDesign.Column Title="DateTime"
+                    DataIndex="DateTime"
+                    TData="DateTime"
+                    Sortable/>
+            <AntDesign.Column Title="Bid"
+                    DataIndex="Bid"
+                    TData="double"/>
+            <AntDesign.Column Title="Ask" 
+                    DataIndex="Ask" 
+                    TData="double"/>
+        </Table>
+    </Col>
+</AntDesign.Row>​ 
+
+@code {
+    List<string> instrumentIds = new List<string>();
+
+    string instrumentId;
+    DateTime priceDateTimeFrom = DateTime.UtcNow.AddMinutes(-3);
+    DateTime priceDateTimeTo = DateTime.UtcNow;
+    BidAskType bidAskType = BidAskType.Bid;
+    AboveBelowType aboveBelowType = AboveBelowType.Above;
+    double priceRate = 0;
+
+    List<FullTickHistory> tickHistory = new List<FullTickHistory>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        instrumentIds = InstrumentsCache.GetAll().Select(x => x.Id).ToList();
+    }
+
+    private async Task LoadPriceHistory()
+    {
+        tickHistory = new List<FullTickHistory>();
+
+        try
+        {
+            var grpcRequest = new FullTicksHistoryWithParamsContract
+            {
+                InstrumentId = instrumentId,
+                DateFrom = priceDateTimeFrom,
+                DateTo = priceDateTimeTo,
+                Rate = priceRate,
+                IsBid = bidAskType == BidAskType.Bid,
+                IsAbove = aboveBelowType == AboveBelowType.Above,
+                ItemsToTake = 1000
+            };
+
+            var grpcResult = await tickHistoryGrpc.GetFullTicksWithParamsAsync(grpcRequest);
+
+            if (grpcResult.Ticks != null)
+            {
+                tickHistory = grpcResult.Ticks.ToList();
+            }
+
+            this.StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+
+    public enum BidAskType
+    {
+        Bid,
+        Ask
+    }
+
+    public enum AboveBelowType
+    {
+        Above,
+        Below
+    }
+}
+

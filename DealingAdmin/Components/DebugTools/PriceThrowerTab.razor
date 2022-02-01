@@ -1,0 +1,120 @@
+﻿@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.Settings
+@using System.IO
+@using System.Diagnostics
+@using SimpleTrading.ServiceBus.PublisherSubscriber.BidAsk
+
+@inject IInstrumentsCache InstrumentsCache
+@inject IUserMessageService MessageService
+@inject BidAskMyServiceBusPublisher bidAskPublisher
+@inject ISnackbar snackbar
+@inject AdminAppSettings appSettings
+@inject Logger logger
+
+<div style="width:600px;">
+<Title Level="4">Synthetic Price </Title>
+<Form @ref="priceForm"
+      Model="priceModel"
+      ValidateOnChange="@true"
+      ValidateMode="@FormValidateMode.Rules"
+      LabelColSpan="6"
+      WrapperColSpan="12">
+    <Validator>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+    </Validator>
+    <ChildContent>
+        <FormItem Label="Instrument Id" Rules=@RequiredRule>
+            <Select DataSource="@instrumentIds"
+                @bind-Value="@context.Id"
+	            TItemValue="string"
+	            TItem="string"
+                EnableSearch>
+            </Select>
+        </FormItem>
+        <FormItem Label="Bid" Required Rules=@RequiredNumberRule>
+            <AntDesign.InputNumber @bind-Value="@context.Bid" />
+        </FormItem>
+        <FormItem Label="Ask" Required Rules=@RequiredNumberRule>
+            <AntDesign.InputNumber @bind-Value="@context.Ask" />
+        </FormItem>
+         <FormItem Label="API Key" Required Rules=@CrudApiKeyRule>
+            <InputPassword @bind-Value="@context.ApiKey" />
+        </FormItem>
+        <AntDesign.Row Class="center-middle p-3">
+            <Col Span="18">
+            </Col>    
+            <Col Span="6">
+                <AntDesign.Button Icon="send"
+                    OnClick="@SendPrice"
+                    Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text"
+                    Disabled="@(priceModel.Bid == 0 || priceModel.Ask == 0)">
+                    Send Price
+                </AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
+    </ChildContent>
+</Form>
+</div>
+
+@code {
+    AntDesign.Form<PriceThrowerModel> priceForm;
+
+    List<string> instrumentIds = new List<string>();
+    PriceThrowerModel priceModel = new();
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+    private FormValidationRule[] RequiredNumberRule = { new FormValidationRule { Required = true, Type = FormFieldType.Number } };
+    private FormValidationRule[] CrudApiKeyRule;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var instList = InstrumentsCache.GetAll().ToList();
+        instrumentIds = instList.Select(x => x.Id).ToList();
+
+        if (instrumentIds.Any())
+        {
+            priceModel.Id = instrumentIds.First();
+        }
+
+        CrudApiKeyRule = new FormValidationRule[]
+        {
+            new FormValidationRule
+                {
+                    Required = true,
+                    Type = FormFieldType.String,
+                    OneOf = new string[] { appSettings.AdminCrudApiKey },
+                    Message = "API Key is not valid"
+                }
+        };
+    }
+
+    private async void SendPrice()
+    {
+        try
+        {
+            if (!priceForm.Validate())
+            {
+                return;
+            }
+
+            await bidAskPublisher.PublishAsync(new PriceThrowerModel
+            {
+                Id = priceModel.Id,
+                Bid = priceModel.Bid,
+                Ask = priceModel.Ask
+            });
+
+            snackbar.Add($"Price for {priceModel.Id} [B:{priceModel.Bid}|A:{priceModel.Ask}] published", Severity.Success);
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+}

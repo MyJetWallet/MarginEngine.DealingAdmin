@@ -1,0 +1,292 @@
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.Instruments
+@using Microsoft.AspNetCore.Components
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper liveDemoServices
+@inject ITradingInstrumentsRepository instrumentsRepository
+@inject ITradingProfileNewInstrumentsValidator profileNewInstrumentsValidator
+@inject ISnackbar snackbar
+@inject Logger logger
+@inject NavigationManager navManager
+
+<PageHeader Class="m-0 p-0" Title="@pageTitle"/>
+<AntDesign.Row>
+    <Col Flex=@("360px") Class="px-2">
+        Profile Id:
+        <Input @bind-Value="@TradingProfile.Id"
+                Placeholder="Profile Id"
+                Style="width:220px"
+                Disabled="@(!isNewProfile)"/>
+    </Col>
+    <Col Flex=@("220px") Class="px-2">
+        Margin Call %
+        <AntDesign.InputNumber
+                @bind-Value="@TradingProfile.MarginCallPercent"
+                TValue="double"
+                Style="width:80px" />
+    </Col>
+    <Col Flex=@("220px") Class="px-2">
+        Stop Out %
+        <AntDesign.InputNumber 
+                @bind-Value="@TradingProfile.StopOutPercent"
+                TValue="double"
+                Style="width:80px"/>
+    </Col>
+    <Col Flex=@("220px") Class="px-2">
+        Topping Up %
+        <AntDesign.InputNumber
+                @bind-Value="@TradingProfile.PositionToppingUpPercent"
+                TValue="double"
+                Style="width:80px"/>
+    </Col>
+    <Col Flex=@("auto")>
+    </Col>
+    <Col Flex=@("160px")>
+        <AntDesign.Button Icon="check"
+            Class="btn-text bg-color-aquamarine"
+            OnClick="SaveTradingProfile"
+            Disabled="@(String.IsNullOrEmpty(TradingProfile.Id))">Save</AntDesign.Button>
+    </Col>
+    <Col Flex=@("160px")>
+        <AntDesign.Button Icon="arrow-left"
+            Class="btn-text bg-color-yellow"
+            OnClick="GoBack">Back</AntDesign.Button>
+    </Col>
+</AntDesign.Row>
+
+<Table DataSource="@TradingProfile.Instruments"
+       TItem="TradingProfileInstrumentModel"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 200px)"
+       PageSize="999">
+    <TitleTemplate>
+        <PageHeader Title="Profile Instruments" Class="m-0 p-0">
+            <PageHeaderExtra>
+                 <AntDesign.Button 
+                    OnClick="ShowNewInstrumentDialog" 
+                    Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text">Add Instrument</AntDesign.Button>
+            </PageHeaderExtra>
+        </PageHeader>
+    </TitleTemplate>
+    <RowTemplate>           
+        <AntDesign.Column Title="Instrument Id"
+                TData="string"
+                DataIndex="Id"
+                Sortable/>
+        <AntDesign.Column Title="Operation Volume" TData="string">
+            <div>Max: @context.MaxOperationVolume</div>
+            <div>Min: @context.MinOperationVolume</div>
+        </AntDesign.Column>
+        <AntDesign.Column Title="Max Position Volume"
+                TData="double"
+                DataIndex="MaxPositionVolume"
+                Sortable/>
+        <AntDesign.Column Title="Open Position Delay" TData="string">
+            <div>Max: @context.OpenPositionMaxDelayMs ms</div>
+            <div>Min: @context.OpenPositionMinDelayMs ms</div>
+        </AntDesign.Column>
+        <AntDesign.Column Title="Slippage" TData="string">
+            <div class="no-click"><Checkbox Checked="@context.TpSlippage">Take Profit</Checkbox></div>
+            <div class="no-click"><Checkbox Checked="@context.SlSlippage">Stop Loss</Checkbox></div>
+            <div class="no-click"><Checkbox Checked="@context.OpenPositionSlippage">Open Position</Checkbox></div>
+        </AntDesign.Column>
+        <AntDesign.Column Title="Leverages" TData="string">
+            <span>@(String.Join(" ", context.Leverages))</span>
+        </AntDesign.Column>
+        <AntDesign.Column Title="Stop Out %"
+                TData="double?"
+                DataIndex="StopOutPercent"
+                Sortable/>
+        <ActionColumn Title="Actions">
+            <Tooltip Title="@("Edit")">
+                <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+            </Tooltip>
+            <Tooltip Title="@("Clone")">
+                <a><i @onclick="()=>CloneInstrument(context)"
+                    class="material-icons color-aquamarine">content_copy</i></a>
+            </Tooltip>
+            <Tooltip Title="@("Delete")">
+                <Popconfirm Title="Are you sure?" OkText="Confirm" CancelText="Cancel">
+                    <a><i @onclick="()=>DeleteInstrument(context)"
+                        class="material-icons color-crimson">delete_outline</i></a>
+                </Popconfirm>
+            </Tooltip>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+<Modal Title="@instrumentEditFormTitle"
+       Visible="@isEditInstrumentDialogVisible"
+       Closable="@false"
+       Footer=null
+       Width="720">
+    <TradingProfileInstrumentEditForm
+            Instrument="@editedInstrument"
+            AvailableInstruments=@availableInstruments
+            OnSave="@SaveInstrument"
+            OnCancel="@CancelEditInstrumentDialog" />       
+</Modal>
+
+@code {
+    [Parameter]
+    public TradingProfileModel TradingProfile { get; set; }
+
+    [Parameter]
+    public EventCallback OnGoBack { get; set; }
+
+    TradingProfileInstrumentModel selectedInstrument;
+    TradingProfileInstrumentModel editedInstrument;
+    List<string> instrumentIds;
+    List<string> availableInstruments;
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+    private FormValidationRule[] RequiredIntRule = { new FormValidationRule { Required = true, Type = FormFieldType.Integer } };
+
+    private string profileId { get; set; }
+
+    private bool isNewProfile = true;
+
+    private string pageTitle = "Add New Trading Profile";
+    private string instrumentEditFormTitle = "";
+    private bool isEditInstrumentDialogVisible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!String.IsNullOrEmpty(TradingProfile.Id))
+        {
+            profileId = TradingProfile.Id;
+            pageTitle = $"Edit '{profileId}' Trading Profile";
+            isNewProfile = false;
+        }
+
+        instrumentIds = (await instrumentsRepository.GetAllAsync()).Select(x => x.Id).ToList();
+        availableInstruments = GetAvailableInstrumentsList();
+
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => GoBack());
+    }
+
+    private List<string> GetAvailableInstrumentsList()
+    {
+        var resultSet = new List<string>();
+
+        if (selectedInstrument != null)
+        {
+            resultSet.Add(selectedInstrument.Id);
+        }
+        else if (TradingProfile.Instruments.Any()) 
+        {
+            foreach(var instId in instrumentIds)
+            {
+                if (!TradingProfile.Instruments.Where(x => x.Id == instId).Any())
+                {
+                    resultSet.Add(instId);
+                }
+            }
+        }
+        else
+        {
+            resultSet.AddRange(instrumentIds);
+        }
+
+        return resultSet;
+    }
+
+    private void ShowNewInstrumentDialog()
+    {
+        selectedInstrument = null;
+        availableInstruments = GetAvailableInstrumentsList();
+
+        editedInstrument = new TradingProfileInstrumentModel 
+        {
+            Leverages = new int[] { }
+        };
+
+        instrumentEditFormTitle = $"Add New Instrument for Trading Profile {profileId}";
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void CancelEditInstrumentDialog()
+    {
+        isEditInstrumentDialogVisible = false;
+    }
+
+    private void ShowEditInstrumentDialog(TradingProfileInstrumentModel profileItem)
+    {
+        selectedInstrument = profileItem;
+        editedInstrument = TradingProfileInstrumentModel.Create(profileItem);
+        availableInstruments = GetAvailableInstrumentsList();
+        instrumentEditFormTitle = $"Edit '{profileItem.Id}' Instrument for Trading Profile {profileId}";
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void CloneInstrument(TradingProfileInstrumentModel profileItem)
+    {
+        selectedInstrument = null;
+        editedInstrument = TradingProfileInstrumentModel.Create(profileItem);
+        availableInstruments = GetAvailableInstrumentsList();
+        instrumentEditFormTitle = $"Add New Instrument for Trading Profile {profileId}";
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void DeleteInstrument(TradingProfileInstrumentModel profileItem)
+    {
+        TradingProfile.Instruments.Remove(profileItem);
+    }
+
+    private void SaveInstrument()
+    {
+        if (selectedInstrument != null)
+        {
+            selectedInstrument.IsTrending = editedInstrument.IsTrending;
+            selectedInstrument.Leverages = editedInstrument.Leverages;
+            selectedInstrument.MaxOperationVolume = editedInstrument.MaxOperationVolume;
+            selectedInstrument.MinOperationVolume = editedInstrument.MinOperationVolume;
+            selectedInstrument.MaxPositionVolume = editedInstrument.MaxPositionVolume;
+            selectedInstrument.OpenPositionMaxDelayMs = editedInstrument.OpenPositionMaxDelayMs;
+            selectedInstrument.OpenPositionMinDelayMs = editedInstrument.OpenPositionMinDelayMs;
+            selectedInstrument.SlSlippage = editedInstrument.SlSlippage;
+            selectedInstrument.TpSlippage = editedInstrument.TpSlippage;
+            selectedInstrument.OpenPositionSlippage = editedInstrument.OpenPositionSlippage;
+            selectedInstrument.StopOutPercent = editedInstrument.StopOutPercent;
+        }
+        else
+        {
+            TradingProfile.Instruments.Add(editedInstrument);
+        }
+
+        isEditInstrumentDialogVisible = false;
+    }
+
+    protected async Task SaveTradingProfile()
+    {
+        if (String.IsNullOrEmpty(TradingProfile.Id))
+        {
+            snackbar.Add("Profile ID is empty", Severity.Warning);
+            return;
+        }
+
+        var profileNewInstrumentsValidatorErrorMessage =
+            await profileNewInstrumentsValidator.ValidateTradingProfileNewInstruments(TradingProfile, AppState.IsLive);
+
+        if (!String.IsNullOrEmpty(profileNewInstrumentsValidatorErrorMessage))
+        {
+            snackbar.Add(profileNewInstrumentsValidatorErrorMessage, Severity.Error);
+        }
+
+        await liveDemoServices.GetContext(AppState.IsLive).TradingProfileRepository.UpdateAsync(TradingProfile);
+        snackbar.Add($"Trading Profile '{TradingProfile.Id}' saved", Severity.Success);
+    }
+
+    private async void GoBack()
+    {
+        await OnGoBack.InvokeAsync();
+    }
+}

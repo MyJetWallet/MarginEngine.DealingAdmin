@@ -1,0 +1,225 @@
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Components.Instruments.Forms
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.Instruments
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+@using SimpleTrading.Abstraction.Trading.Swaps
+@using SimpleTrading.Common.Abstractions.DefaultValues
+@using SimpleTrading.Common.Abstractions.InstrumentsAvatar
+@using SimpleTrading.Common.Abstractions.Images
+@using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
+@using static DealingAdmin.FormatUtils
+
+@inject IInstrumentSubGroupsRepository SubGroupsRepository
+@inject IInstrumentGroupsRepository GroupsRepository
+@inject ITradingInstrumentsRepository InstrumentsRepository
+@inject TradingInstrumentMyNoSqlRepository avatarRepository
+@inject IDefaultValuesRepository defValuesRepository
+@inject ISwapProfileWriter SwapProfileWriter
+@inject ISnackbar snackbar 
+@inject Logger logger
+
+<PageHeader Class="mb-2 p-0" Title="Instruments">
+    <PageHeaderExtra>
+        <AntDesign.Button 
+            OnClick="ShowNewInstrumentDialog" 
+            Type="@AntDesign.ButtonType.Primary"
+            Class="btn-text">New Instrument</AntDesign.Button>
+    </PageHeaderExtra>
+</PageHeader>
+<Table DataSource="@tradingInstruments"
+       TItem="TradingInstrumentModel"
+       Loading="@isLoading"
+       Bordered="@true"
+       Total="0"
+       HidePagination="@true"
+       ScrollY="calc(100vh - 200px)"
+       PageSize="999">
+    <RowTemplate>
+        <AntDesign.Column Title="Group"
+                TData="string"
+                DataIndex="GroupId"
+                Sortable
+                Filterable/>
+        <AntDesign.Column Title="Id"
+                TData="string"
+                DataIndex="Id"
+                Sortable>
+            <p>Id: <b>@context.Id</b></p>
+            <p>Name: <b>@context.Name</b></p>
+        </AntDesign.Column>
+        <AntDesign.Column Title="Weight"
+            TData="int?"
+            DataIndex="Weight"
+            Sortable
+            Width="80"/>
+        <AntDesign.Column Title="Sub group" 
+                DataIndex="SubGroupId" 
+                TData="string"
+                Sortable
+                Filterable/>
+        <AntDesign.Column Title="Base"
+                DataIndex="Base" 
+                TData="string"
+                Sortable
+                Width="80"/>
+        <AntDesign.Column Title="Quote"
+                DataIndex="Quote"
+                TData="string"
+                Sortable
+                Width="80"/>
+        <AntDesign.Column Title="Digits" 
+                DataIndex="Digits" 
+                TData="int"
+                Sortable
+                Width="72"/>
+        <AntDesign.Column Title="Swap"
+                DataIndex="SwapScheduleId"
+                TData="string"
+                Width="72">
+            @if (String.IsNullOrEmpty(context.SwapScheduleId))
+            {
+                <i class="material-icons color-crimson font-18">warning_amber</i>
+            }
+            else
+            {
+                <span>@context.SwapScheduleId</span>
+            }
+        </AntDesign.Column>
+        <AntDesign.Column Title="Time off"
+                TData="string"
+                Width="220">
+            @foreach(var item in context.DaysOff)
+            {
+                <p>@(FormatUtils.GetDayOffText(item))</p>
+            }
+        </AntDesign.Column>
+        <AntDesign.Column Title="On/Off"
+                TData="bool"
+                Field="@context.TradingDisabled"
+                Sortable
+                Width="72">
+            <Switch @bind-Value="@context.TradingDisabled"></Switch>
+        </AntDesign.Column>
+        <AntDesign.Column Title="Price"
+                TData="string"
+                Width="160">
+            <InstrumentBidAsk InstrumentId="@context.Id" InstrumentDigits="@context.Digits"/>
+        </AntDesign.Column>
+        <AntDesign.Column Title="Timeout"
+                TData="string" 
+                Width="120">
+            Night:<Tag PresetColor="PresetColor.Purple">@context.NightTimeout</Tag>
+            Day:<Tag PresetColor="PresetColor.GeekBlue">@context.DayTimeout</Tag>
+        </AntDesign.Column>        
+        <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditInstrumentDialog(context)"
+                    class="material-icons color-primary">edit</i></a>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+   
+<Modal Title="@instrumentEditFormTitle"
+       Visible="@isEditInstrumentDialogVisible"
+       OkText="@("Save")"
+       OnOk="()=>SaveInstrument()"
+       OnCancel="()=>CloseEditInstrumentDialog()"
+       Width="900">
+    <TradingInstrumentEditForm
+        Instrument="editedInstrument"
+        InstrumentGroups="instrumentGroups" 
+        SubGroups="instrumentSubGroups"
+        SwapProfiles="swapProfiles"/>   
+</Modal>
+
+@code {
+    private IEnumerable<TradingInstrumentModel> tradingInstruments;
+    private IEnumerable<InstrumentGroupModel> instrumentGroups;
+    private IEnumerable<InstrumentSubGroupModel> instrumentSubGroups;
+    private IEnumerable<ISwapProfile> swapProfiles;
+
+    private bool isLoading = false;
+    private TradingInstrumentModel editedInstrument;
+    private string instrumentEditFormTitle;
+    private bool isEditInstrumentDialogVisible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        instrumentSubGroups = (await SubGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
+        instrumentGroups = (await GroupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
+        tradingInstruments = (await InstrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
+        swapProfiles = await SwapProfileWriter.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private void ShowNewInstrumentDialog()
+    {
+        instrumentEditFormTitle = "Add New Instrument";
+        editedInstrument = new TradingInstrumentModel()
+            {
+                DaysOff = new List<TradingInstrumentDayOffModel>()
+            };
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void ShowEditInstrumentDialog(TradingInstrumentModel instrument)
+    {
+        instrumentEditFormTitle = $"Edit '{instrument.Name}' Instrument";
+        editedInstrument = instrument;
+        isEditInstrumentDialogVisible = true;
+    }
+
+    private void CloseEditInstrumentDialog()
+    {
+        isEditInstrumentDialogVisible = false;
+        editedInstrument = new TradingInstrumentModel();
+    }
+
+    private async Task<string> GetInstrumentAvatarSrc(string instumentId, ImageTypes imgType)
+    {
+        ITradingInstrumentsAvatar instrumentAvatar = null;
+        var avatarSrc = "";
+
+        try
+        {
+            instrumentAvatar = await avatarRepository.GetInstrumentsAvatarAsync(instumentId, imgType);
+            avatarSrc = instrumentAvatar.Avatar;
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex);
+            logger.Warning(ex, ex.Message);
+            logger.Warning($"Can't read instrument avatar (ID:'{instumentId}') from repository");
+        }
+
+        if (instrumentAvatar == null)
+        {
+            avatarSrc = imgType == ImageTypes.SVG
+                ? await defValuesRepository.GetTradingInstrumentAvatarSvgAsync()
+                : await defValuesRepository.GetTradingInstrumentAvatarPngAsync();
+        }
+
+        return imgType == ImageTypes.SVG
+            ? $"{FormatUtils.ImageSvgDataPrefix}{avatarSrc}"
+            : $"{FormatUtils.ImagePngDataPrefix}{avatarSrc}";
+    }
+
+    private async void SaveInstrument()
+    {
+        try
+        {
+            await InstrumentsRepository.UpdateAsync(editedInstrument);
+            tradingInstruments = (await InstrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
+            isEditInstrumentDialogVisible = false;
+            snackbar.Add($"Instrument '{editedInstrument.Id}' saved", Severity.Success);
+            StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+}

@@ -1,0 +1,100 @@
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Microsoft.AspNetCore.Components
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+@using System.ComponentModel.DataAnnotations
+
+@inject IInstrumentGroupsRepository groupsRepository;
+@inject ISnackbar snackbar
+@inject Logger logger
+
+<Form @ref="editForm"
+      Model="InstrumentGroup"
+      ValidateOnChange="@true"
+      ValidateMode="@FormValidateMode.Rules"
+      LabelColSpan="6"
+      WrapperColSpan="12">
+    <Validator>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+    </Validator>
+    <ChildContent>
+        <FormItem Label="Group Id" Required Rules=@RequiredRule>
+             <Input @bind-Value="@context.Id"
+                 Placeholder="Group Id"
+                 Disabled="@(!isNewGroup)"/>
+        </FormItem>           
+        <FormItem Label="Name" Required Rules=@RequiredRule>
+            <Input @bind-Value="@context.Name" Placeholder="Name" />
+        </FormItem>
+        <FormItem Label="Weight" Required Rules=@RequiredIntRule>
+            <Input @bind-Value="@context.Weight" TValue="int" />
+        </FormItem>
+        <AntDesign.Row Class="center-middle p-3">
+            <Col Span="12">
+            </Col>    
+            <Col Span="6">
+                <AntDesign.Button OnClick="SaveGroup"
+                    Class="btn-text bg-color-aquamarine">
+                    Save
+                </AntDesign.Button>
+            </Col>    
+            <Col Span="6">
+                <AntDesign.Button OnClick="CloseDialog"
+                    Class="btn-text bg-color-light-yellow">
+                    Cancel
+                </AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
+    </ChildContent>
+</Form>
+ 
+@code {
+    [Parameter]
+    public InstrumentGroupModel InstrumentGroup { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnFinish { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+    private FormValidationRule[] RequiredIntRule = 
+        { new FormValidationRule { Required = true, Type = FormFieldType.Integer } };
+
+    AntDesign.Form<InstrumentGroupModel> editForm;
+
+    private bool isNewGroup;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isNewGroup = String.IsNullOrEmpty(this.InstrumentGroup.Id);
+    }
+
+    private async void CloseDialog()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async void SaveGroup()
+    {
+        try
+        {
+            if (!editForm.Validate())
+            {
+                return;
+            }
+
+            await groupsRepository.UpdateAsync(InstrumentGroup);
+            await OnFinish.InvokeAsync();
+            snackbar.Add($"Trading Group {InstrumentGroup.Id} saved", Severity.Success);
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+}

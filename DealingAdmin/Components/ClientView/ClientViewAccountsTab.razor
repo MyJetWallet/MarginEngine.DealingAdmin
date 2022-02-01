@@ -1,0 +1,332 @@
+﻿@using System.ComponentModel
+@using AntDesign.TableModels
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Caches.ActiveOrders
+@using SimpleTrading.Abstraction.Trading
+@using SimpleTrading.Abstraction.Trading.BalanceOperations
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Engine.Grpc.Contracts
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper LiveDemoServices
+@inject IUserMessageService MessageService
+@inject AdminAppSettings appSettings
+@inject Serilog.Core.Logger logger
+@inject ModalService modalService
+@inject IAccountNewTradingGroupValidator accountNewTradingGroupValidator
+@inject Logger logger
+
+<Table  DataSource="@GridData"
+        TItem="TradingAccountModel"
+        Loading="@isLoading"
+        Bordered="@true"
+        Total="0"
+        HidePagination="@true"
+        ScrollY="calc(100vh - 260px)"
+        PageSize="999">
+    <RowTemplate> 
+        <AntDesign.Column Title="Account"
+                DataIndex="AccountId"
+                TData="string"
+                Sortable
+                Filterable/>
+        <AntDesign.Column Title="Currency"
+                DataIndex="Currency"
+                TData="string"
+                Width="120"/>
+        <AntDesign.Column Title="Balance"
+                DataIndex="Balance"
+                TData="double"/>
+        <AntDesign.Column Title="Real Funds" TData="double">
+            @((context.Balance - context.Bonus > 0
+                ? context.Balance - context.Bonus : 0))
+        </AntDesign.Column> 
+        <AntDesign.Column Title="Bonus"
+                DataIndex="Bonus"
+                TData="double"/>              
+        <AntDesign.Column Title="Trading Group"
+                DataIndex="TradingGroup"
+                TData="string"/>
+        <ActionColumn Title="Actions" Width="120">
+            <div>
+                <Tooltip Title="@("Update Balance")">
+                    <a><i @onclick="()=>ShowUpdateBalanceDialog(context.AccountId)"
+                        class="material-icons color-primary">account_balance_wallet</i></a>
+                </Tooltip>
+                <Tooltip Title="@("Update Group")">    
+                    <a><i @onclick="()=>ShowUpdateTradingGroupDialog(context.AccountId)"
+                        class="material-icons color-teal">list_alt</i></a>
+                </Tooltip>
+            </div>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+<Modal Title="Update Balance"
+       Visible="@isUpdateBalanceDialogVisible"
+       OkText="@("Confirm")"
+       OnOk="()=>UpdateBalance()"
+       OnCancel="()=>CloseUpdateBalanceDialog()">
+    <Form Model="formUpdateBalance"
+          LabelColSpan="8"
+          WrapperColSpan="16">
+        <FormItem Label="Trader Id" >
+            <Input @bind-Value="@context.TraderId" Disabled="@true" ReadOnly="@true" />
+        </FormItem>
+        <FormItem Label="Account Id" >
+            <Input @bind-Value="@context.AccountId" Disabled="@true" ReadOnly="@true" />
+        </FormItem>
+        <FormItem Label="Delta" Required>
+            <AntDesign.InputNumber @bind-Value="@context.Delta" />
+        </FormItem>
+        <FormItem Label="Comment" Required>
+            <Input @bind-Value="@context.Comment" />
+        </FormItem>
+        <FormItem Label="Operation Type" Required="@true">
+             <Select Mode="default"
+                    @bind-Value="@context.OperationType"    
+                    TItemValue="BalanceUpdateOperationType"
+                    TItem="BalanceUpdateOperationType">
+                <SelectOptions>
+                    @foreach (var item in Enum.GetValues<BalanceUpdateOperationType>())
+                    {
+                        <SelectOption
+                            TItemValue="BalanceUpdateOperationType"
+                            TItem="BalanceUpdateOperationType"
+                            Value=@item
+                            Label="@item.ToString()"/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        <FormItem Label="API Key" Required>
+            <InputPassword @bind-Value="@context.ChangeBalanceApiKey" />
+        </FormItem>
+    </Form>
+</Modal>
+
+<Modal Title="Update Trading Group"
+       Visible="@isUpdateTradingGroupDialogVisible"
+       OkText="@("Confirm")"
+       OnOk="()=>UpdateTradingGroup()"
+       OnCancel="()=>CloseUpdateTradingGroupDialog()">
+    <Form Model="formUpdateTradingGroup"
+          LabelColSpan="8"
+          WrapperColSpan="16">
+        <FormItem Label="Trader Id" >
+            <Input @bind-Value="@context.TraderId" Disabled="@true" ReadOnly="@true" />
+        </FormItem>
+        <FormItem Label="Account Id" >
+            <Input @bind-Value="@context.AccountId" Disabled="@true" ReadOnly="@true" />
+        </FormItem>
+        <FormItem Label="Trading Group" Required="@true">
+             <Select Mode="default"
+                    @bind-Value="@context.TradingGroupToAssign"    
+                    TItemValue="string"
+                    TItem="string">
+                <SelectOptions>
+                    @foreach (var item in tradingGroups)
+                    {
+                        <SelectOption
+                            TItemValue="string"
+                            TItem="string"
+                            Value="@item.Id"
+                            Label="@item.Name.ToString()"/>
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        <FormItem Label="API Key" Required>
+            <InputPassword @bind-Value="@context.ApiKey" />
+        </FormItem>
+    </Form>
+</Modal>
+
+@code
+{
+    [Parameter]
+    public string TraderId { get; set; }
+
+    List<TradingAccountModel> GridData = new List<TradingAccountModel>();
+
+    List<TradingGroupModel> tradingGroups = new List<TradingGroupModel>();
+
+    int _pageSize = 999;
+
+    private bool isLoading = false;
+    private bool stopPriceRefresh = false;
+    private bool isUpdateBalanceDialogVisible = false;
+    private bool isUpdateTradingGroupDialogVisible = false;
+
+    UpdateBalanceModel formUpdateBalance = new UpdateBalanceModel();
+    UpdateAccountTradingGroupModel formUpdateTradingGroup = new UpdateAccountTradingGroupModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() =>
+        {
+            RefreshData().GetAwaiter().GetResult();
+            this.StateHasChanged();
+        });
+
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
+
+        try
+        {
+            tradingGroups = (await LiveDemoServices.GetContext(AppState.IsLive)
+                .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
+
+            Console.WriteLine($"Acc Tab -> RefreshData ->  GRPC call"); /// REMOVE AFTER TEST!!!!
+
+            var grpcAccounts = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.GetAccountsAsync(
+                new GetAccountsGrpcRequestContract
+                    {
+                        TraderId = this.TraderId
+                    });
+
+            Console.WriteLine($"Acc Tab -> RefreshData ->  grpcAccounts.Count = {grpcAccounts.Count()}"); /// REMOVE AFTER TEST!!!!
+            GridData = grpcAccounts.Select(TradingAccountModel.Create).ToList();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }        
+    }
+
+    void ShowUpdateBalanceDialog(string accountId)
+    {
+        formUpdateBalance = new UpdateBalanceModel
+            {
+                TraderId = TraderId,
+                AccountId = accountId,
+                OperationType = BalanceUpdateOperationType.BalanceCorrection,
+            };
+
+        this.isUpdateBalanceDialogVisible = true;
+    }
+
+    void ShowUpdateTradingGroupDialog(string accountId)
+    {
+        formUpdateTradingGroup = new UpdateAccountTradingGroupModel
+            {
+                TraderId = TraderId,
+                AccountId = accountId,
+                TradingGroupToAssign = GridData.First(x => x.AccountId == accountId).TradingGroup,
+            };
+
+        this.isUpdateTradingGroupDialogVisible = true;
+    }
+
+    void CloseUpdateBalanceDialog()
+    {
+        this.isUpdateBalanceDialogVisible = false;
+    }
+
+    void CloseUpdateTradingGroupDialog()
+    {
+        this.isUpdateTradingGroupDialogVisible = false;
+    }
+
+    private async Task UpdateBalance()
+    {
+        Console.WriteLine($"UpdateBalance"); /// REMOVE AFTER TEST!!!!
+
+        if (formUpdateBalance.ChangeBalanceApiKey != appSettings.ChangeBalanceApiKey)
+        {
+            await MessageService.ErrorAsync("API Key is not valid");
+            return;
+        }
+
+        if (Math.Abs(formUpdateBalance.Delta) < 0.001)
+        {
+            await MessageService.ErrorAsync("Delta can't be zero");
+            return;
+        }
+
+        var contract = new ChangeBalanceGrpcRequest
+            {
+                TraderId = formUpdateBalance.TraderId,
+                AccountId = formUpdateBalance.AccountId,
+                Delta = formUpdateBalance.Delta,
+                Comment = formUpdateBalance.Comment,
+                OperationType = formUpdateBalance.OperationType,
+                ProcessId = $"Dealing-Admin-{FormatUtils.DateTimeNamedWithMsFormat(DateTime.UtcNow)}"
+            };
+
+        var grpcResponse = await LiveDemoServices.GetContext(AppState.IsLive)
+            .EngineApi.ChangeBalanceAsync(contract);
+
+        if (grpcResponse.Result != TradingOperationResult.Ok)
+        {
+            await MessageService.ErrorAsync($"Result: {grpcResponse.Result.ToString()}");
+            return;
+        }
+
+        await MessageService.SuccessAsync($"Result: OK. Account updated balance: ${grpcResponse.Account.Balance}");
+        CloseUpdateBalanceDialog();
+
+        Console.WriteLine($"UpdateBalance Result: ${grpcResponse.Account.Balance}"); /// REMOVE AFTER TEST!!!!
+
+        await RefreshData();
+        StateHasChanged();
+    }
+
+    private async Task UpdateTradingGroup()
+    {
+        Console.WriteLine($"UpdateTradingGroup"); /// REMOVE AFTER TEST!!!!
+
+        if (formUpdateTradingGroup.ApiKey != appSettings.AdminCrudApiKey)
+        {
+            await MessageService.ErrorAsync("API Key is not valid");
+            return;
+        }
+        
+        var newGroupValidatorErrorMessage = await accountNewTradingGroupValidator
+            .ValidateAccountNewTradingGroup(formUpdateTradingGroup);
+
+        if (!String.IsNullOrEmpty(newGroupValidatorErrorMessage))
+        {
+            await MessageService.ErrorAsync($"Error: {newGroupValidatorErrorMessage}");
+            return;
+        }
+
+        var tradingDisabledRequest = new UpdateTradingAccountGroupRequest
+        {
+            TraderId = formUpdateTradingGroup.TraderId,
+            AccountId = formUpdateTradingGroup.AccountId,
+            GroupToAssign = formUpdateTradingGroup.TradingGroupToAssign
+        };
+
+        try
+        {
+            var updateTradingAccountGroupResponse = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi
+                .UpdateTradingAccountGroupAsync(tradingDisabledRequest);
+
+            await MessageService.SuccessAsync($"Result: {updateTradingAccountGroupResponse.Result}");
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine(e);
+            logger.Error(e, e.Message);
+            await MessageService.ErrorAsync("Error occured during the EngineApi request execution");
+        }
+
+        await RefreshData();
+        StateHasChanged();
+    }
+}

@@ -1,4 +1,4 @@
-﻿using DeakingAdmin.Abstractions.Models;
+﻿using DealingAdmin.Abstractions.Models;
 using Microsoft.AspNetCore.Components.Forms;
 using SimpleTrading.Abstraction.Candles;
 using SimpleTrading.CandlesHistory.AzureStorage;
@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DeakingAdmin.Abstractions
+namespace DealingAdmin.Abstractions
 {
     public interface ICandlesService
     {

@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using MyNoSqlServer.Abstractions;
 using DealingAdmin.Abstractions;
+using SimpleTrading.QuotesFeedRouter.Abstractions;
 
 namespace DealingAdmin.MyNoSql
 {

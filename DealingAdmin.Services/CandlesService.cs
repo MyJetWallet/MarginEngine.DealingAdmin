@@ -1,14 +1,9 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
-using DeakingAdmin.Abstractions;
-using DeakingAdmin.Abstractions.Models;
+using DealingAdmin.Abstractions;
+using DealingAdmin.Abstractions.Models;
 using DotNetCoreDecorators;
 using Microsoft.AspNetCore.Components.Forms;
 using Serilog.Core;
@@ -18,8 +13,8 @@ using SimpleTrading.CandlesHistory.AzureStorage;
 using SimpleTrading.CandlesHistory.Grpc;
 using SimpleTrading.CandlesHistory.Grpc.Contracts;
 using SimpleTrading.CandlesHistory.Grpc.Models;
-using SimpleTrading.GrpcTemplate;
 using SimpleTrading.ServiceBus.Contracts;
+using SimpleTrading.ServiceBus.PublisherSubscriber.BidAsk;
 
 namespace DealingAdmin.Services
 {
@@ -40,26 +35,26 @@ namespace DealingAdmin.Services
 
         private readonly ICandlesPersistentStorage _candlesPersistentStorage;
 
-        private readonly GrpcServiceClient<ISimpleTradingCandlesHistoryGrpc> _candlesHistoryService;
+        private readonly ISimpleTradingCandlesHistoryGrpc _candlesHistoryGrpc;
 
-        public static IPublisher<UpdateCandlesHistoryServiceBusContract> _candlesUpdatePublisher;
+        public static CandlesHistoryMyServiceBusPublisher _candlesHistoryPublisher;
 
         private readonly IInstrumentsCache _instrumentsCache;
 
         private readonly Logger _logger;
 
         public CandlesService(
-            GrpcServiceClient<ISimpleTradingCandlesHistoryGrpc> candlesHistoryService,
+            ISimpleTradingCandlesHistoryGrpc candlesHistoryGrpc,
             ICandlesPersistentStorage candlesPersistentStorage,
-            IInstrumentsCache instrumentsCache,
-            IPublisher<UpdateCandlesHistoryServiceBusContract> candlesUpdatePublisher,
+            IInstrumentsCache instrumentsCache, //InstrumentsMyNoSqlReadCache
+            CandlesHistoryMyServiceBusPublisher candlesHistoryPublisher,
             CandlesServiceSettings serviceSettings,
             Logger logger)
         {
-            _candlesHistoryService = candlesHistoryService;
+            _candlesHistoryGrpc = candlesHistoryGrpc;
             _candlesPersistentStorage = candlesPersistentStorage;
             _instrumentsCache = instrumentsCache;
-            _candlesUpdatePublisher = candlesUpdatePublisher;
+            _candlesHistoryPublisher = candlesHistoryPublisher;
             _settings = serviceSettings;
         }
 
@@ -95,20 +90,32 @@ namespace DealingAdmin.Services
 
         public static async Task<List<CandleWithTime>> ParseCandlesWithTime(IBrowserFile file)
         {
-            using var reader = new StreamReader(file.OpenReadStream());
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture) { TrimOptions = TrimOptions.None, Delimiter = "\t" };
-            using var csv = new CsvReader(reader, config);
-            var hasRecords = await csv.ReadAsync();
-
-            if (!hasRecords)
+            using (var memStream = new MemoryStream())
             {
-                throw new Exception("File contains no record");
+                // although file.OpenReadStream is itself a stream,
+                // using it directly causes "Synchronous reads are not supported" error
+                await file.OpenReadStream().CopyToAsync(memStream);
+
+                // at the end of the copy method, we are at the end of both the input and output stream
+                // and need to reset the one we want to work with.
+                memStream.Seek(0, SeekOrigin.Begin);
+
+                var reader = new StreamReader(memStream);
+
+                var config = new CsvConfiguration(CultureInfo.InvariantCulture) { TrimOptions = TrimOptions.None, Delimiter = "\t" };
+                using var csv = new CsvReader(reader, config);
+                var hasRecords = csv.Read();
+
+                if (!hasRecords)
+                {
+                    throw new Exception("File contains no record");
+                }
+
+                csv.Context.RegisterClassMap<CandleWithTimeMap>();
+
+                var recordsCsv = csv.GetRecords<CandleWithTime>().ToList();
+                return recordsCsv;
             }
-
-            csv.Context.RegisterClassMap<CandleWithTimeMap>();
-
-            var recordsCsv = csv.GetRecords<CandleWithTime>().ToList();
-            return recordsCsv;
         }
 
         public static async Task<List<CandleModel>> ParseCandles(IBrowserFile file)
@@ -157,7 +164,7 @@ namespace DealingAdmin.Services
                     await Task.WhenAll(tasks);
                 }
 
-                await _candlesUpdatePublisher.PublishAsync(
+                await _candlesHistoryPublisher.PublishAsync(
                     new UpdateCandlesHistoryServiceBusContract
                     {
                         InstrumentId = instrumentId,
@@ -218,7 +225,7 @@ namespace DealingAdmin.Services
 
                 await Task.WhenAll(tasks);
 
-                await _candlesUpdatePublisher.PublishAsync(
+                await _candlesHistoryPublisher.PublishAsync(
                     new UpdateCandlesHistoryServiceBusContract
                     {
                         InstrumentId = instrumentId,
@@ -375,8 +382,7 @@ namespace DealingAdmin.Services
                 var filteredCandlesCount = candles.Count;
                 var cacheCandles = new List<CandleGrpcModel>();
 
-                await foreach (var cacheCandle in _candlesHistoryService
-                    .Value.GetCandlesHistoryStream(cacheRequest))
+                await foreach (var cacheCandle in _candlesHistoryGrpc.GetCandlesHistoryStream(cacheRequest))
                 {
                     cacheCandles.Add(cacheCandle);
                 }
@@ -489,7 +495,7 @@ namespace DealingAdmin.Services
                 };
 
 
-                var candleGrpcList = await _candlesHistoryService.Value.GetCandlesHistoryAsync(cacheRequest);
+                var candleGrpcList = await _candlesHistoryGrpc.GetCandlesHistoryAsync(cacheRequest);
 
                 if (candleGrpcList.Any())
                 {
@@ -567,7 +573,7 @@ namespace DealingAdmin.Services
                 _ => throw new NotImplementedException("Unhandled Candle Type")
             };
 
-            await _candlesUpdatePublisher.PublishAsync(
+            await _candlesHistoryPublisher.PublishAsync(
                 new UpdateCandlesHistoryServiceBusContract
                 {
                     InstrumentId = editContract.InstrumentId,

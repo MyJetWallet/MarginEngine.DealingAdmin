@@ -1,0 +1,31 @@
+﻿@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+
+<div>
+    <div>O: @Order.OpenPrice.ToString($"F{Digits}")</div>
+    <div>C: @Order.ClosePrice.ToString($"F{Digits}")</div>
+    <div>Pips: <span class="simple-badge @(ticksBadgeColor)">@positionTicks</span></div>
+</div>
+
+@code {
+    [Parameter]
+    public ClosedPositionViewModel Order { get; set; }
+
+    public int Digits { get; set; }
+
+    private string ticksBadgeColor;
+
+    private int positionTicks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Digits = Order.InstrumentDigits;
+
+        ticksBadgeColor = Order.Profit > 0 ? "badge-green" : "badge-red";
+
+        positionTicks = FxUtils.CalcTicks(
+            Order.OpenPrice,
+            Order.ClosePrice,
+            Order.InstrumentDigits);
+    }
+}

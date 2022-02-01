@@ -1,0 +1,124 @@
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Microsoft.AspNetCore.Components
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+@using System.ComponentModel.DataAnnotations
+
+@inject IInstrumentGroupsRepository groupsRepository;
+@inject IInstrumentSubGroupsRepository subGroupsRepository;
+@inject ISnackbar snackbar
+@inject Logger logger
+
+<Form @ref="editForm"
+      Model="InstrumentSubGroup"
+      ValidateOnChange="@true"
+      ValidateMode="@FormValidateMode.Rules"
+      LabelColSpan="6"
+      WrapperColSpan="12">
+    <Validator>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+    </Validator>
+    <ChildContent>
+        <FormItem Label="Group" Required Rules=@RequiredRule>
+            <Select @bind-Value="@context.GroupId"
+                TItemValue="string"
+                TItem="string"
+                Disabled="@(!isNewSubGroup)"
+                Placeholder="Group Id">
+                <SelectOptions>
+                    @foreach (var item in instrumentGroups)
+                    {
+                        <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Name />
+                    }
+                </SelectOptions>
+            </Select>
+        </FormItem>
+        <FormItem Label="SubGroup Id" Required Rules=@RequiredRule>
+             <Input @bind-Value="@context.Id"
+                 Placeholder="SubGroup Id"
+                 Disabled="@(!isNewSubGroup)"/>
+        </FormItem>           
+        <FormItem Label="Name" Required Rules=@RequiredRule>
+            <Input @bind-Value="@context.Name" Placeholder="Name" />
+        </FormItem>
+        <FormItem Label="Weight" Required Rules=@RequiredIntRule>
+            <Input @bind-Value="@context.Weight" TValue="int" />
+        </FormItem>
+        <AntDesign.Row Class="center-middle p-3">
+            <Col Span="12">
+                <AntDesign.Button OnClick="SaveGroup"
+                    Class="btn-text bg-color-aquamarine">
+                    Save
+                </AntDesign.Button>
+            </Col>    
+            <Col Span="12">
+                <AntDesign.Button OnClick="CloseDialog"
+                    Class="btn-text bg-color-light-yellow">
+                    Cancel
+                </AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
+    </ChildContent>
+</Form>
+ 
+@code {
+    [Parameter]
+    public InstrumentSubGroupModel InstrumentSubGroup { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnFinish { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
+    private FormValidationRule[] RequiredIntRule = 
+        { new FormValidationRule { Required = true, Type = FormFieldType.Integer } };
+
+    AntDesign.Form<InstrumentSubGroupModel> editForm;
+    private List<IInstrumentGroup> instrumentGroups = new List<IInstrumentGroup>();
+    private bool isNewSubGroup;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine(">>> InstrumentSubGroupEditForm >>> OnInitializedAsync >>> START"); // REMOVE AFTER TEST !!!!
+        instrumentGroups = (await groupsRepository.GetAllAsync()).ToList();
+         Console.WriteLine(">>> InstrumentSubGroupEditForm >>> OnInitializedAsync >>> p-2"); // REMOVE AFTER TEST !!!!
+        isNewSubGroup = String.IsNullOrEmpty(this.InstrumentSubGroup.Id);
+
+        if (isNewSubGroup)
+        {
+            InstrumentSubGroup.GroupId = instrumentGroups.First().Id;
+        }
+        Console.WriteLine($">>> InstrumentSubGroupEditForm >>> instrumentGroups.Count {instrumentGroups.Count()}"); // REMOVE AFTER TEST !!!!
+        await base.OnInitializedAsync();        
+        Console.WriteLine(">>> InstrumentSubGroupEditForm >>> OnInitializedAsync >>> END"); // REMOVE AFTER TEST !!!!
+    }
+
+    private async void CloseDialog()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async void SaveGroup()
+    {
+        try
+        {
+            if (!editForm.Validate())
+            {
+                return;
+            }
+
+            await subGroupsRepository.UpdateAsync(InstrumentSubGroup);
+            await OnFinish.InvokeAsync();
+            snackbar.Add($"SubGroup {InstrumentSubGroup.Id} of Group '{InstrumentSubGroup.GroupId}' saved", Severity.Success);
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+}

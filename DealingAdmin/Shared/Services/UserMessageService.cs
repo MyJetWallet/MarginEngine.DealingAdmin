@@ -15,6 +15,8 @@ namespace DealingAdmin.Shared.Services
             MessageService messageService,
             Logger logger)
         {
+            Console.WriteLine("MessageService init");
+
             messageService.Config(new MessageGlobalConfig
             {
                 Top = 65,

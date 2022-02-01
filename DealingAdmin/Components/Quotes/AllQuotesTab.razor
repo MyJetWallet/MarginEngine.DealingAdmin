@@ -1,0 +1,84 @@
+﻿@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.BidAsk
+@using SimpleTrading.QuotesFeedRouter.Abstractions
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Common.MyNoSql.DefaultValues
+
+@inject IInstrumentsCache InstrumentsCache
+@inject ILiquidityProviderReader LpReader
+@inject IQuoteSourceService QuoteSourceService
+@inject IDefaultLiquidityProviderWriter DefaultLpWriter
+
+<div id="AllQuotesRegion">    
+  <Table DataSource="@GridData"
+           TItem="InstrumentQuoteModel"
+           Bordered="@true"
+           PageSize="999999"
+           HidePagination="@true"
+           ScrollY="calc(100vh - 160px)">
+        <RowTemplate> 
+            <AntDesign.Column Title="Instrument"
+                    Field="@context.Name"
+                    TData="string"
+                    Width="140"
+                    Sortable
+                    Filterable/>
+            <AntDesign.Column Title="Quotes"  
+                    Field="@context.Id">
+                <TitleTemplate>
+                    <div class="grid-container-lp-quote-line">
+                        <div></div>
+                        <div></div>
+                        <div>Bid</div>
+                        <div></div>
+                        <div>Ask</div>
+                        <div></div>
+                        <div>Spread</div>
+                        <div></div>
+                        <div>DateTime</div>
+                    </div>
+                </TitleTemplate>
+                <ChildContent>
+                    <InstrumentAllQuotes
+                        Instrument="context"
+                        ProvidersList="@liquidityProvidersList"
+                        ActiveProviderId="@dictInstrumentProviderMaps[context.Id]"/>
+                </ChildContent>               
+            </AntDesign.Column>
+        </RowTemplate>
+    </Table>
+</div>
+ 
+@code {
+
+    public List<InstrumentQuoteModel> GridData
+        = new List<InstrumentQuoteModel>();
+
+    private List<string> liquidityProvidersList = new List<string>();
+
+    private Dictionary<string, string> dictInstrumentProviderMaps
+        = new Dictionary<string, string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        liquidityProvidersList = (await LpReader.GetLiquidityProviders()).ToList();
+
+        GridData = InstrumentsCache.GetAll().Select(x => InstrumentQuoteModel.Create(x)).ToList();
+
+        var sourceMaps = (await QuoteSourceService.GetInstrumentSourcesMaps()).ToList();
+
+        foreach(var instr in GridData)
+        {
+            var overwrittenProviderId = sourceMaps.FirstOrDefault(x => x.InstrumentId == instr.Id);
+
+            var providerId =  overwrittenProviderId != null
+                ? overwrittenProviderId.SourceId
+                : await DefaultLpWriter.GetAsync();
+
+            dictInstrumentProviderMaps.Add(instr.Id, providerId);
+        }
+    }
+}

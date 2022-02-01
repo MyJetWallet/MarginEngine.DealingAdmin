@@ -1,0 +1,53 @@
+﻿@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.BidAsk
+@using SimpleTrading.Abstraction.Trading.Positions
+
+<div>
+    <span class="simple-badge @(closeReasonBadgeColor)">@closeReasonText</span>
+</div>
+
+@code {
+    [Parameter]
+    public ClosePositionReason CloseReason { get; set; }
+
+    private string closeReasonBadgeColor;
+
+    private string closeReasonText;
+
+    protected override async Task OnInitializedAsync()
+    {
+        switch (CloseReason)
+        {
+            case ClosePositionReason.ClientCommand: 
+                closeReasonText = "Client Command";
+                closeReasonBadgeColor = "badge-primary";
+                break;
+
+            case ClosePositionReason.StopOut:
+                closeReasonText = "Stop Out";
+                closeReasonBadgeColor = "badge-red";
+                break;
+
+            case ClosePositionReason.TakeProfit:
+                closeReasonText = "Take Profit";
+                closeReasonBadgeColor = "badge-green";
+                break;
+
+            case ClosePositionReason.StopLoss:
+                closeReasonText = "Stop Loss";
+                closeReasonBadgeColor = "badge-orange";
+                break;
+
+            case ClosePositionReason.Canceled:
+                closeReasonText = "Canceled";
+                closeReasonBadgeColor = "badge-orange";
+                break;
+
+            case ClosePositionReason.None:
+                closeReasonText = "None";
+                closeReasonBadgeColor = "badge-red";
+                break;
+        }
+    }
+}

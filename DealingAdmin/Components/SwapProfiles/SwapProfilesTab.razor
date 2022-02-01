@@ -1,0 +1,117 @@
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.Trading.Swaps
+
+@inject ISwapProfileWriter SwapProfileWriter
+@inject NavigationManager NavManager
+
+@if (!editFormSwitch)
+{
+    <PageHeader Class="m-2 p-0" Title="Swap Profiles">
+        <PageHeaderExtra>
+            <AntDesign.Button OnClick="ShowNewProfile"
+                Type="@AntDesign.ButtonType.Primary"
+                Class="btn-text">New Profile</AntDesign.Button>
+        </PageHeaderExtra>
+    </PageHeader>
+
+    <Table DataSource="@swapGroupProfiles"
+           TItem="SwapGroupProfile"
+           Bordered="@true"
+           Total="0"
+           HidePagination="@true"
+           ScrollY="calc(100vh - 120px)"
+           PageSize="999">
+        <RowTemplate>           
+            <AntDesign.Column Title="Profile Id"
+                DataIndex="ProfileId"
+                TData="string"
+                Sortable
+                Width="200"/>
+            <AntDesign.Column Title="Instruments" TData="string">   
+                @foreach (var instrument in context.Instruments)
+                {
+                    <Tag PresetColor="PresetColor.Purple">@instrument.InstrumentId</Tag>
+                }
+            </AntDesign.Column>
+            <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditProfile(context)"
+                    class="material-icons color-primary">edit</i></a>
+            </ActionColumn>
+        </RowTemplate>
+    </Table>
+}
+else
+{
+    <EditSwapProfile ProfileGroup="editedProfile" OnGoBack="CloseEditProfile"/>
+}
+
+@code {
+    private List<SwapGroupProfile> swapGroupProfiles;
+
+    private SwapGroupProfile editedProfile;
+    private bool editFormSwitch = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        swapGroupProfiles = new List<SwapGroupProfile>();
+        var swapProfiles = (await SwapProfileWriter.GetAllAsync()).Select(SwapProfileModel.Create);
+        var profilesGroupDictionary = new Dictionary<string, List<SwapProfileModel>>();
+
+        foreach(var item in swapProfiles)
+        {
+            if (!profilesGroupDictionary.ContainsKey(item.Id))
+            {
+                profilesGroupDictionary.Add(item.Id, new List<SwapProfileModel>());
+            }
+
+            profilesGroupDictionary[item.Id].Add(item);
+        }
+
+        foreach(var groupId in profilesGroupDictionary.Keys)
+        {
+            swapGroupProfiles.Add(new SwapGroupProfile
+                {
+                    ProfileId = groupId,
+                    Instruments = profilesGroupDictionary[groupId]
+                });
+        }
+
+        editedProfile = new SwapGroupProfile
+            {
+                ProfileId = "",
+                Instruments = new List<SwapProfileModel>()
+            };
+
+        this.StateHasChanged();
+    }
+
+    private void ShowNewProfile()
+    {
+        editedProfile = new SwapGroupProfile
+            {
+                ProfileId = "",
+                Instruments = new List<SwapProfileModel>()
+            };
+        editFormSwitch = true;
+    }
+
+    private void ShowEditProfile(SwapGroupProfile groupProfile)
+    {
+        editedProfile = groupProfile;
+        editFormSwitch = true;
+    }
+
+    private async void CloseEditProfile()
+    {
+        editFormSwitch = false;
+        await RefreshData();
+    }
+}

@@ -1,0 +1,346 @@
+﻿@using System.ComponentModel
+@using AntDesign.TableModels
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
+@using DealingAdmin.Shared.Services
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+@using SimpleTrading.Abstraction.Caches.ActiveOrders
+@using SimpleTrading.Abstraction.Trading
+@using SimpleTrading.Abstraction.Trading.BalanceOperations
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Engine.Grpc.Contracts
+@using SimpleTrading.TradeLog.Grpc
+@using SimpleTrading.TradeLog.Grpc.Contracts
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper LiveDemoServices
+@inject IUserMessageService MessageService
+@inject AdminAppSettings appSettings
+@inject Serilog.Core.Logger logger
+@inject ModalService modalService
+@inject ISnackbar snackbar
+@inject ITradeLogGrpcService TradeLogGrpcService
+
+<div class="mb-2">
+    <AntDesign.Row>
+        <Col Span="8" Class="text-nowrap">
+            <span class="text-bold mx-2">Account:</span>               
+            <Select DataSource="@AccountsList"
+                    TItemValue="TradingAccountModel"
+                    TItem="TradingAccountModel"
+                    OnSelectedItemChanged="SelectedAccountChanged"
+                    Style="width: 300px;">
+                <SelectOptions>
+                    @foreach (var acc in AccountsList)
+                    {
+                        <SelectOption
+                            TItemValue="TradingAccountModel"
+                            TItem="TradingAccountModel"
+                            Value=@acc
+                            Label="@($"{acc.AccountId} | Balance: {acc.Balance.ToString("F2")}")"/>
+                    }
+                </SelectOptions>
+            </Select>
+        </Col>
+        <Col Span="8" Class="text-nowrap align-content-end">
+            <span class="text-bold mx-2">Date:</span>                 
+            <DatePicker
+                @bind-Value="@tradeLogDate"
+                TValue="DateTime"
+                AllowClear="false"
+                Picker="@DatePickerType.Date"/>
+            <AntDesign.Button
+                Type="@AntDesign.ButtonType.Primary"
+                OnClick="()=>LoadDataForDay()"
+                Class="mx-2">
+                Load
+            </AntDesign.Button>
+        </Col>
+        <Col Span="8" Class="align-items-end">
+            <AntDesign.Button
+                Type="@AntDesign.ButtonType.Primary"
+                OnClick="()=>LoadLastData()"
+                Class="mx-2">
+                Load Last
+            </AntDesign.Button>
+            <AntDesign.InputNumber @bind-Value="@tradeLogTimeUnits" />
+            <Select Mode="default"
+                    @bind-Value="@timeUnitType"    
+                    TItemValue="TradeLogTimeUnitsType"
+                    TItem="TradeLogTimeUnitsType"
+                    Style="width: 120px;">
+                <SelectOptions>
+                    @foreach (var item in Enum.GetValues<TradeLogTimeUnitsType>())
+                    {
+                        <SelectOption
+                            TItemValue="TradeLogTimeUnitsType"
+                            TItem="TradeLogTimeUnitsType"
+                            Value=@item
+                            Label="@item.ToString()"/>
+                    }
+                </SelectOptions>
+            </Select>
+        </Col>
+    </AntDesign.Row>       
+</div>
+
+<Table DataSource="@GridData"
+        TItem="TradeLogModel"
+        Loading="@isLoading"
+        Bordered="@true"
+        Total="_total"
+        ScrollY="calc(100vh - 320px)"
+        @bind-PageIndex="_pageIndex"
+        @bind-PageSize="_pageSize">
+    <RowTemplate> 
+        <AntDesign.Column Title="DateTime"
+                TData="DateTime"
+                @bind-Field="@context.DateTime"
+                Format="@(FormatUtils.DateTimeCommonFormat)"
+                Sortable
+                Filterable
+                Width="200"/>
+        <AntDesign.Column Title="Process Id"
+                TData="string"
+                @bind-Field="@context.ProcessId"
+                Width="360"/>
+        <AntDesign.Column Title="Component"
+                TData="string"
+                @bind-Field="@context.Component"
+                Width="140"/>
+        <AntDesign.Column Title="Message"
+                TData="string"
+                @bind-Field="@context.Message"/>
+        <ActionColumn Title="Actions" Width="100">
+            <div>
+                <Tooltip Title="@("Show Details")">
+                    <a><i @onclick="()=>ShowEventDetails(context.Data)"
+                          class="material-icons color-primary">manage_search</i></a>
+                </Tooltip>
+                @if (isCreatePositionEvent(context))
+                {
+                    <Tooltip Title="@("Restore Active Position")">    
+                        <a><i @onclick="()=>RestoreActivePosition(context.Data)"
+                              class="material-icons color-primary">restore_page</i></a>
+                    </Tooltip>
+                }
+            </div>
+        </ActionColumn>
+    </RowTemplate>
+</Table>
+
+<Modal Title="Event Details"
+       Visible="@isEventDetailsDialogVisible"
+       Closable=@false
+       Footer=null
+       CancelButtonProps="new AntDesign.ButtonProps(){ Ghost = true }">
+    <div>
+        <TextArea Placeholder="Event Details" 
+            AutoSize Value="@eventDetailsText"
+            ReadOnly />
+    </div>
+    <div class="end-middle">
+    <AntDesign.Button
+        Type="@AntDesign.ButtonType.Primary"
+        OnClick="()=>CloseEventDetailsDialog()"
+        Class="btn-text m-2">Close</AntDesign.Button>
+    </div>
+</Modal>
+
+<style>
+.ant-table td {
+    padding: 5px 10px !important
+}
+
+.event-details-content {
+    max-height: calc(100vh - 320px);
+    max-width:900px;
+    height:224px;
+    overflow: scroll;
+    overflow-y: scroll;
+    background:#fff;
+}
+</style>
+
+@code
+{
+    [Parameter]
+    public string TraderId { get; set; }
+
+    List<TradingAccountModel> AccountsList = new List<TradingAccountModel>();
+
+    List<TradeLogModel> GridData = new List<TradeLogModel>();
+
+    int _pageIndex = 1;
+    int _pageSize = 200;
+    int _total = 0;
+    private bool isLoading = false;
+    private bool isEventDetailsDialogVisible = false;
+
+    DateTime tradeLogDate = DateTime.UtcNow.Date;
+    TradeLogTimeUnitsType timeUnitType = TradeLogTimeUnitsType.Minutes;
+    int tradeLogTimeUnits = 10;
+    private string eventDetailsText = "";
+
+    UpdateBalanceModel formUpdateBalance = new UpdateBalanceModel();
+    TradingAccountModel tradeLogAccount; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+        await RefreshData();
+    }
+
+    private async Task RefreshData()
+    {
+        if (isLoading)
+        {
+            return;
+        }
+
+        isLoading = true;
+
+        try
+        {
+            AccountsList = new List<TradingAccountModel>();
+            GridData = new List<TradeLogModel>();
+
+            Console.WriteLine($"TradeLog Tab -> RefreshData ->  GRPC call"); /// REMOVE AFTER TEST!!!!
+
+            var grpcAccounts = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.GetAccountsAsync(
+                new GetAccountsGrpcRequestContract
+                    {
+                        TraderId = this.TraderId
+                    });
+
+            Console.WriteLine($"TradeLog Tab -> RefreshData ->  grpcAccounts.Count = {grpcAccounts.Count()}"); /// REMOVE AFTER TEST!!!!
+
+            AccountsList = grpcAccounts.Select(TradingAccountModel.Create).ToList();
+            tradeLogAccount = AccountsList.First();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }        
+
+        Console.WriteLine($"Acc Tab -> RefreshData -> StateHasChanged"); /// REMOVE AFTER TEST!!!!
+
+        this.StateHasChanged();
+    }
+
+    private async void SelectedAccountChanged(TradingAccountModel selectedAccount)
+    {
+        tradeLogAccount = selectedAccount;
+    }
+
+    private async Task LoadDataForDay()
+    {
+        var dateFrom = tradeLogDate.Date;
+        var dateTo = dateFrom.AddDays(1);
+
+        await LoadGridData(dateFrom, dateTo);
+    }
+
+    private async Task LoadLastData()
+    {
+        var dateTo = DateTime.UtcNow;
+
+        var dateFrom = timeUnitType == TradeLogTimeUnitsType.Minutes
+            ? dateTo.AddMinutes(-Math.Abs(tradeLogTimeUnits))
+            : dateTo.AddHours(-Math.Abs(tradeLogTimeUnits));
+
+        await LoadGridData(dateFrom, dateTo);
+    }
+
+    private async Task LoadGridData(DateTime dateFrom, DateTime dateTo)
+    {
+        if (isLoading)
+        {
+            return;
+        }
+
+        isLoading = true;
+
+        try
+        {
+            GridData = new List<TradeLogModel>();
+
+            var grpcResult = await TradeLogGrpcService.GetEventsAsync(new GetTradeLogGrpcRequest
+                {
+                    TraderId = this.TraderId,
+                    AccountId = tradeLogAccount.AccountId,
+                    DateTimeFrom = dateFrom,
+                    DateTimeTo = dateTo
+                });
+
+            if (grpcResult.Events == null)
+            {
+                return;
+            }
+
+            GridData = grpcResult.Events.Select(TradeLogModel.Create).ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }     
+
+        this.StateHasChanged();
+    }
+
+    private bool isCreatePositionEvent(TradeLogModel logLine)
+    {
+        return (logLine.Component == "DealService" && logLine.Message == "Position is created");
+    }
+
+    private enum TradeLogTimeUnitsType
+    {
+        Minutes,
+        Hours
+    }
+
+    private async void ShowEventDetails(object base64EncodedData)
+    {
+        eventDetailsText = "";
+
+        try
+        {
+            var byteData = System.Convert.FromBase64String(base64EncodedData.ToString());
+            var jsonDecodedData = System.Text.ASCIIEncoding.ASCII.GetString(byteData);
+            JObject jsonObj = JObject.Parse(jsonDecodedData);
+            eventDetailsText = jsonObj.ToString();
+            isEventDetailsDialogVisible = true;
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+            Console.WriteLine(ex);
+        }
+        
+    }
+
+    private void CloseEventDetailsDialog()
+    {
+        isEventDetailsDialogVisible = false;
+    }
+
+
+    private async Task RestoreActivePosition(object jsonEventData)
+    {
+        //TODO: Restore Active pos
+    }
+}

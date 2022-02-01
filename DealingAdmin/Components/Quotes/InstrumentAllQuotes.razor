@@ -1,0 +1,24 @@
+﻿@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using SimpleTrading.Abstraction.BidAsk
+@using SimpleTrading.Abstraction.Trading.Settings
+
+<div style="font-family:courier">
+    @foreach (var provider in ProvidersList)
+    {
+        <LpQuoteLine Instrument="@Instrument" ProviderId="@provider" IsDefaultProvider="@(provider == ActiveProviderId)"  />
+    }
+    <CurrentLpQuoteLine Instrument="@Instrument"/>
+</div>
+
+@code {
+    [Parameter]
+    public InstrumentQuoteModel Instrument { get; set; }
+
+    [Parameter]
+    public List<string> ProvidersList { get; set; }
+
+    [Parameter]
+    public string ActiveProviderId { get; set; }
+}

@@ -1,0 +1,107 @@
+@using AntDesign.TableModels
+@using System.Text.Json
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.Swaps
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper liveDemoServices;
+@inject IUserMessageService messageService
+@inject AdminAppSettings appSettings
+@inject Logger logger
+@inject NavigationManager NavManager
+
+<div style="width:80%">
+@if (!editFormSwitch)
+{
+    <PageHeader Class="m-0 p-0" Title="Markup Profiles">
+        <PageHeaderExtra>
+            <AntDesign.Button OnClick="ShowNewProfile"
+                Type="@AntDesign.ButtonType.Primary"
+                Class="btn-text">New Profile</AntDesign.Button>
+        </PageHeaderExtra>
+    </PageHeader>
+
+    <Table DataSource="@markupProfiles"
+           TItem="MarkupProfileModel"
+           Bordered="@true"
+           Total="0"
+           HidePagination="@true"
+           ScrollY="calc(100vh - 220px)"
+           PageSize="999">
+        <RowTemplate>           
+            <AntDesign.Column Title="Profile Id"
+                DataIndex="ProfileId"
+                TData="string"
+                Sortable
+                Width="200"/>
+            <AntDesign.Column Title="Instruments" TData="string">   
+                @foreach (var instrument in context.MarkupInstruments)
+                {
+                    <Tag PresetColor="PresetColor.Purple">@instrument.InstrumentId</Tag>
+                }
+            </AntDesign.Column>
+            <ActionColumn Title="Edit" Width="60">
+                <a><i @onclick="()=>ShowEditProfile(context)"
+                    class="material-icons color-primary">edit</i></a>
+            </ActionColumn>
+        </RowTemplate>
+    </Table>
+}
+else
+{
+    <EditMarkupProfile Profile="editedProfile" OnGoBack="CloseEditProfile"/>
+}
+</div>
+
+@code {
+    private List<MarkupProfileModel> markupProfiles;
+
+    private MarkupProfileModel editedProfile;
+    private string profileEditFormTitle;
+    private bool editFormSwitch = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+    }
+
+    private async Task RefreshData()
+    {
+        markupProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
+           .TradingGroupsMarkupProfilesRepository.GetAllAsync()).Select(x => x.ToModel()).ToList();
+
+        editedProfile = new MarkupProfileModel
+            {
+                ProfileId = "",
+                MarkupInstruments = new List<MarkupItem>()
+            };
+    }
+
+    private void ShowNewProfile()
+    {
+        profileEditFormTitle = "Add New Markup Profile";
+        editedProfile = new MarkupProfileModel
+            {
+                ProfileId = "",
+                MarkupInstruments = new List<MarkupItem>()
+            };
+        editFormSwitch = true;
+    }
+
+    private void ShowEditProfile(MarkupProfileModel markupProfile)
+    {
+        profileEditFormTitle = $"Edit '{markupProfile.ProfileId}' Markup Profile";
+        editedProfile = markupProfile;
+        editFormSwitch = true;
+    }
+
+    private async void CloseEditProfile()
+    {
+        editFormSwitch = false;
+        await RefreshData();
+    }
+}

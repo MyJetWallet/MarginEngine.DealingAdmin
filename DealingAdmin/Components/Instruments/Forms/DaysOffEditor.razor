@@ -1,0 +1,105 @@
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using Microsoft.AspNetCore.Components
+@using SimpleTrading.Abstraction.Trading.InstrumentsGroup
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Abstractions.Common.InstrumentsAvatar
+@using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
+
+<AntList DataSource="@Instrument.DaysOff" Size="small" Bordered="@true"> 
+    <ChildContent Context="item">
+        <ListItem>
+            <div class="start-middle">
+                <span>@(FormatUtils.GetDayOffText(item))</span>
+                <a @onclick="()=>RemoveItem(item)"><i class="material-icons color-crimson mx-1">indeterminate_check_box</i></a>
+            </div>
+        </ListItem>
+    </ChildContent>
+</AntList>
+<AntDesign.Row>
+    <Col Flex=@("270px") Class="no-wrap mx-2">
+        <span class="px-1">From:</span>
+        <Select Mode="default"
+                title="asdasd"
+                @bind-Value="newItem.DowFrom"
+                Style="width:90px"
+                DropdownMaxWidth="80"
+                TItemValue="DayOfWeek"
+                TItem="DayOfWeek">
+            <SelectOptions>
+                @foreach (var item in Enum.GetValues<DayOfWeek>())
+                {
+                    <SelectOption
+                        TItemValue="DayOfWeek"
+                        TItem="DayOfWeek"
+                        Value=@item
+                        Label="@(Enum.GetName(typeof(FormatUtils.DowShortNames), item))"/>
+                }
+            </SelectOptions>
+        </Select>
+        <TimePicker @bind-Value="newItemTimeFrom"
+                    TValue="DateTime"
+                    Format="hh:mm"
+                    Style="width:90px"
+                    Class="px-1"/>
+    </Col>
+    <Col Flex=@("270px") Class="no-wrap mx-2">
+        <span class="px-1">To: </span>
+        <Select Mode="default"
+                @bind-Value="newItem.DowTo"
+                Style="width:90px"
+                DropdownMaxWidth="80"
+                TItemValue="DayOfWeek"
+                TItem="DayOfWeek">
+            <SelectOptions>
+                @foreach (var item in Enum.GetValues<DayOfWeek>())
+                {
+                    <SelectOption
+                        TItemValue="DayOfWeek"
+                        TItem="DayOfWeek"
+                        Value=@item
+                        Label="@(Enum.GetName(typeof(FormatUtils.DowShortNames), item))"/>
+                }
+            </SelectOptions>
+        </Select>
+        <TimePicker @bind-Value="newItemTimeTo"
+                    TValue="DateTime" 
+                    Format="hh:mm"
+                    Style="width:90px"
+                    Class="px-1"/>
+    </Col>
+    <Col Flex=@("auto") Class="mx-2 center-middle">
+        <AntDesign.Button OnClick="()=>AddItem()" Color="AntDesign.Color.Green1">+</AntDesign.Button>
+    </Col>
+</AntDesign.Row>
+
+@code {
+    [Parameter]
+    public TradingInstrumentModel Instrument { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<TradingInstrumentModel> InstrumentChanged { get; set; }
+
+    TradingInstrumentDayOffModel newItem = new TradingInstrumentDayOffModel();
+    
+    private DateTime newItemTimeFrom { get; set; }
+    private DateTime newItemTimeTo { get; set; }
+
+    private void RemoveItem(TradingInstrumentDayOffModel item)
+    {
+        this.Instrument.DaysOff.Remove(item);
+    }
+
+    private void AddItem()
+    {
+        newItem.TimeFrom = newItemTimeFrom.TimeOfDay;
+        newItem.TimeTo = newItemTimeTo.TimeOfDay;
+        this.Instrument.DaysOff.Add(newItem);
+        newItem = new TradingInstrumentDayOffModel();
+    }
+
+    public async Task UpdateInstrumentDayOffs()
+    {
+        await InstrumentChanged.InvokeAsync(Instrument);
+    }
+}

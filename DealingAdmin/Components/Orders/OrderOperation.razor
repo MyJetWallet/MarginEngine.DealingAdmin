@@ -1,0 +1,63 @@
+﻿@using DealingAdmin.Abstractions.Models
+@using SimpleTrading.Abstraction.Trading.Positions
+
+<div>
+    @if (Operation == PositionOperation.Buy)
+    {
+        <div class="color-green text-bold">
+            BUY
+        </div>
+    }
+    else
+    {
+        <div class="color-crimson text-bold">
+            SELL
+        </div>
+    }
+    <div>
+        <span class="simple-badge @(orderTypeBadgeColor)">@orderTypeName</span>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public PositionOperation Operation { get; set; }
+
+    [Parameter]
+    public PositionOrderType OrderType { get; set; }
+
+    private string orderTypeBadgeColor;
+
+    private string orderTypeName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        switch (OrderType)
+        {
+            case PositionOrderType.Market: 
+                orderTypeName = "Market";
+                orderTypeBadgeColor = "badge-primary";
+                break;
+
+            case PositionOrderType.BuyLimit:
+                orderTypeName = "BuyLimit";
+                orderTypeBadgeColor = "badge-orange";
+                break;
+
+            case PositionOrderType.BuyStop:
+                orderTypeName = "BuyStop";
+                orderTypeBadgeColor = "badge-orange";
+                break;
+
+            case PositionOrderType.SellLimit:
+                orderTypeName = "SellLimit";
+                orderTypeBadgeColor = "badge-orange";
+                break;
+
+            case PositionOrderType.SellStop:
+                orderTypeName = "SellStop";
+                orderTypeBadgeColor = "badge-orange";
+                break;
+        }
+    }
+}

@@ -1,0 +1,12 @@
+@page "/SwapSettings"
+
+@using DealingAdmin.Components.SwapProfiles
+
+<Tabs Size="@TabSize.Large">
+    <TabPane Tab="PROFILES" Key="SwapProfiles" Class="tab-text">
+        <SwapProfilesTab/>
+	</TabPane>
+    <TabPane Tab="SCHEDULE" Key="SwapSchedule" Class="tab-text">
+        <SwapScheduleTab/>
+    </TabPane>
+</Tabs>

@@ -1,0 +1,29 @@
+﻿@using AntDesign
+@using DealingAdmin.Shared.Services
+ 
+ <Menu DefaultSelectedKeys=@(new[] {"1"})
+      Mode="@MenuMode.Inline"
+      Theme="@MenuTheme.Dark">
+    @foreach (var item in NavMenuGenerator.GenerateNavMenuItems())
+    {
+        <AntDesign.MenuItem RouterLink="@item.Href" Key="@item.Key">
+            <IconTemplate>
+                <i class="material-icons">@item.Icon</i>
+            </IconTemplate>
+            <ChildContent>
+                <span>
+                    @($"{item.Name}")
+                </span>
+            </ChildContent>
+        </AntDesign.MenuItem>
+    }
+</Menu>
+
+@code {
+    bool _collapsed;
+
+    void ToggleCollapsed()
+    {
+        _collapsed = !_collapsed;
+    }
+}

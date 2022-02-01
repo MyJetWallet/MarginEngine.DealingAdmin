@@ -43,9 +43,15 @@
                     <Tag PresetColor="PresetColor.Purple">@instrument.InstrumentId</Tag>
                 }
             </AntDesign.Column>
-            <ActionColumn Title="Edit" Width="60">
-                <a><i @onclick="()=>ShowEditProfile(context)"
-                    class="material-icons color-primary">edit</i></a>
+            <ActionColumn Title="Edit" Width="120">
+                <Tooltip Title="@("Edit")">
+                    <a><i @onclick="()=>ShowEditProfile(context)"
+                        class="material-icons color-primary">edit</i></a>
+                </Tooltip>
+                <Tooltip Title="@("Clone")">
+                    <a><i @onclick="()=>CloneProfile(context)"
+                        class="material-icons color-aquamarine">content_copy</i></a>
+                </Tooltip>
             </ActionColumn>
         </RowTemplate>
     </Table>
@@ -96,6 +102,17 @@ else
     {
         profileEditFormTitle = $"Edit '{markupProfile.ProfileId}' Markup Profile";
         editedProfile = markupProfile;
+        editFormSwitch = true;
+    }
+
+    private void CloneProfile(MarkupProfileModel markupProfile)
+    {
+        profileEditFormTitle = "Add New Markup Profile";
+        editedProfile = new MarkupProfileModel
+            {
+                ProfileId = "",
+                MarkupInstruments = markupProfile.MarkupInstruments
+            };
         editFormSwitch = true;
     }
 

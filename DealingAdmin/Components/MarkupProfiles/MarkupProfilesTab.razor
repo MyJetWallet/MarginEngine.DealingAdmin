@@ -72,7 +72,12 @@ else
     protected override async Task OnInitializedAsync()
     {
         await RefreshData();
-        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() =>
+        {
+            RefreshData().GetAwaiter().GetResult();
+            this.StateHasChanged();
+        });
     }
 
     private async Task RefreshData()

@@ -1,0 +1,225 @@
+@using AntDesign.TableModels
+@using System.Text.Json
+@using CsvHelper
+@using CsvHelper.Configuration
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Trading.Instruments
+@using SimpleTrading.Abstraction.Trading.Swaps
+@using System.IO
+@using System.Globalization
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper liveDemoServices
+@inject ITradingInstrumentsRepository instrumentsRepository
+@inject ISnackbar snackbar
+@inject Logger logger
+
+<Title Level="4">Upload Markup Profile Items</Title>
+<span class="m-1">Markup Profile:</span>
+<Select
+    DataSource="@markupProfileIds"
+    @bind-Value="@markupProfileId"
+	TItemValue="string"
+	TItem="string"
+    Style="width:320px"
+    DropdownMaxWidth="300"
+    OnSelectedItemChanged="(x)=>HideResultMessage()"
+    EnableSearch>
+</Select>
+<AntDesign.Row>
+    <Col Xs="24" Sm="24" Md="20" Lg="16" Xl="8" class="m-3">
+        <div>Candles History File:</div>
+        <InputFile OnChange="@FileChanged"/>
+    </Col>
+    <Col Xs="6" Sm="6" Md="4" Lg="4" Xl="4" class="mx-3">
+        <br/>
+        <AntDesign.Button Icon="upload" OnClick="@UploadProfile" Disabled="@(markupFile == null)">
+            <span>Upload</span>
+        </AntDesign.Button>
+    </Col>
+</AntDesign.Row>
+<Divider/>
+
+@if (showResultMessage)
+{
+    <div>
+        <b>@resultMessage</b>
+    </div>
+}
+
+@if (showInvalidItems)
+{
+    <div class="grid-container-two-cols">
+        <div>
+            <div>Following intruments were not found:</div>
+            @foreach (var invalidItem in invalidMarkupItems)
+            {
+                <Tag  PresetColor="PresetColor.Volcano">@invalidItem</Tag>
+            }
+        </div> 
+        <div>
+            <div>All existing instruments (IDs):</div>
+            @foreach (var invalidItem in invalidMarkupItems)
+            {
+                <Tag  PresetColor="PresetColor.Green">@invalidItem</Tag>
+            }
+         </div>
+    </div>
+}
+
+@code {
+    private List<string> markupProfileIds;
+    private string markupProfileId;
+    IBrowserFile markupFile;
+
+    private bool showResultMessage;
+    private bool showInvalidItems;
+    private string resultMessage;
+    private List<string> invalidMarkupItems = new List<string>();
+    private List<string> instrumentList = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshData();
+
+        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() =>
+        {
+            RefreshData().GetAwaiter().GetResult();
+            this.StateHasChanged();
+        });
+    }
+
+    private async Task RefreshData()
+    {
+        markupProfileIds = (await liveDemoServices.GetContext(AppState.IsLive)
+           .TradingGroupsMarkupProfilesRepository.GetAllAsync()).Select(x => x.ProfileId).ToList();
+
+        markupProfileId = markupProfileIds.FirstOrDefault();
+    }
+
+    private void FileChanged(InputFileChangeEventArgs e)
+    {
+        markupFile = e.File;
+        InvokeAsync(StateHasChanged);
+        HideResultMessage();
+    }
+
+    private async Task UploadProfile()
+    {
+        HideResultMessage();
+        resultMessage = "";
+
+        try
+        {
+            var maxFileSizeInMb = 10;
+            var fileSizeInBytes = maxFileSizeInMb * 1024 * 1024;
+
+            if (markupFile == null)
+            {
+                snackbar.Add("Choose a file to upload", Severity.Warning);
+                return;
+            }
+
+            if (markupFile.Size > fileSizeInBytes)
+            {
+                snackbar.Add($"Max file size is {maxFileSizeInMb} MB", Severity.Warning);
+                return;
+            }
+
+            if (!markupFile.Name.EndsWith(".csv"))
+            {
+                snackbar.Add("File extention is not CSV", Severity.Warning);
+                return;
+            }
+
+            var markupItems = await ParseMarkupItems(markupFile);
+
+            instrumentList = (await instrumentsRepository.GetAllAsync())
+                .Select(x => x.Id).ToList();
+
+            var validMarkupItems = new List<MarkupItem>();
+            invalidMarkupItems = new List<string>();
+
+            foreach (var item in markupItems)
+            {
+                if (instrumentList.Contains(item.InstrumentId))
+                {
+                    validMarkupItems.Add(item);
+                }
+                else
+                {
+                    invalidMarkupItems.Add(item.InstrumentId);
+                }
+            }
+
+            var updatedMarkupProfile = MarkupProfileModel.Create(markupProfileId, validMarkupItems);
+
+            await liveDemoServices.GetContext(AppState.IsLive)
+                .TradingGroupsMarkupProfilesRepository.UpdateAsync(updatedMarkupProfile.ToDatabaseModel());
+
+            resultMessage = $"Markup Profile '{markupProfileId}' saved with [{validMarkupItems.Count}] of [{markupItems.Count}] Instrument(s)";
+            snackbar.Add(resultMessage, Severity.Success);
+
+            showInvalidItems = invalidMarkupItems.Any();
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add(ex.Message, Severity.Error);
+            resultMessage = $"Error: {ex.Message}";
+        }
+
+        showResultMessage = true;
+    }
+
+    private void HideResultMessage()
+    {
+        showResultMessage = false;
+        showInvalidItems = false;
+    }
+
+    public async Task<List<MarkupItem>> ParseMarkupItems(IBrowserFile file)
+    {
+        using (var memStream = new MemoryStream())
+        {
+            // although file.OpenReadStream is itself a stream,
+            // using it directly causes "Synchronous reads are not supported" error
+            await file.OpenReadStream().CopyToAsync(memStream);
+
+            // at the end of the copy method, we are at the end of both the input and output stream
+            // and need to reset the one we want to work with.
+            memStream.Seek(0, SeekOrigin.Begin);
+
+            var reader = new StreamReader(memStream);
+
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture) { TrimOptions = TrimOptions.None };
+            using var csv = new CsvReader(reader, config);
+
+            csv.Context.RegisterClassMap<MarkupItemMap>();
+
+            var recordsCsv = csv.GetRecords<MarkupItem>().ToList();
+
+            if (!recordsCsv.Any())
+            {
+                throw new Exception("File contains no record");
+            }
+
+            return recordsCsv;
+        }
+    }
+
+    public class MarkupItemMap : ClassMap<MarkupItem>
+    {
+        public MarkupItemMap()
+        {
+            Map(x => x.InstrumentId).Name("ID");
+            
+            Map(x => x.MarkupBid).Name("BID");
+
+            Map(x => x.MarkupAsk).Name("ASK");
+        }
+    }
+}

@@ -11,7 +11,7 @@
 @inject IInstrumentsCache InstrumentsCache
 @inject ICandlesService CandlesService
 @inject ISimpleTradingCandlesHistoryGrpc CandlesHistoryGrpc
-@inject IUserMessageService MessageService
+@inject ISnackbar snackbar
 
 <Title Level="4">Upload Candles History</Title>
 <AntDesign.Row>
@@ -113,19 +113,19 @@
 
             if (candlesFile == null)
             {
-                await MessageService.WarningAsync($"Choose a file to upload");
+                snackbar.Add($"Choose a file to upload", Severity.Warning);
                 return;
             }
 
             if (candlesFile.Size > fileSizeInBytes)
             {
-                await MessageService.WarningAsync($"Max file size is {maxFileSizeInMb} MB");
+                snackbar.Add($"Max file size is {maxFileSizeInMb} MB", Severity.Warning);
                 return;
             }
 
             if (!candlesFile.Name.EndsWith(".csv"))
             {
-                await MessageService.WarningAsync("You can only upload CSV file!");
+                snackbar.Add("File extention is not CSV", Severity.Warning);
                 return;
             }
 
@@ -138,12 +138,13 @@
             await CandlesService.BulkWriteCandles(instrumentId, candleType, candles);
             stopwatch.Stop();
 
-            await MessageService.SuccessAsync(
-            $"Instrument {instrumentId} was recorded, time elapsed: {stopwatch.Elapsed}");
+            snackbar.Add(
+                $"Instrument {instrumentId} was recorded, time elapsed: {stopwatch.Elapsed}",
+                Severity.Success);
         }
         catch (Exception e)
         {
-            await MessageService.ErrorAsync(e.Message, e);
+            snackbar.Add(e.Message, Severity.Error);
         }
 
         isLoading = false;
@@ -153,7 +154,7 @@
     {
         if (string.IsNullOrEmpty(instrumentId))
         {
-            await MessageService.WarningAsync($"Instrument must be not empty");
+            snackbar.Add("Instrument must be not empty", Severity.Warning);
             return;
         }
 
@@ -165,11 +166,11 @@
 
         if (grpcResult.Result)
         {
-            await MessageService.SuccessAsync($"Cache was updated");
+             snackbar.Add("Cache was updated", Severity.Success);
         }
         else
         {
-            await MessageService.WarningAsync($"Can't run update because cache renewal is already in progress");
+            snackbar.Add("Can't run update because cache renewal is already in progress", Severity.Warning);
         }
     }
 }

@@ -66,6 +66,11 @@ a, .btn-link {
     column-gap: 10px;
 }
 
+.grid-container-two-cols {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+}
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }

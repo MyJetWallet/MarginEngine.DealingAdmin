@@ -104,36 +104,44 @@ namespace DealingAdmin.Services
 
                 var config = new CsvConfiguration(CultureInfo.InvariantCulture) { TrimOptions = TrimOptions.None, Delimiter = "\t" };
                 using var csv = new CsvReader(reader, config);
-                var hasRecords = csv.Read();
+                csv.Context.RegisterClassMap<CandleWithTimeMap>();
+                var recordsCsv = csv.GetRecords<CandleWithTime>().ToList();
 
-                if (!hasRecords)
+                if (!recordsCsv.Any())
                 {
                     throw new Exception("File contains no record");
                 }
-
-                csv.Context.RegisterClassMap<CandleWithTimeMap>();
-
-                var recordsCsv = csv.GetRecords<CandleWithTime>().ToList();
+               
                 return recordsCsv;
             }
         }
 
         public static async Task<List<CandleModel>> ParseCandles(IBrowserFile file)
         {
-            using var reader = new StreamReader(file.OpenReadStream());
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture) { TrimOptions = TrimOptions.None, Delimiter = "\t" };
-            using var csv = new CsvReader(reader, config);
-            var hasRecords = await csv.ReadAsync();
-
-            if (!hasRecords)
+            using (var memStream = new MemoryStream())
             {
-                throw new Exception("File contains no record");
+                // although file.OpenReadStream is itself a stream,
+                // using it directly causes "Synchronous reads are not supported" error
+                await file.OpenReadStream().CopyToAsync(memStream);
+
+                // at the end of the copy method, we are at the end of both the input and output stream
+                // and need to reset the one we want to work with.
+                memStream.Seek(0, SeekOrigin.Begin);
+
+                var reader = new StreamReader(memStream);
+
+                var config = new CsvConfiguration(CultureInfo.InvariantCulture) { TrimOptions = TrimOptions.None, Delimiter = "\t" };
+                using var csv = new CsvReader(reader, config);
+                csv.Context.RegisterClassMap<CandleMap>();
+                var recordsCsv = csv.GetRecords<CandleModel>().ToList();
+
+                if (!recordsCsv.Any())
+                {
+                    throw new Exception("File contains no record");
+                }
+
+                return recordsCsv;
             }
-
-            csv.Context.RegisterClassMap<CandleMap>();
-
-            var recordsCsv = csv.GetRecords<CandleModel>().ToList();
-            return recordsCsv;
         }
 
         public async Task WriteCandles(string instrumentId, CandleType candleType, List<CandleModel> candles)

@@ -62,9 +62,9 @@
         </div> 
         <div>
             <div>All existing instruments (IDs):</div>
-            @foreach (var invalidItem in invalidMarkupItems)
+            @foreach (var inst in instrumentList)
             {
-                <Tag  PresetColor="PresetColor.Green">@invalidItem</Tag>
+                <Tag  PresetColor="PresetColor.Green">@inst</Tag>
             }
          </div>
     </div>

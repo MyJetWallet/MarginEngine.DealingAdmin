@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SimpleTrading.SettingsReader;
 using MudBlazor.Services;
+using SimpleTrading.ServiceStatusReporterConnector;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +41,9 @@ builder.Services.AddMudServices(config =>
 
 
 var app = builder.Build();
+
+app.BindIsAlive();
+app.BindServicesTree(Assembly.GetExecutingAssembly());
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

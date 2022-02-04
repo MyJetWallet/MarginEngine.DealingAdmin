@@ -30,6 +30,7 @@
 		<PackageReference Include="SimpleTrading.Postgres" Version="1.0.83" />
 		<PackageReference Include="SimpleTrading.TickHistory.Grpc" Version="1.0.14" />
 		<PackageReference Include="Texnomic.Blazor.JsonViewer" Version="0.1.0" />
+		<PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />
     </ItemGroup>
     
     <ItemGroup>

@@ -138,7 +138,7 @@
             var markupItems = await ParseMarkupItems(markupFile);
 
             instrumentList = (await instrumentsRepository.GetAllAsync())
-                .Select(x => x.Id).ToList();
+                .Select(x => x.Id).OrderBy(id => id).ToList();
 
             var validMarkupItems = new List<MarkupItem>();
             invalidMarkupItems = new List<string>();

@@ -33,6 +33,10 @@ a, .btn-link {
     white-space: nowrap !important;
 }
 
+.black-text {
+    color: #000 !important;
+}
+
 .tab-text {
     font-size: .875rem !important;
     font-weight: 500 !important;
@@ -155,6 +159,16 @@ a, .btn-link {
 .bg-color-yellow {
     color: #000;
     background-color: #ffe082 !important;
+}
+
+.tag-color-orange {
+    color: #000 !important;
+    background-color: darkorange !important;
+}
+
+.tag-color-gray {
+    color: #000 !important;
+    background-color: lightgray !important;
 }
 
 .color-green {

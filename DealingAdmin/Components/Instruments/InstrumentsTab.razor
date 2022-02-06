@@ -2,6 +2,7 @@
 @using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Components.Instruments.Forms
+@using DealingAdmin.Shared.Models
 @using Serilog.Core
 @using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.InstrumentsGroup
@@ -10,13 +11,18 @@
 @using SimpleTrading.Common.Abstractions.InstrumentsAvatar
 @using SimpleTrading.Common.Abstractions.Images
 @using SimpleTrading.Common.MyNoSql.InstrumentsAvatar
+@using SimpleTrading.MyNoSqlRepositories.InstrumentSourcesMaps
+@using SimpleTrading.QuotesFeedRouter.Abstractions
 @using static DealingAdmin.FormatUtils
 
 @inject IInstrumentSubGroupsRepository SubGroupsRepository
 @inject IInstrumentGroupsRepository GroupsRepository
 @inject ITradingInstrumentsRepository InstrumentsRepository
 @inject TradingInstrumentMyNoSqlRepository avatarRepository
+@inject InstrumentSourcesMapsMyNoSqlRepository sourcesMapsRepository
 @inject IDefaultValuesRepository defValuesRepository
+@inject ILiquidityProviderReader liquidityProviderReader
+@inject IDefaultLiquidityProviderWriter defLiquidityProviderWriter
 @inject ISwapProfileWriter SwapProfileWriter
 @inject ISnackbar snackbar 
 @inject Logger logger
@@ -30,7 +36,7 @@
     </PageHeaderExtra>
 </PageHeader>
 <Table DataSource="@tradingInstruments"
-       TItem="TradingInstrumentModel"
+       TItem="TradingInstrumentViewModel"
        Loading="@isLoading"
        Bordered="@true"
        Total="0"
@@ -88,6 +94,15 @@
                 <span>@context.SwapScheduleId</span>
             }
         </AntDesign.Column>
+        <AntDesign.Column Title="Liquidity Provider" 
+                TData="string"
+                Width="90">
+            <a @onclick="()=>ShowEditLiquidityProviderDialog(context)">
+                <Tag Class="@GetLiquidityProviderTagClass(@context.DefaultLiquidityProvider)">
+                    @(String.IsNullOrEmpty(context.LiquidityProviderId) ? defaultLP : context.LiquidityProviderId)
+                </Tag>
+            </a>
+        </AntDesign.Column>
         <AntDesign.Column Title="Time off"
                 TData="string"
                 Width="220">
@@ -134,37 +149,169 @@
         SwapProfiles="swapProfiles"/>   
 </Modal>
 
+<Modal Title="@instrumentEditLiquidityProviderTitle"
+       Visible="@isEditLiquidityProvidertDialogVisible"
+       OkText="@("Save")"
+       Footer=@null
+       Closable=@false
+       Width="320">
+    <div class="m-1">Liquidity Provider:</div>
+    <Select DataSource="@liquidityProvidersViewList"
+            @bind-Value="@editedLiquidityProviderId"
+	        TItemValue="string"
+	        TItem="ViewListItem"
+            LabelName="Text"
+            ValueName="Value"
+            Style="width:220px"
+            DropdownMaxWidth="200"/>
+    <AntDesign.Row Class="center-middle p-3">
+        <Col Span="4">
+        </Col>    
+        <Col Span="10">
+            <AntDesign.Button OnClick="SaveLiquidityProvider"
+                Class="btn-text bg-color-aquamarine">
+                Save
+            </AntDesign.Button>
+        </Col>    
+        <Col Span="10">
+            <AntDesign.Button OnClick="CloseEditLiquidityProviderDialog"
+                Class="btn-text bg-color-light-yellow">
+                Cancel
+            </AntDesign.Button>
+        </Col>
+    </AntDesign.Row>
+</Modal>
+
+
 @code {
-    private IEnumerable<TradingInstrumentModel> tradingInstruments;
+    private List<TradingInstrumentViewModel> tradingInstruments;
     private IEnumerable<InstrumentGroupModel> instrumentGroups;
     private IEnumerable<InstrumentSubGroupModel> instrumentSubGroups;
     private IEnumerable<ISwapProfile> swapProfiles;
+    private List<ViewListItem> liquidityProvidersViewList;
 
     private bool isLoading = false;
-    private TradingInstrumentModel editedInstrument;
+    private TradingInstrumentViewModel editedInstrument;
     private string instrumentEditFormTitle;
     private bool isEditInstrumentDialogVisible;
+    private bool isEditLiquidityProvidertDialogVisible;
+    private string defaultLP;
+    private string defaultLpListItem;
+    private List<InstrumentSourcesMapsMyNoSqlTableEntity> sourcesMapsList;
+    private string instrumentEditLiquidityProviderTitle;
+    private string editedLiquidityProviderId;
 
     protected override async Task OnInitializedAsync()
     {
         instrumentSubGroups = (await SubGroupsRepository.GetAllAsync()).Select(InstrumentSubGroupModel.Create);
         instrumentGroups = (await GroupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
-        tradingInstruments = (await InstrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
         swapProfiles = await SwapProfileWriter.GetAllAsync();
+        await RefreshData();
         await base.OnInitializedAsync();
+    }
+
+    private async Task RefreshData()
+    {
+        isLoading = true;
+
+        defaultLP = await defLiquidityProviderWriter.GetAsync();
+        var liquidityProviders = await liquidityProviderReader.GetLiquidityProviders();
+        liquidityProvidersViewList = new List<ViewListItem>();
+        liquidityProvidersViewList.Add(new ViewListItem { Text = $"Default ({defaultLP})", Value = String.Empty });
+        liquidityProviders.ForEach(item =>
+            liquidityProvidersViewList.Add(new ViewListItem { Text = item, Value = item }));
+
+        sourcesMapsList = (await sourcesMapsRepository.GetAllAsync()).ToList();
+        var instruments = await InstrumentsRepository.GetAllAsync();
+        tradingInstruments = new List<TradingInstrumentViewModel>();
+
+        foreach (var inst in instruments)
+        {
+            var provider = GetLiquidityProviderIdForInstrument(inst.Id);
+
+            tradingInstruments.Add(TradingInstrumentViewModel.Create(
+                inst,
+                provider,
+                String.IsNullOrEmpty(provider)));
+        }
+
+        isLoading = false;
+    }
+
+    private string GetLiquidityProviderIdForInstrument(string instrumentId)
+    {
+        var overwrittenProviderId = sourcesMapsList.FirstOrDefault(x => x.InstrumentId == instrumentId)?.SourceId;
+
+        return String.IsNullOrEmpty(overwrittenProviderId)
+            ? String.Empty
+            : overwrittenProviderId;
+    }
+
+    private string GetLiquidityProviderTagClass(bool isDefaultProvider)
+    {
+        return isDefaultProvider ? "btn-text tag-color-gray" : "btn-text tag-color-orange";
+    }
+
+    private void ShowEditLiquidityProviderDialog(TradingInstrumentViewModel lpInstrument)
+    {
+        editedInstrument = lpInstrument;
+        editedLiquidityProviderId = lpInstrument.DefaultLiquidityProvider ? String.Empty : lpInstrument.LiquidityProviderId;
+        instrumentEditLiquidityProviderTitle = $"Update Liquidity Provider for '{lpInstrument.Name}'";
+        isEditLiquidityProvidertDialogVisible = true;
+    }
+
+    private async Task SaveLiquidityProvider()
+    {
+        try
+        {
+            if (editedInstrument == null || String.IsNullOrEmpty(editedInstrument.Id))
+            { 
+                snackbar.Add($"InstrumentId is empty. Try again. '{editedInstrument.Id}' set to default", Severity.Warning);
+            }
+
+            if (String.IsNullOrEmpty(editedLiquidityProviderId))
+            {
+                await sourcesMapsRepository.Delete(editedInstrument.Id);
+                snackbar.Add($"Liquidity Provider for Instrument '{editedInstrument.Id}' set to default", Severity.Success);
+            }
+            else
+            {
+                await sourcesMapsRepository.UpdateAsync(new QuoteSourceModel
+                    {
+                        InstrumentId = editedInstrument.Id,
+                        SourceId = editedLiquidityProviderId
+                    });
+
+                isEditLiquidityProvidertDialogVisible = false;
+                snackbar.Add($"Liquidity Provider for Instrument '{editedInstrument.Id}' set to '{editedLiquidityProviderId}", Severity.Success);
+
+                await RefreshData();
+                StateHasChanged();
+            }
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void CloseEditLiquidityProviderDialog()
+    {
+        isEditLiquidityProvidertDialogVisible = false;
     }
 
     private void ShowNewInstrumentDialog()
     {
         instrumentEditFormTitle = "Add New Instrument";
-        editedInstrument = new TradingInstrumentModel()
+        editedInstrument = new TradingInstrumentViewModel()
             {
                 DaysOff = new List<TradingInstrumentDayOffModel>()
             };
         isEditInstrumentDialogVisible = true;
     }
 
-    private void ShowEditInstrumentDialog(TradingInstrumentModel instrument)
+    private void ShowEditInstrumentDialog(TradingInstrumentViewModel instrument)
     {
         instrumentEditFormTitle = $"Edit '{instrument.Name}' Instrument";
         editedInstrument = instrument;
@@ -174,8 +321,9 @@
     private void CloseEditInstrumentDialog()
     {
         isEditInstrumentDialogVisible = false;
-        editedInstrument = new TradingInstrumentModel();
+        editedInstrument = new TradingInstrumentViewModel();
     }
+
 
     private async Task<string> GetInstrumentAvatarSrc(string instumentId, ImageTypes imgType)
     {
@@ -211,10 +359,9 @@
         try
         {
             await InstrumentsRepository.UpdateAsync(editedInstrument);
-            tradingInstruments = (await InstrumentsRepository.GetAllAsync()).Select(TradingInstrumentModel.Create);
             isEditInstrumentDialogVisible = false;
             snackbar.Add($"Instrument '{editedInstrument.Id}' saved", Severity.Success);
-            StateHasChanged();
+            await RefreshData();
         }
         catch(Exception ex)
         {

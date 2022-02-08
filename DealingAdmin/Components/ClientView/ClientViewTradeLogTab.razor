@@ -11,9 +11,13 @@
 @using SimpleTrading.Abstraction.Trading
 @using SimpleTrading.Abstraction.Trading.BalanceOperations
 @using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Admin.Grpc
+@using SimpleTrading.Admin.Grpc.Contracts
+@using SimpleTrading.Admin.Grpc.Models
 @using SimpleTrading.Engine.Grpc.Contracts
 @using SimpleTrading.TradeLog.Grpc
 @using SimpleTrading.TradeLog.Grpc.Contracts
+@using System.Text
 
 @inject StateManager AppState
 @inject LiveDemoServiceMapper LiveDemoServices
@@ -23,6 +27,7 @@
 @inject ModalService modalService
 @inject ISnackbar snackbar
 @inject ITradeLogGrpcService TradeLogGrpcService
+@inject IAdminGrpc AdminGrpc
 
 <div class="mb-2">
     <AntDesign.Row>
@@ -124,7 +129,7 @@
                 {
                     <Tooltip Title="@("Restore Active Position")">    
                         <a><i @onclick="()=>RestoreActivePosition(context.Data)"
-                              class="material-icons color-primary">restore_page</i></a>
+                              class="material-icons color-aquamarine">restore_page</i></a>
                     </Tooltip>
                 }
             </div>
@@ -330,7 +335,7 @@
             snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
             Console.WriteLine(ex);
         }
-        
+
     }
 
     private void CloseEventDetailsDialog()
@@ -341,6 +346,42 @@
 
     private async Task RestoreActivePosition(object jsonEventData)
     {
-        //TODO: Restore Active pos
+
+        if (!AppState.IsLive)
+        {
+            snackbar.Add($"Currently this feature is for Live positions only", Severity.Error);
+            return;
+        }
+
+        byte[] dateByteArray = Convert.FromBase64String((string)jsonEventData);
+
+        string eventJson = Encoding.UTF8.GetString(dateByteArray);
+
+        try
+        {
+            var eventModel = JsonConvert.DeserializeObject<EventCreatePositionModel>(eventJson);
+
+            var grpcRequest = new RestoreActivePositonRequestGrpc
+                {
+                    ActivePosition = TradeOrderGrpcModel.Create(eventModel.NewPosition)
+                };
+
+            var grpcResponse = await AdminGrpc.RestoreActivePosition(grpcRequest);
+
+            if (grpcResponse.Ok)
+            {
+                snackbar.Add("Active Position Restore - Response: OK", Severity.Success);
+            }
+            else
+            {
+                snackbar.Add($"Active Position Restore - Error: {grpcResponse.Error} ", Severity.Error);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            logger.Error(e, e.Message);
+            snackbar.Add("Error occured during processing the request", Severity.Error);
+        }
     }
 }

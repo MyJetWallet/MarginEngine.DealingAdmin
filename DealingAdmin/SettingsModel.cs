@@ -82,5 +82,8 @@ namespace DealingAdmin
 
         [YamlProperty("DealingAdmin.AdminCrudApiKey")]
         public string AdminCrudApiKey { get; set; }
+
+        [YamlProperty("DealingAdmin.AdminServerServiceUrl")]
+        public string AdminServerServiceUrl { get; set; }
     }
 }

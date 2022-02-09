@@ -5,8 +5,8 @@
     </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.13" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.14" />
 		<PackageReference Include="SimpleTrading.Abstraction" Version="2.0.21" />
 		<PackageReference Include="SimpleTrading.Auth.Grpc" Version="1.2.0" />
 		<PackageReference Include="SimpleTrading.Engine.Grpc" Version="1.0.54" />

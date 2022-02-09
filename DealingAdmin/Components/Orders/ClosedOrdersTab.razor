@@ -137,6 +137,11 @@
                 <div>@($"TP: {GetOrderTakeProfit(context)}")</div>
                   <div>@($"SL: {GetOrderStopLoss(context)}")</div>
             </AntDesign.Column>
+            <AntDesign.Column Title="Swaps"
+                    TData="string"
+                    Width="80">
+                <div>@($"{GetOrderSwaps(context)}")</div>
+            </AntDesign.Column>
             <AntDesign.Column Title="Refill %"
                     TData="double"
                     @bind-Field="@context.ToppingUpPercent"
@@ -151,12 +156,13 @@
                     Sortable>
                 <div>@((context.ReservedFundsForToppingUp > 0 ? context.ReservedFundsForToppingUp.ToString("F2") : "-"))</div>
             </AntDesign.Column>
-            <AntDesign.Column Title="Profit"
+            <AntDesign.Column Title="Net Profit"
+                    TData="double"
                     Field="@context.Profit"
                     Filterable
                     Sortable>
                 <div>
-                    <span class="simple-badge @(GetOrderProfitBadgeColor(context.Profit))">@context.Profit.ToString("F2")</span>
+                    <span class="simple-badge @(GetOrderProfitBadgeColor(context.Profit))">@GetOrderNetProfit(context)</span>
                 </div>
             </AntDesign.Column>
         </RowTemplate>
@@ -238,6 +244,23 @@
         }
 
         return "-";
+    }
+    
+    private string GetOrderSwaps(ClosedPositionViewModel order)
+    {
+        if (order.Swaps != null && order.Swaps.Any()) {
+            return order.Swaps.Sum(x => x.Profit).ToString("F2");
+        }
+      
+        return "0.00";
+    }
+
+    private string GetOrderNetProfit(ClosedPositionViewModel order)
+    {
+        var swapsSum = (order.Swaps != null && order.Swaps.Any())
+            ? order.Swaps.Sum(x => x.Profit) : 0;
+
+        return (order.Profit - swapsSum).ToString("F2");
     }
 
     private string GetOrderProfitBadgeColor(double profit)

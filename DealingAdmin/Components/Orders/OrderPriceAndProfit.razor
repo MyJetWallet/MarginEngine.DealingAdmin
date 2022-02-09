@@ -17,7 +17,7 @@
         <div>Ticks: <span style="@($"font-weight: bold; color: {(@positionTicks > 0 ? "SeaGreen" : "DarkRed")}")">@positionTicks</span></div>
     </div>
     <div>
-        <span class="@($"simple-badge {(profitLoss > 0 ? "badge-green" : "badge-red")}")">@profitLoss.ToString($"F2")</span>
+        <span class="@($"simple-badge {(netProfit > 0 ? "badge-green" : "badge-red")}")">@netProfit.ToString($"F2")</span>
     </div>
 </div>
 
@@ -33,7 +33,8 @@
     private string desiredPrice = "";
     private double nowPrice;
     private int positionTicks;
-    private double profitLoss;
+    private double netProfit;
+    private double swapsProfit;
 
     private bool isUpdating = false;
 
@@ -41,9 +42,9 @@
     {
         openPrice = Order.OpenPrice.ToString($"F{Digits}");
         desiredPrice = Order.DesiredPrice.ToString($"F{Digits}");
-        profitLoss = Order.Profit;
+        swapsProfit = Order.Swaps.Sum(x => x.Profit); 
+        netProfit = Order.Profit - swapsProfit;
         positionTicks = FxUtils.CalcTicks(Order.OpenPrice, nowPrice, Digits);
-
         RefreshData();
 
         AppJobService.PriceUpdateEvent += async () => await InvokeAsync(() => RefreshData());
@@ -73,7 +74,7 @@
         nowPrice = FxUtils.GetOrderPrice(Order.Operation, bidAsk);
         positionTicks = FxUtils.CalcTicks(Order.OpenPrice, nowPrice, Digits);
         openPriceBoldFont = nowPrice <= Order.OpenPrice;
-        profitLoss = FxUtils.CalcProfitLossByPrice(Order, nowPrice);
+        netProfit = FxUtils.CalcProfitLossByPrice(Order, nowPrice) - swapsProfit;
         this.StateHasChanged();
     }
 }

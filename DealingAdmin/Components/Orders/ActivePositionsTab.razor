@@ -84,7 +84,7 @@
                 <TitleTemplate>
                     <div class="grid-container-price-profit">
                         <div>Now BidAsk</div>
-                        <div>Profit</div>
+                        <div>Net Profit</div>
                     </div>
                 </TitleTemplate>
                 <ChildContent>
@@ -119,6 +119,11 @@
                     @bind-Field="@context.StopLossInCurrency"
                     Width="80">
                 <div>@($"{GetOrderStopLoss(context)}")</div>
+            </AntDesign.Column>
+            <AntDesign.Column Title="Swaps"
+                    TData="double"
+                    Width="80">
+                <div>@($"{GetOrderSwaps(context)}")</div>
             </AntDesign.Column>
             <AntDesign.Column Title="Refill %"
                     TData="double"
@@ -300,5 +305,14 @@
         }
 
         return "-";
+    }
+
+    private string GetOrderSwaps(ActivePositionViewModel order)
+    {
+        if (order.Swaps != null && order.Swaps.Any()) {
+            return order.Swaps.Sum(x => x.Profit).ToString("F2");
+        }
+      
+        return "0.00";
     }
 }

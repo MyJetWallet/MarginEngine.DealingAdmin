@@ -115,7 +115,7 @@
         <AntDesign.Column Title="Component"
                 TData="string"
                 @bind-Field="@context.Component"
-                Width="140"/>
+                Width="180"/>
         <AntDesign.Column Title="Message"
                 TData="string"
                 @bind-Field="@context.Message"/>
@@ -213,15 +213,11 @@
             AccountsList = new List<TradingAccountModel>();
             GridData = new List<TradeLogModel>();
 
-            Console.WriteLine($"TradeLog Tab -> RefreshData ->  GRPC call"); /// REMOVE AFTER TEST!!!!
-
             var grpcAccounts = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.GetAccountsAsync(
                 new GetAccountsGrpcRequestContract
                     {
                         TraderId = this.TraderId
                     });
-
-            Console.WriteLine($"TradeLog Tab -> RefreshData ->  grpcAccounts.Count = {grpcAccounts.Count()}"); /// REMOVE AFTER TEST!!!!
 
             AccountsList = grpcAccounts.Select(TradingAccountModel.Create).ToList();
             tradeLogAccount = AccountsList.First();
@@ -235,8 +231,6 @@
         {
             isLoading = false;
         }        
-
-        Console.WriteLine($"Acc Tab -> RefreshData -> StateHasChanged"); /// REMOVE AFTER TEST!!!!
 
         this.StateHasChanged();
     }
@@ -317,7 +311,7 @@
         Hours
     }
 
-    private async void ShowEventDetails(object base64EncodedData)
+    private void ShowEventDetails(object base64EncodedData)
     {
         eventDetailsText = "";
 
@@ -335,14 +329,12 @@
             snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
             Console.WriteLine(ex);
         }
-
     }
 
     private void CloseEventDetailsDialog()
     {
         isEventDetailsDialogVisible = false;
     }
-
 
     private async Task RestoreActivePosition(object jsonEventData)
     {

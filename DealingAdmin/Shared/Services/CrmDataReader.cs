@@ -39,6 +39,11 @@ namespace DealingAdmin.Shared.Services
 
         public async Task<InternalTraderModel> GetAccountType(string traderId)
         {
+            if (String.IsNullOrEmpty(traderId))
+            {
+                return null;
+            }
+
             var sql = @$"SELECT id AS TraderId, COALESCE(isinternal, true) AS isinternal FROM personaldata id = @traderId";
             var result = await _crmConnection.GetFirstRecordOrNullAsync<InternalTraderModel>(sql, new { traderId = traderId });
             return result;

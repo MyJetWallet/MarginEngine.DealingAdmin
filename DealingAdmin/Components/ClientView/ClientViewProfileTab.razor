@@ -13,7 +13,7 @@
 @inject ICrmDataReader CrmReader
 @inject IAccountTypeFilter AccTypeFilter
 @inject Serilog.Core.Logger logger
-
+@inject ISnackbar snackbar
 
 <Title Level="4">Client profile</Title>
 
@@ -108,12 +108,19 @@
     {
         try
         {
+            if (String.IsNullOrEmpty(TraderId))
+            {
+                snackbar.Add("Can't load data: TraderId is empty!", Severity.Warning);
+                return;
+            }
+
             personalData = (await PersonalDataService.GetByIdAsync(TraderId)).PersonalData;
-            var internalAcc = (await CrmReader.GetAccountType(this.TraderId))?.IsInternal;
+            var internalAcc = (await CrmReader.GetAccountType(TraderId))?.IsInternal;
             isInternal = internalAcc.HasValue ? internalAcc.Value : true;
         }
         catch (Exception ex)
         {
+            logger.Error($"Error occured while getting date for TraderId: '{TraderId}'");
             logger.Error(ex, ex.Message);
             Console.WriteLine(ex);
         }

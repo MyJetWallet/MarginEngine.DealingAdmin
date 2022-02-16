@@ -35,6 +35,7 @@ namespace DealingAdmin.Shared.Services
             CommonUpdateTaskTimer.Register("Common Update", () =>
             {
                 CommonUpdateEvent?.Invoke();
+                SysUtils.CollectGarbage();
                 return new ValueTask();
             });
         }

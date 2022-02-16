@@ -5,6 +5,7 @@
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Services
 @using DealingAdmin.Shared.Services
+@using Serilog.Core
 @using SimpleTrading.Abstraction.Caches.ActiveOrders
 @using SimpleTrading.Abstraction.Trading.Settings
 @using SimpleTrading.Engine.Grpc.Contracts
@@ -15,6 +16,7 @@
 @inject IInstrumentsCache InstrumentsCache
 @inject AdminAppSettings appSettings
 @inject ISnackbar snackbar
+@inject Logger logger
 
 <div id="ActivePositionsRegion">
     <div class="mb-2">
@@ -268,15 +270,31 @@
 
     private async Task RefreshData()
     {
+        if (isLoading)
+        {
+            snackbar.Add($"Can't refresh data for ActivePositions, another refresh process is already in progress", Severity.Warning);
+            return;
+        }
+
         isLoading = true;
 
-        var activePositions = LiveDemoServices.GetContext(AppState.IsLive).ActiveOrdersReader.GetAllPendingOrders();
+        try
+        {
+            var activePositions = LiveDemoServices.GetContext(AppState.IsLive).ActiveOrdersReader.GetAllPendingOrders();
 
-        GridData = (await AccTypeFilter.FilterPositions(activePositions, AccountsTypeFilter))
-            .Select(x => ActivePositionViewModel.Create(x, 
-                InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
-
-        isLoading = false;
+            GridData = (await AccTypeFilter.FilterPositions(activePositions, AccountsTypeFilter))
+                .Select(x => ActivePositionViewModel.Create(x, 
+                    InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured while loading data", Severity.Error);
+        }
+        finally
+        {
+             isLoading = false;
+        }
 
         this.StateHasChanged();
     }

@@ -11,7 +11,7 @@
 @inject LiveDemoServiceMapper LiveDemoServices
 @inject IAccountTypeFilter AccTypeFilter
 @inject IInstrumentsCache InstrumentsCache
-@inject IUserMessageService MessageService
+@inject ISnackbar snackbar
 
 <div id="PendingOrdersRegion">    
     <div class="mb-2">
@@ -150,14 +150,26 @@
 
     private async Task RefreshData()
     {
+        if (isLoading)
+        {
+            snackbar.Add($"Can't refresh data for PendingOrders, another refresh process is already in progress", Severity.Warning);
+            return;
+        }
+
         isLoading = true;
 
-        var pendingOrders = (await LiveDemoServices.GetContext(AppState.IsLive).StReader.GetPendingOrdersAsync());
+        try
+        {
+            var pendingOrders = (await LiveDemoServices.GetContext(AppState.IsLive).StReader.GetPendingOrdersAsync());
 
-        GridData =  (await AccTypeFilter.FilterPositions(pendingOrders, AccountsTypeFilter))
-            .Select(x => PendingOrderViewModel.Create(x,
-                InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
-
+            GridData =  (await AccTypeFilter.FilterPositions(pendingOrders, AccountsTypeFilter))
+                .Select(x => PendingOrderViewModel.Create(x,
+                    InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+        }
+        finally
+        {
+             isLoading = false;
+        }
         isLoading = false;
 
         this.StateHasChanged();

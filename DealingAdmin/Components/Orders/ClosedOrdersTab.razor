@@ -13,6 +13,7 @@
 @inject LiveDemoServiceMapper LiveDemoServices
 @inject IAccountTypeFilter AccTypeFilter
 @inject IInstrumentsCache InstrumentsCache
+@inject ISnackbar snackbar
 
 <div id="ClosedPositionsRegion">
     <div class="mb-2">
@@ -207,17 +208,28 @@
 
     private async Task LoadData()
     {
+        if (isLoading)
+        {
+            snackbar.Add($"Can't load data for ClosedOrders, another loading process is already in progress", Severity.Warning);
+            return;
+        }
+
         isLoading = true;
 
-        var closedOrders = (await LiveDemoServices.GetContext(AppState.IsLive).StReader.GetClosedPositionsAsync(dateFrom, dateTo));
+        try
+        {
+            var closedOrders = (await LiveDemoServices.GetContext(AppState.IsLive).StReader.GetClosedPositionsAsync(dateFrom, dateTo));
 
-        GridData =  (await AccTypeFilter.FilterPositions(closedOrders, AccountsTypeFilter))
-            .Select(x => ClosedPositionViewModel.Create(x,
-                InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+            GridData = (await AccTypeFilter.FilterPositions(closedOrders, AccountsTypeFilter))
+                .Select(x => ClosedPositionViewModel.Create(x,
+                    InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+        }
+        finally
+        {
+             isLoading = false;
+        }
 
-        isLoading = false;
-
-        this.StateHasChanged();
+    this.StateHasChanged();
     }
 
     private string GetOrderTakeProfit(ClosedPositionViewModel order)

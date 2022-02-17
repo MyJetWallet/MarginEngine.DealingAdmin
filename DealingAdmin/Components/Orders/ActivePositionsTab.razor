@@ -77,7 +77,8 @@
                 </div>
             </AntDesign.Column>
             <AntDesign.Column Title="Open BidAsk"
-                    @bind-Field="@context.Id">
+                    @bind-Field="@context.Id"
+                    Width="130">
                 <OrderOpenBidAsk BidAsk="context.OpenPriceBidAsk" Digits="context.InstrumentDigits"></OrderOpenBidAsk>
             </AntDesign.Column>
             <AntDesign.Column Title="Profit"
@@ -106,6 +107,7 @@
             <AntDesign.Column Title="Investment"
                     TData="double"
                     @bind-Field="@context.InvestmentAmount"
+                    Width="120"
                     Sortable>
                 <div>@($"{context.InvestmentAmount.ToString("F0")} x 1:{context.Leverage }")</div>
                 <div>@($"V: {(context.InvestmentAmount * context.Leverage).ToString("F0")}")</div>
@@ -272,7 +274,7 @@
     {
         if (isLoading)
         {
-            snackbar.Add($"Can't refresh data for ActivePositions, another refresh process is already in progress", Severity.Warning);
+            snackbar.Add($"Data refresh for Active Positions in progress");
             return;
         }
 

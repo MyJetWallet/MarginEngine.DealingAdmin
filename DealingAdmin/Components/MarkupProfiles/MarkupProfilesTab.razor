@@ -13,7 +13,7 @@
 @inject Logger logger
 @inject NavigationManager NavManager
 
-<div style="width:80%">
+<div style="width:90%">
 @if (!editFormSwitch)
 {
     <PageHeader Class="m-0 p-0" Title="Markup Profiles">
@@ -25,18 +25,28 @@
     </PageHeader>
 
     <Table DataSource="@markupProfiles"
-           TItem="MarkupProfileModel"
+           TItem="MarkupProfileExtModel"
            Bordered="@true"
            Total="0"
            HidePagination="@true"
            ScrollY="calc(100vh - 180px)"
            PageSize="999">
-        <RowTemplate>           
+        <RowTemplate>
             <AntDesign.Column Title="Profile Id"
                 DataIndex="ProfileId"
                 TData="string"
                 Sortable
                 Width="200"/>
+            <AntDesign.Column Title="Description"
+                DataIndex="Description"
+                TData="string"
+                Sortable
+                Width="200"/>
+            <AntDesign.Column Title="Is Hidden"
+                DataIndex="IsHidden"
+                TData="bool"
+                Sortable
+                Width="90"/>
             <AntDesign.Column Title="Instruments" TData="string">   
                 @foreach (var instrument in context.MarkupInstruments)
                 {
@@ -63,9 +73,9 @@ else
 </div>
 
 @code {
-    private List<MarkupProfileModel> markupProfiles;
+    private List<MarkupProfileExtModel> markupProfiles;
 
-    private MarkupProfileModel editedProfile;
+    private MarkupProfileExtModel editedProfile;
     private string profileEditFormTitle;
     private bool editFormSwitch = false;
 
@@ -82,10 +92,14 @@ else
 
     private async Task RefreshData()
     {
-        markupProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
-           .TradingGroupsMarkupProfilesRepository.GetAllAsync()).Select(x => x.ToModel()).ToList();
+        var markupProfileProps = (await liveDemoServices.GetContext(AppState.IsLive)
+           .TradingGroupMarkupProfilePropertiesRepository.GetAllAsync()).ToList();
 
-        editedProfile = new MarkupProfileModel
+        markupProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
+           .TradingGroupsMarkupProfilesRepository.GetAllAsync())
+           .Select(x => x.ToExtModel(markupProfileProps.FirstOrDefault(p => p.ProfileId == x.ProfileId))).ToList();
+
+        editedProfile = new MarkupProfileExtModel
             {
                 ProfileId = "",
                 MarkupInstruments = new List<MarkupItem>()
@@ -95,7 +109,7 @@ else
     private void ShowNewProfile()
     {
         profileEditFormTitle = "Add New Markup Profile";
-        editedProfile = new MarkupProfileModel
+        editedProfile = new MarkupProfileExtModel
             {
                 ProfileId = "",
                 MarkupInstruments = new List<MarkupItem>()
@@ -103,17 +117,17 @@ else
         editFormSwitch = true;
     }
 
-    private void ShowEditProfile(MarkupProfileModel markupProfile)
+    private void ShowEditProfile(MarkupProfileExtModel markupProfile)
     {
         profileEditFormTitle = $"Edit '{markupProfile.ProfileId}' Markup Profile";
         editedProfile = markupProfile;
         editFormSwitch = true;
     }
 
-    private void CloneProfile(MarkupProfileModel markupProfile)
+    private void CloneProfile(MarkupProfileExtModel markupProfile)
     {
         profileEditFormTitle = "Add New Markup Profile";
-        editedProfile = new MarkupProfileModel
+        editedProfile = new MarkupProfileExtModel
             {
                 ProfileId = "",
                 MarkupInstruments = markupProfile.MarkupInstruments

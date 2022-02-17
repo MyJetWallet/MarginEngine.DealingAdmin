@@ -21,6 +21,37 @@ namespace DealingAdmin.Abstractions.Models
         }
     }
 
+    public class MarkupProfilePropertiesModel : ITradingGroupMarkupProfileProperties
+    {
+        public string ProfileId { get; set; }
+
+        public string Description { get; set; }
+
+        public bool IsHidden { get; set; }
+
+        public static MarkupProfilePropertiesModel Create(ITradingGroupMarkupProfileProperties src)
+        {
+            return new MarkupProfilePropertiesModel
+            {
+                ProfileId = src.ProfileId,
+                Description = src.Description,
+                IsHidden = src.IsHidden,
+            };
+        }
+    }
+
+    public class MarkupProfileExtModel
+    {
+        public string ProfileId { get; set; }
+
+        public List<MarkupItem> MarkupInstruments { get; set; }
+
+        public string Description { get; set; }
+
+        public bool IsHidden { get; set; }
+    }
+
+
     public class MarkupProfileDatabaseModel : IIMarkupProfileBase, IMarkupProfile, ITradingGroupMarkupProfile
     {
         public string ProfileId { get; set; }

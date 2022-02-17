@@ -16,7 +16,7 @@
 <PageHeader Class="m-0 p-0" Title="@pageTitle">
 </PageHeader>
 <AntDesign.Row>
-    <Col Span="16">
+    <Col Flex=@("400px")>
         <Form Model="Profile"        
                 ValidateOnChange="@true"
                 ValidateMode="@FormValidateMode.Rules">
@@ -24,20 +24,30 @@
                 <Input @bind-Value="@context.ProfileId"
                         Placeholder="Profile Id"
                         Style="width:300px"
-                        Size="@InputSize.Large" 
                         Disabled="@(!isNewProfile)"
                         Rules=@RequiredRule/>
             </FormItem>            
         </Form>
     </Col>
-    <Col Flex=@("auto")></Col>
+    <Col Flex=@("260px")>
+        <div>Description:</div>
+        <Input @bind-Value="@Profile.Description"
+                Placeholder="info"
+                Style="width:240px"/>
+    </Col>
     <Col Flex=@("160px")>
+        <div>Is Hidden:</div>
+        <Switch @bind-Value="@Profile.IsHidden"></Switch>
+    </Col>
+    <Col Flex=@("auto")>
+    </Col>
+    <Col Flex=@("140px")>
         <AntDesign.Button Icon="check"
             Class="btn-text bg-color-aquamarine"
             OnClick="SaveMarkupProfile"
             Disabled="@(String.IsNullOrEmpty(Profile.ProfileId))">Save</AntDesign.Button>
     </Col>
-    <Col Flex=@("160px")>
+    <Col Flex=@("140px")>
         <AntDesign.Button Icon="arrow-left"
             Class="btn-text bg-color-yellow"
             OnClick="GoBack">Back</AntDesign.Button>
@@ -126,7 +136,7 @@
 
 @code {
     [Parameter]
-    public MarkupProfileModel Profile { get; set; }
+    public MarkupProfileExtModel Profile { get; set; }
 
     [Parameter]
     public EventCallback OnGoBack { get; set; }
@@ -252,6 +262,10 @@
                 .TradingGroupsMarkupProfilesRepository.UpdateAsync(this.Profile.ToDatabaseModel());
 
             snackbar.Add($"Markup Profile '{profileId}' saved", Severity.Success);
+
+            await liveDemoServices.GetContext(AppState.IsLive)
+                .TradingGroupMarkupProfilePropertiesRepository.UpdateAsync(this.Profile.ToPropertiesModel());
+
         }
         catch(Exception ex)
         {

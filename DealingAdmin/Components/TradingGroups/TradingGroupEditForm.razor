@@ -97,9 +97,9 @@
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
-    private IEnumerable<ITradingProfile> tradingProfiles { get; set; } = new List<ITradingProfile>();
-    private IEnumerable<IMarkupProfile> markupProfiles { get; set; } = new List<IMarkupProfile>();
-    private IEnumerable<ISwapProfile> swapProfiles { get; set; } = new List<ISwapProfile>();
+    private List<ITradingProfile> tradingProfiles { get; set; } = new List<ITradingProfile>();
+    private List<MarkupProfileExtModel> markupProfiles { get; set; } = new List<MarkupProfileExtModel>();
+    private List<ISwapProfile> swapProfiles { get; set; } = new List<ISwapProfile>();
 
     private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
     private FormValidationRule[] CrudApiKeyRule;
@@ -110,10 +110,18 @@
     protected override async Task OnInitializedAsync()
     {
         isNewGroup = String.IsNullOrEmpty(TradingGroup.Id);
-        tradingProfiles = await liveDemoServices.GetContext(AppState.IsLive)
-            .TradingProfileRepository.GetAllAsync();
-        swapProfiles = await swapProfileWriter.GetAllAsync();
-        markupProfiles = await markupProfilesRepository.GetAllAsync();
+        tradingProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
+            .TradingProfileRepository.GetAllAsync()).ToList();
+        swapProfiles = (await swapProfileWriter.GetAllAsync()).ToList();
+
+        var markupProfileProps = (await liveDemoServices.GetContext(AppState.IsLive)
+          .TradingGroupMarkupProfilePropertiesRepository.GetAllAsync()).ToList();
+
+        var markupExtProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
+           .TradingGroupsMarkupProfilesRepository.GetAllAsync())
+           .Select(x => x.ToExtModel(markupProfileProps.FirstOrDefault(p => p.ProfileId == x.ProfileId))).ToList();
+
+        markupProfiles = markupExtProfiles.Where(p => !p.IsHidden).ToList();
 
         CrudApiKeyRule = new FormValidationRule[]
         {
@@ -134,7 +142,6 @@
 
     private async void SaveGroup()
     {
-        Console.WriteLine(">> SaveGroup >> START"); /// REMOVE AFTER TEST!!!
         try
         {
             if (!editForm.Validate())
@@ -151,17 +158,13 @@
             await liveDemoServices.GetContext(AppState.IsLive)
                 .TradingGroupsRepository.UpdateAsync(TradingGroup);
 
-            Console.WriteLine($"Trading Group {TradingGroup.Id} saved");
             await OnFinish.InvokeAsync();
-            Console.WriteLine(">> SaveGroup >> Message"); /// REMOVE AFTER TEST!!!
             snackbar.Add($"Trading Group {TradingGroup.Id} saved", Severity.Success);
-            Console.WriteLine(">> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
         }
         catch(Exception ex)
         {
             logger.Error(ex, ex.Message);
             snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
         }
-        Console.WriteLine("TradingGroups >> SaveGroup >> END"); /// REMOVE AFTER TEST!!!
     }
 }

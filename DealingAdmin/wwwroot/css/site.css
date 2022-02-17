@@ -161,6 +161,10 @@ a, .btn-link {
     background-color: #ffe082 !important;
 }
 
+.bg-color-darkred {
+    background-color: DarkRed !important
+}
+
 .tag-color-orange {
     color: #000 !important;
     background-color: darkorange !important;

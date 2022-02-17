@@ -24,6 +24,7 @@
 @inject ILiquidityProviderReader liquidityProviderReader
 @inject IDefaultLiquidityProviderWriter defLiquidityProviderWriter
 @inject ISwapProfileWriter SwapProfileWriter
+@inject AdminAppSettings appSettings
 @inject ISnackbar snackbar 
 @inject Logger logger
 
@@ -116,7 +117,11 @@
                 Field="@context.TradingDisabled"
                 Sortable
                 Width="72">
-            <Switch @bind-Value="@context.TradingDisabled"></Switch>
+            <AntDesign.Button
+                Class="@GetTradingDisableColor(context.TradingDisabled)"
+                OnClick="()=>ShowTradingDisableDialog(context)"
+                Shape="@ButtonShape.Circle"
+                Icon="@IconType.Outline.Poweroff"/>
         </AntDesign.Column>
         <AntDesign.Column Title="Price"
                 TData="string"
@@ -182,6 +187,19 @@
     </AntDesign.Row>
 </Modal>
 
+<Modal Title="@tradingDisableDialogTitle"
+       Visible="@isTradingDisableDialogVisible"
+       OkText="@("Save")"
+       OnOk="()=>SaveTradingDisable()"
+       OnCancel="()=>CloseTradingDisableDialog()"
+       Width="600">
+    <AntDesign.Row Class="center-middle" p-3>
+        <Switch @bind-Value="@isTradingDisabled"></Switch><span class="px-3">Disable Trading</span>
+    </AntDesign.Row>
+    <AntDesign.Row Class="center-middle">
+       <span class="px-2">API Key:</span><InputPassword @bind-Value="@disableTradingApiKey" />
+    </AntDesign.Row>
+</Modal>
 
 @code {
     private List<TradingInstrumentViewModel> tradingInstruments;
@@ -193,8 +211,12 @@
     private bool isLoading = false;
     private TradingInstrumentViewModel editedInstrument;
     private string instrumentEditFormTitle;
+    private string tradingDisableDialogTitle;
     private bool isEditInstrumentDialogVisible;
     private bool isEditLiquidityProvidertDialogVisible;
+    private bool isTradingDisableDialogVisible;
+    private bool isTradingDisabled;
+    private string disableTradingApiKey;
     private string defaultLP;
     private string defaultLpListItem;
     private List<InstrumentSourcesMapsMyNoSqlTableEntity> sourcesMapsList;
@@ -252,6 +274,11 @@
         return isDefaultProvider ? "btn-text tag-color-gray" : "btn-text tag-color-orange";
     }
 
+    private string GetTradingDisableColor(bool isTradingDisabled)
+    {
+        return isTradingDisabled ? "bg-color-darkred" : "bg-color-green";
+    }
+
     private void ShowEditLiquidityProviderDialog(TradingInstrumentViewModel lpInstrument)
     {
         editedInstrument = lpInstrument;
@@ -301,6 +328,49 @@
         isEditLiquidityProvidertDialogVisible = false;
     }
 
+    private void ShowTradingDisableDialog(TradingInstrumentViewModel instrument)
+    {
+        editedInstrument = instrument;
+        disableTradingApiKey = "";
+        tradingDisableDialogTitle = $"Disable Trading for '{instrument.Name}'";
+        isTradingDisableDialogVisible = true;
+    }
+
+    private async Task SaveTradingDisable()
+    {
+        try
+        {
+            if (editedInstrument == null || String.IsNullOrEmpty(editedInstrument.Id))
+            { 
+                snackbar.Add($"InstrumentId is empty. Try again.", Severity.Warning);
+            }
+
+            if (disableTradingApiKey != appSettings.AdminCrudApiKey)
+            {
+                snackbar.Add($"API Key is not valid", Severity.Error);
+                return;
+            }
+
+            editedInstrument.TradingDisabled = isTradingDisabled;
+            await InstrumentsRepository.UpdateAsync(editedInstrument);
+            snackbar.Add($"Trading setting for Instrument '{editedInstrument.Id}' updated", Severity.Success);
+            CloseTradingDisableDialog();
+            await RefreshData();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error occured: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void CloseTradingDisableDialog()
+    {
+        isTradingDisableDialogVisible = false;
+        disableTradingApiKey = "";
+        editedInstrument = null;
+    }
+
     private void ShowNewInstrumentDialog()
     {
         instrumentEditFormTitle = "Add New Instrument";
@@ -315,13 +385,14 @@
     {
         instrumentEditFormTitle = $"Edit '{instrument.Name}' Instrument";
         editedInstrument = instrument;
+        isTradingDisabled = instrument.TradingDisabled;
         isEditInstrumentDialogVisible = true;
     }
 
     private void CloseEditInstrumentDialog()
     {
         isEditInstrumentDialogVisible = false;
-        editedInstrument = new TradingInstrumentViewModel();
+        editedInstrument = null;
     }
 
 

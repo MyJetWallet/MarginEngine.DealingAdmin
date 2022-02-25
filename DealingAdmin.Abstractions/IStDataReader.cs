@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DealingAdmin.Shared.Services
+namespace DealingAdmin.Abstractions
 {
     public interface IStDataReader
     {

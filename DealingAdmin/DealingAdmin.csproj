@@ -2,23 +2,23 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-		<Version>3.0.6</Version>
+		<Version>3.0.7</Version>
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="AntDesign" Version="0.10.3.1" />
+        <PackageReference Include="AntDesign" Version="0.10.4" />
         <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
 		<PackageReference Include="Flurl" Version="3.0.4" />
 		<PackageReference Include="Flurl.Http" Version="3.2.2" />
-		<PackageReference Include="MudBlazor" Version="6.0.6" />
-        <PackageReference Include="MyNoSqlServer.DataReader" Version="1.4.4" />
+		<PackageReference Include="MudBlazor" Version="6.0.7" />
+        <PackageReference Include="MyNoSqlServer.DataReader" Version="1.7.0" />
         <PackageReference Include="SimpleTrading.SettingsReader" Version="1.1.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
 		<PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
 		<PackageReference Include="SerilogWeb.Classic" Version="5.1.66" />
 		<PackageReference Include="SimpleTrading.Admin.Grpc" Version="1.0.2" />
 		<PackageReference Include="SimpleTrading.ClientApi" Version="1.0.18" />
-		<PackageReference Include="SimpleTrading.Common.MyNoSql" Version="1.0.45" />
+		<PackageReference Include="SimpleTrading.Common.MyNoSql" Version="1.0.46" />
 		<PackageReference Include="SimpleTrading.Engine.Grpc" Version="1.0.54" />
 		<PackageReference Include="SimpleTrading.Abstraction" Version="2.0.23" />
 		<PackageReference Include="SimpleTrading.ServiceBus" Version="4.0.17" />
@@ -32,6 +32,7 @@
 		<PackageReference Include="SimpleTrading.TickHistory.Grpc" Version="1.0.14" />
 		<PackageReference Include="Texnomic.Blazor.JsonViewer" Version="0.1.0" />
 		<PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />
+		        <PackageReference Include="CsvHelper.Excel.Core" Version="27.2.1" />		
     </ItemGroup>
     
     <ItemGroup>

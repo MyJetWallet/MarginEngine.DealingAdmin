@@ -110,6 +110,7 @@ namespace DealingAdmin
 
             services.AddScoped<StateManager>();
             services.AddScoped<ICandlesService, CandlesService>();
+            services.AddScoped<ISwapProfileUploadService, SwapProfileUploadService>();            
             services.AddSingleton<IPriceAggregator, PriceAggregator>();
             services.AddSingleton<IPriceRetriever, PriceRetriever>();
             services.AddSingleton<IAccountTypeFilter, AccountTypeFilter>();

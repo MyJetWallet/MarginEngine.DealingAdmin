@@ -1,14 +1,16 @@
 @using AntDesign
 @using AntDesign.TableModels
 @using System.Text.Json
+@using DealingAdmin.Abstractions
 @using DealingAdmin.Abstractions.Models
 @using DealingAdmin.Shared.Services
 @using Serilog.Core
 @using SimpleTrading.Abstraction.Trading.Instruments
 @using SimpleTrading.Abstraction.Trading.Swaps
 
-@inject ITradingInstrumentsRepository InstrumentsRepository;
+@inject ITradingInstrumentsRepository InstrumentsRepository
 @inject ISwapProfileWriter SwapProfileWriter
+@inject ISwapProfileUploadService SwapProfileUploadService
 @inject AdminAppSettings appSettings
 @inject ISnackbar snackbar
 @inject Logger logger
@@ -54,6 +56,10 @@
     <TitleTemplate>
         <PageHeader Title="Profile Instruments" Class="m-0 p-0">
             <PageHeaderExtra>
+                 <AntDesign.Button 
+                    OnClick="ShowLoadFileDialog" 
+                    Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text mx-3">Load from Excel file</AntDesign.Button>
                  <AntDesign.Button 
                     OnClick="ShowNewInstrumentDialog" 
                     Type="@AntDesign.ButtonType.Primary"
@@ -134,6 +140,32 @@
     </Form> 
 </Modal>
 
+
+<Modal Title="Swaps Excel File Upload"
+       Visible="@isExcelUploadDialogVisible"
+       Closable="@false"
+       Footer=null
+       Width="480">
+    <AntDesign.Row>
+        <Col class="m-3">
+            <div>Swaps Excel File:</div>
+            <InputFile OnChange="@FileChanged"/>
+        </Col>
+    </AntDesign.Row>
+    <AntDesign.Row Class="center-middle p-3">
+        <Col Span="18">
+            <AntDesign.Button Icon="upload" OnClick="@UploadSwaps" Disabled="@(swapsFile == null)">
+                <span>Upload</span>
+            </AntDesign.Button>
+        </Col>    
+        <Col Span="6">
+            <AntDesign.Button OnClick="CloseExcelUploadDialog"
+                Class="btn-text">Cancel</AntDesign.Button>
+        </Col>
+    </AntDesign.Row>
+</Modal>
+
+
 @code {
     [Parameter]
     public SwapGroupProfile ProfileGroup { get; set; }
@@ -153,11 +185,12 @@
     private string profileId { get; set; }
 
     private bool isNewProfile = true;
-
+    IBrowserFile swapsFile;
     private string pageTitle = "Add New Swap Profile";
     private string instrumentEditFormTitle = "";
     private string profileEditFormTitle;
     private bool isEditInstrumentDialogVisible;
+    private bool isExcelUploadDialogVisible;
 
     protected override async Task OnInitializedAsync()
     {
@@ -183,6 +216,59 @@
         availableInstruments = GetAvailableInstrumentsList();
     }
 
+    private void ShowLoadFileDialog()
+    {
+        swapsFile = null;
+        isExcelUploadDialogVisible = true;
+    }
+
+    private void FileChanged(InputFileChangeEventArgs e)
+    {
+        swapsFile = e.File;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void CloseExcelUploadDialog()
+    {
+        isExcelUploadDialogVisible = false;
+    }
+
+    private async Task UploadSwaps()
+    {
+        try
+        {
+            var maxFileSizeInMb = 10;
+            var fileSizeInBytes = maxFileSizeInMb * 1024 * 1024;
+
+            if (swapsFile == null)
+            {
+                snackbar.Add($"Choose a file to upload", Severity.Warning);
+                return;
+            }
+
+            if (swapsFile.Size > fileSizeInBytes)
+            {
+                snackbar.Add($"Max file size is {maxFileSizeInMb} MB", Severity.Warning);
+                return;
+            }
+
+            var swapItems = await SwapProfileUploadService.ParseSwapItemsFromExcelFile(
+                swapsFile,
+                String.IsNullOrEmpty(profileId) ? "" : profileId);
+
+            if (swapItems.Any())
+            {
+                ProfileGroup.Instruments = swapItems;
+                snackbar.Add($"{swapItems.Count} Instruments were updated", Severity.Success);
+                CloseExcelUploadDialog();
+                this.StateHasChanged();
+            }
+        }
+        catch (Exception e)
+        {
+            snackbar.Add(e.Message, Severity.Error);
+        }
+    }
 
     private List<string> GetAvailableInstrumentsList()
     {
@@ -235,7 +321,7 @@
             Id = profileId,
             InstrumentId = availableInstruments.FirstOrDefault()
         };
-        
+
         instrumentEditFormTitle = $"Add New Instrument for Swap Profile {profileId}";
         isEditInstrumentDialogVisible = true;
     }

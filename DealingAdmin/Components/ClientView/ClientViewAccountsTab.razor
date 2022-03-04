@@ -20,6 +20,7 @@
 @inject ModalService modalService
 @inject IAccountNewTradingGroupValidator accountNewTradingGroupValidator
 @inject Logger logger
+@inject ISnackbar snackbar
 
 <Table  DataSource="@GridData"
         TItem="TradingAccountModel"
@@ -168,25 +169,28 @@
 
     protected override async Task OnInitializedAsync()
     {
-        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() =>
+        AppState.LiveDemoModeChanged += async () =>
         {
-            RefreshData().GetAwaiter().GetResult();
+            await RefreshData();
             this.StateHasChanged();
-        });
+        };
 
         await RefreshData();
     }
 
     private async Task RefreshData()
     {
-        isLoading = true;
+        if (isLoading)
+        {
+            return;
+        }
 
         try
         {
+            isLoading = true;
+
             tradingGroups = (await LiveDemoServices.GetContext(AppState.IsLive)
                 .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
-
-            Console.WriteLine($"Acc Tab -> RefreshData ->  GRPC call"); /// REMOVE AFTER TEST!!!!
 
             var grpcAccounts = await LiveDemoServices.GetContext(AppState.IsLive).EngineApi.GetAccountsAsync(
                 new GetAccountsGrpcRequestContract
@@ -194,13 +198,14 @@
                         TraderId = this.TraderId
                     });
 
-            Console.WriteLine($"Acc Tab -> RefreshData ->  grpcAccounts.Count = {grpcAccounts.Count()}"); /// REMOVE AFTER TEST!!!!
             GridData = grpcAccounts.Select(TradingAccountModel.Create).ToList();
         }
         catch(Exception ex)
         {
-            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error during loading Accounts data: {ex.Message}", Severity.Error);
             Console.WriteLine(ex);
+            logger.Error(ex, ex.Message);
+            
         }
         finally
         {
@@ -244,8 +249,6 @@
 
     private async Task UpdateBalance()
     {
-        Console.WriteLine($"UpdateBalance"); /// REMOVE AFTER TEST!!!!
-
         if (formUpdateBalance.ChangeBalanceApiKey != appSettings.ChangeBalanceApiKey)
         {
             await MessageService.ErrorAsync("API Key is not valid");
@@ -280,16 +283,12 @@
         await MessageService.SuccessAsync($"Result: OK. Account updated balance: ${grpcResponse.Account.Balance}");
         CloseUpdateBalanceDialog();
 
-        Console.WriteLine($"UpdateBalance Result: ${grpcResponse.Account.Balance}"); /// REMOVE AFTER TEST!!!!
-
         await RefreshData();
         StateHasChanged();
     }
 
     private async Task UpdateTradingGroup()
     {
-        Console.WriteLine($"UpdateTradingGroup"); /// REMOVE AFTER TEST!!!!
-
         if (formUpdateTradingGroup.ApiKey != appSettings.AdminCrudApiKey)
         {
             await MessageService.ErrorAsync("API Key is not valid");

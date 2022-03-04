@@ -9,6 +9,7 @@
 
 @inject LiveDemoServiceMapper LiveDemoServices
 @inject ITraderSearchService traderSearchService
+@inject ISnackbar snackbar
 
 <PageTitle>Client View</PageTitle>
 
@@ -26,6 +27,12 @@
             Class="btn-text ">Search</AntDesign.Button>
     </Col>   
 </AntDesign.Row>
+
+@if (isLoading)
+{
+    <Spin Tip="Loading...">
+    </Spin>
+}
 
 @if (traderMultiBrands)
 {
@@ -62,7 +69,7 @@ else if (traderNotFound.HasValue && !traderNotFound.Value)
 @code {
     private string SelectedBrandTabKey { get; set; }
     private string SelectedTabKey { get; set; }
-
+    private bool isLoading;
     private string searchPhrase = String.Empty;
 
     private bool? traderNotFound = null;
@@ -82,64 +89,71 @@ else if (traderNotFound.HasValue && !traderNotFound.Value)
 
     private async Task OnSearch()
     {
+        if (isLoading)
+        {
+            return;
+        }
+
         if (string.IsNullOrEmpty(searchPhrase))
         {
             return;
         }
 
-        traderBrands = new List<TraderBrandSearchModel>();
-        activeBrandTab = null;
-
-        Console.WriteLine($"OnSearch -> searchPhrase: '{searchPhrase}'"); /// REMOVE AFTER TEST!!!!
-
-        if (IsEmail(searchPhrase))
+        try
         {
-            Console.WriteLine("OnSearch -> IsEmail"); /// REMOVE AFTER TEST!!!!
+            isLoading = true;
 
-            var tradersData = await traderSearchService.GetTraderDataByEmail(searchPhrase);
+            traderBrands = new List<TraderBrandSearchModel>();
+            activeBrandTab = null;
 
-            if (tradersData.Count > 0)
+            if (IsEmail(searchPhrase))
             {
-                Console.WriteLine("OnSearch -> tradersData.Count > 0"); /// REMOVE AFTER TEST!!!!
-                traderBrands = tradersData.Select(x => TraderBrandSearchModel.FromTraderBrand(x, false)).ToList();
+                var tradersData = await traderSearchService.GetTraderDataByEmail(searchPhrase);
+
+                if (tradersData.Count > 0)
+                {
+                    traderBrands = tradersData.Select(x => TraderBrandSearchModel.FromTraderBrand(x, false)).ToList();
+                }
             }
-        }
-        else
-        {
-            Console.WriteLine("OnSearch -> GetTraderDataByAnyId"); /// REMOVE AFTER TEST!!!!
-            traderBrands = await traderSearchService.GetTraderDataByAnyId(searchPhrase);
-        }
-
-        if (traderBrands.Any())
-        {
-            traderNotFound = false;
-
-            Console.WriteLine("OnSearch -> traderBrands.Any"); /// REMOVE AFTER TEST!!!!
-
-            if (traderBrands.Count > 1)
+            else
             {
-                traderMultiBrands = true;
-                Console.WriteLine("OnSearch -> traderMultiBrands"); /// REMOVE AFTER TEST!!!!
-
-                activeBrandTab = traderBrands.FirstOrDefault(x => x.SearchMatch);
+                traderBrands = await traderSearchService.GetTraderDataByAnyId(searchPhrase);
             }
 
-            if (activeBrandTab == null)
+            if (traderBrands.Any())
             {
-                Console.WriteLine("OnSearch -> activeBrandTab == null)"); /// REMOVE AFTER TEST!!!!
-                activeBrandTab = traderBrands.First();
+                traderNotFound = false;
+
+                if (traderBrands.Count > 1)
+                {
+                    traderMultiBrands = true;
+
+                    activeBrandTab = traderBrands.FirstOrDefault(x => x.SearchMatch);
+                }
+
+                if (activeBrandTab == null)
+                {
+                    activeBrandTab = traderBrands.First();
+                }
+
+                SelectedBrandTabKey = activeBrandTab.Brand;
+
+                RefreshData();
             }
-
-            Console.WriteLine($"OnSearch -> SelectedBrandTabKey (activeBrandTab.Brand = '{activeBrandTab?.Brand}')"); /// REMOVE AFTER TEST!!!!
-            SelectedBrandTabKey = activeBrandTab.Brand;
-
-            Console.WriteLine("OnSearch -> RefreshData"); /// REMOVE AFTER TEST!!!!
-            RefreshData();
+            else
+            {
+                traderNotFound = true;
+                snackbar.Add($"No accounts were found for '{searchPhrase}'", Severity.Warning);
+                StateHasChanged();
+            }
         }
-        else
+        catch(Exception ex)
         {
-            traderNotFound = true;
-            StateHasChanged();
+            snackbar.Add($"Error occured while loading data: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 
@@ -155,7 +169,6 @@ else if (traderNotFound.HasValue && !traderNotFound.Value)
 
     private void OnBrandTabSelect(string brandTab)
     {
-        Console.WriteLine($"ClientView => OnBrandTabSelect -> brandTab = '{brandTab}')"); /// REMOVE AFTER TEST!!!!
         SelectedBrandTabKey = brandTab;
         activeBrandTab = traderBrands.First(x => x.Brand == brandTab);
         RefreshData();
@@ -169,10 +182,8 @@ else if (traderNotFound.HasValue && !traderNotFound.Value)
 
     private void RefreshData()
     {
-        Console.WriteLine($"ClientView => RefreshData -> activeBrandTab.TraderId = '{activeBrandTab?.TraderId}')"); /// REMOVE AFTER TEST!!!!
         string updateBalanceApiKey = String.Empty;
         string updateTradingGroupApiKey = String.Empty;
         StateHasChanged();
-        Console.WriteLine($"ClientView => RefreshData -> DONE"); /// REMOVE AFTER TEST!!!!
     }
 }

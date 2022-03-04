@@ -51,9 +51,14 @@ namespace DealingAdmin
             var day = dt.DayOfWeek;
             var time = dt.TimeOfDay;
 
-            if (day > dowFrom && day < dowTo)
+            if (day > dowFrom)
             {
-                return true;
+                if (day < dowTo)
+                {
+                    return true;
+                }
+
+                return (day == dowTo && time < timeTo);
             }
             else if (day == dowFrom && time > timeFrom)
             {
@@ -61,10 +66,6 @@ namespace DealingAdmin
                 {
                     return time < timeTo;
                 }
-                return true;
-            }
-            else if (day == dowTo && time < timeTo)
-            {
                 return true;
             }
 

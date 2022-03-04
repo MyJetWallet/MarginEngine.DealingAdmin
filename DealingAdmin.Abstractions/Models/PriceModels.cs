@@ -43,7 +43,7 @@ namespace DealingAdmin.Abstractions.Models
                 Bid = bidAsk.Bid,
                 Ask = bidAsk.Ask,
                 Provider = bidAsk.LiquidityProvider,
-                TimeWarning = DateTime.Now - bidAsk.DateTime > TimeSpan.FromSeconds(20),
+                TimeWarning = DateTime.Now - bidAsk.DateTime > TimeSpan.FromMinutes(3),
             };
         }
 
@@ -55,7 +55,7 @@ namespace DealingAdmin.Abstractions.Models
                 Date = bidAsk.DateTime.ToString("yyyy-MM-dd HH:mm:ss"),
                 Bid = bidAsk.Bid,
                 Ask = bidAsk.Ask,
-                TimeWarning = DateTime.Now - bidAsk.DateTime > TimeSpan.FromSeconds(20),
+                TimeWarning = DateTime.Now - bidAsk.DateTime > TimeSpan.FromMinutes(3),
             };
         }
     }

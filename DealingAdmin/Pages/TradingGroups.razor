@@ -22,6 +22,7 @@
 
 <Table DataSource="@tradingGroups"
        TItem="TradingGroupModel"
+       Loading="isLoading"
        Bordered="@true"
        Total="0"
        HidePagination="@true"
@@ -71,17 +72,40 @@
     private TradingGroupModel editedGroup = new TradingGroupModel();
     private string groupEditFormTitle = "";
     private bool isEditGroupDialogVisible;
+    private bool isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
         await RefreshData();
-        AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => RefreshData());
+        AppState.LiveDemoModeChanged += async () =>
+        {
+            await RefreshData();
+            this.StateHasChanged();
+        };
     }
 
     private async Task RefreshData()
     {
-        tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
-           .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
+        if (isLoading)
+        {
+            return;
+        }
+
+        try
+        {
+            isLoading = true;
+            tradingGroups = (await liveDemoServices.GetContext(AppState.IsLive)
+               .TradingGroupsRepository.GetAllAsync()).Select(TradingGroupModel.Create).ToList();
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"TradingGroup - RefreshData Error: {ex.Message}");
+            logger.Error(ex, ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private void ShowNewGroupDialog()
@@ -93,11 +117,9 @@
 
     private void ShowEditGroupDialog(TradingGroupModel Group)
     {
-        Console.WriteLine("TradingGroups >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
         groupEditFormTitle = $"Edit '{Group.Id}' Group";
         editedGroup = TradingGroupModel.Create(Group);
         isEditGroupDialogVisible = true;
-        Console.WriteLine("TradingGroups >> ShowEditGroupDialog >> START"); /// REMOVE AFTER TEST!!!
     }
 
     private void CloseEditDialog()

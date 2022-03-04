@@ -44,7 +44,7 @@ namespace DealingAdmin.Shared.Services
                 return null;
             }
 
-            var sql = @$"SELECT id AS TraderId, COALESCE(isinternal, true) AS isinternal FROM personaldata id = @traderId";
+            var sql = @$"SELECT id AS TraderId, COALESCE(isinternal, true) AS isinternal FROM personaldata WHERE id = @traderId";
             var result = await _crmConnection.GetFirstRecordOrNullAsync<InternalTraderModel>(sql, new { traderId = traderId });
             return result;
         }

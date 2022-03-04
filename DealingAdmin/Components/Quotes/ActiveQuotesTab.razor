@@ -97,29 +97,34 @@
 
         isLoading = true;
 
-        liquidityProvidersList = (await LpReader.GetLiquidityProviders()).ToList();
-
-        GridData = GetActiveInstruments(InstrumentsCache.GetAll())
-            .Select(x => TradingInstrumentAssetGroupModel.Create(x)).ToList();
-
-        instrumentFilters = new List<TableFilter<string>>();
-
-        var sourceMaps = (await QuoteSourceService.GetInstrumentSourcesMaps()).ToList();
-
-        foreach(var instr in GridData)
+        try
         {
-            var overwrittenProviderId = sourceMaps.FirstOrDefault(x => x.InstrumentId == instr.Id);
+            liquidityProvidersList = (await LpReader.GetLiquidityProviders()).ToList();
 
-            var providerId =  overwrittenProviderId != null
-                ? overwrittenProviderId.SourceId
-                : await DefaultLpWriter.GetAsync();
+            GridData = GetActiveInstruments(InstrumentsCache.GetAll())
+                .Select(x => TradingInstrumentAssetGroupModel.Create(x)).ToList();
 
-            dictInstrumentProviderMaps.Add(instr.Id, providerId);
+            instrumentFilters = new List<TableFilter<string>>();
 
-            instrumentFilters.Add(new TableFilter<string> { Text = instr.Name, Value = instr.Name });
+            var sourceMaps = (await QuoteSourceService.GetInstrumentSourcesMaps()).ToList();
+
+            foreach (var instr in GridData)
+            {
+                var overwrittenProviderId = sourceMaps.FirstOrDefault(x => x.InstrumentId == instr.Id);
+
+                var providerId = overwrittenProviderId != null
+                    ? overwrittenProviderId.SourceId
+                    : await DefaultLpWriter.GetAsync();
+
+                dictInstrumentProviderMaps.Add(instr.Id, providerId);
+
+                instrumentFilters.Add(new TableFilter<string> { Text = instr.Name, Value = instr.Name });
+            }
         }
-
-        isLoading = false;
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private List<ITradingInstrument> GetActiveInstruments(IEnumerable<ITradingInstrument> instruments)

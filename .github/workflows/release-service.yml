@@ -53,6 +53,24 @@ jobs:
         tag_with_ref: true
         build_args: app_version=dealing.admin:${{ steps.extract_branch.outputs.branch }},app_compilation_date=${{ steps.current-time.outputs.formattedTime }}
 
+  update_version_prod_kube:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: change image name in deployment
+      uses: actions/checkout@v2
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_ST_PROD }}
+        NAMESPACE: "simple-trading"
+    - run: |
+        echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+        export KUBECONFIG=/tmp/config
+        kubectl config current-context
+        kubectl get nodes
+        ls -la
+        kubectl set image deployment/dealing-admin-slot-a dealing-admin-slot-a=${{ secrets.AZURE_CONTAINER_REGISTRY }}/margin/dealing.admin:${GITHUB_REF#refs/tags/} --namespace=${NAMESPACE} --record
+        kubectl set image deployment/dealing-admin-slot-b dealing-admin-slot-b=${{ secrets.AZURE_CONTAINER_REGISTRY }}/margin/dealing.admin:${GITHUB_REF#refs/tags/} --namespace=${NAMESPACE} --record
+ 
 
 #  update_version_st_kube:
 #    needs: build

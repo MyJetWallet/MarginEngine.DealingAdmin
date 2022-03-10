@@ -175,7 +175,6 @@
     </Form>
 </Modal>
 
-
 <style>
 .ant-table td {
     padding: 5px 10px !important
@@ -184,10 +183,15 @@
 
 @code
 {
+    [Parameter]
+    public string AccountId { get; set; }
+
     public List<ActivePositionViewModel> GridData
         = new List<ActivePositionViewModel>();
 
     private AccountType AccountsTypeFilter = AccountType.Real;
+
+    private List<TableFilter<string>> accountFilter = new List<TableFilter<string>>();
 
     int _pageIndex = 1;
     int _pageSize = 200;
@@ -282,11 +286,22 @@
 
         try
         {
-            var activePositions = LiveDemoServices.GetContext(AppState.IsLive).ActiveOrdersReader.GetAllPendingOrders();
+            if (String.IsNullOrEmpty(AccountId))
+            {
+                var activePositions = LiveDemoServices.GetContext(AppState.IsLive).ActiveOrdersReader.GetAllPendingOrders();
 
-            GridData = (await AccTypeFilter.FilterPositions(activePositions, AccountsTypeFilter))
-                .Select(x => ActivePositionViewModel.Create(x, 
+                GridData = (await AccTypeFilter.FilterPositions(activePositions, AccountsTypeFilter))
+                    .Select(x => ActivePositionViewModel.Create(x, 
+                        InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+            }
+            else
+            {
+                var accActivePositions = LiveDemoServices.GetContext(AppState.IsLive)
+                    .ActiveOrdersReader.GetTraderPendingOrders(AccountId);
+
+                GridData = accActivePositions.Select(x => ActivePositionViewModel.Create(x,
                     InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+            }
         }
         catch(Exception ex)
         {

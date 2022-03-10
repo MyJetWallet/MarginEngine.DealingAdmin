@@ -51,13 +51,11 @@ namespace DealingAdmin.Shared.Services
 
         public async Task<string> GetTraderIdBySearch(string phrase)
         {
-            var sqlSearchByAccountId = @$"SELECT traderid FROM {Tables.Accounts} WHERE accountid = @accountId";
-            var accountResult = await _crmConnection.
-                GetFirstRecordOrNullAsync<TraderIdModel>(sqlSearchByAccountId, new { accountId = phrase });
+            var traderIdSearch = await GetTraderIdByAccountId(phrase);
 
-            if (accountResult != null && !String.IsNullOrEmpty(accountResult.TraderId))
+            if (!String.IsNullOrEmpty(traderIdSearch))
             {
-                return accountResult.TraderId;
+                return traderIdSearch;
             }
 
             var sqlSearchByTraderId = @$"SELECT traderid FROM {Tables.Accounts} WHERE traderid = @traderId";
@@ -67,6 +65,20 @@ namespace DealingAdmin.Shared.Services
             if (traderResult != null && !String.IsNullOrEmpty(traderResult.TraderId))
             {
                 return traderResult.TraderId;
+            }
+
+            return null;
+        }
+
+        public async Task<string> GetTraderIdByAccountId(string accountId)
+        {
+            var sqlSearchByAccountId = @$"SELECT traderid FROM {Tables.Accounts} WHERE accountid = @accountId";
+            var accountResult = await _crmConnection.
+                GetFirstRecordOrNullAsync<TraderIdModel>(sqlSearchByAccountId, new { accountId = accountId });
+
+            if (accountResult != null && !String.IsNullOrEmpty(accountResult.TraderId))
+            {
+                return accountResult.TraderId;
             }
 
             return null;

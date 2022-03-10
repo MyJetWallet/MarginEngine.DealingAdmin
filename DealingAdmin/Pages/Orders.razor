@@ -1,18 +1,46 @@
 ﻿@page "/Orders"
+@page "/Orders/ActivePositions/{ActivePosAccountId}"
+@page "/Orders/ClosedPositions/{ClosedPosAccountId}"
 
 @using AntDesign
 @using DealingAdmin.Components.Orders
 
 <PageTitle>Positions &amp; Orders</PageTitle>
 
-<Tabs Size="@TabSize.Large">
+<Tabs Size="@TabSize.Large" ActiveKey="@activeTab">
     <TabPane Tab="ACTIVE POSITIONS" Key="ActivePositions" Class="tab-text">
-        <ActivePositionsTab/>
+        <ActivePositionsTab AccountId="@accountId"/>
 	</TabPane>
     <TabPane Tab="PENDING ORDERS" Key="PendingOrders" Class="tab-text">
          <PendingOrdersTab/>
     </TabPane>
     <TabPane Tab="HISTORY" Key="ClosedOrders" Class="tab-text">
-         <ClosedOrdersTab/>
+         <ClosedOrdersTab AccountId="@accountId"/>
     </TabPane>
 </Tabs>
+
+@code
+{
+    [Parameter]
+    public string ActivePosAccountId { get; set; }
+
+    [Parameter]
+    public string ClosedPosAccountId { get; set; }
+
+    private string activeTab = "ActivePositions";
+    private string accountId = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!String.IsNullOrEmpty(ActivePosAccountId))
+        {
+            activeTab = "ActivePositions";
+            accountId = ActivePosAccountId;
+        }
+        else if (!String.IsNullOrEmpty(ClosedPosAccountId))
+        {
+            activeTab = "ClosedOrders";
+            accountId = ClosedPosAccountId;
+        }
+    }
+}

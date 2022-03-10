@@ -12,5 +12,7 @@ namespace DealingAdmin.Abstractions
         Task<InternalTraderModel> GetAccountType(string traderId);
 
         Task<string> GetTraderIdBySearch(string phrase);
+
+        Task<string> GetTraderIdByAccountId(string accountId);
     }
 }

@@ -7,11 +7,13 @@
 @using DealingAdmin.Shared.Services
 @using System.Collections.Generic
 @using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.PersonalData.Grpc
 
 @inject StateManager AppState
 @inject IUserMessageService MsgService
 @inject LiveDemoServiceMapper LiveDemoServices
 @inject IAccountTypeFilter AccTypeFilter
+@inject ICrmDataReader CrmDataReader
 @inject IInstrumentsCache InstrumentsCache
 @inject ISnackbar snackbar
 
@@ -178,6 +180,9 @@
 
 @code
 {
+    [Parameter]
+    public string AccountId { get; set; }
+
     private AccountType AccountsTypeFilter = AccountType.Real;
 
     public List<ClosedPositionViewModel> GridData
@@ -185,6 +190,8 @@
 
     DateTime dateFrom = DateTime.UtcNow.Date;
     DateTime dateTo = DateTime.UtcNow.Date.AddDays(-1);
+
+    private List<TableFilter<string>> accountFilter = new List<TableFilter<string>>();
 
     int _pageIndex = 1;
     int _pageSize = 200;
@@ -196,6 +203,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!String.IsNullOrEmpty(AccountId))
+        {
+
+        }
+
         await LoadData();
         AppState.LiveDemoModeChanged += async () => await InvokeAsync(() => LoadData());
     }
@@ -218,18 +230,33 @@
 
         try
         {
-            var closedOrders = (await LiveDemoServices.GetContext(AppState.IsLive).StReader.GetClosedPositionsAsync(dateFrom, dateTo));
+            if (String.IsNullOrEmpty(AccountId))
+            {
+                var closedOrders = (await LiveDemoServices.GetContext(AppState.IsLive)
+                    .StReader.GetClosedPositionsAsync(dateFrom, dateTo));
 
-            GridData = (await AccTypeFilter.FilterPositions(closedOrders, AccountsTypeFilter))
-                .Select(x => ClosedPositionViewModel.Create(x,
-                    InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+                GridData = (await AccTypeFilter.FilterPositions(closedOrders, AccountsTypeFilter))
+                    .Select(x => ClosedPositionViewModel.Create(x,
+                        InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+            }
+            else
+            {
+                var traderId = await CrmDataReader.GetTraderIdByAccountId(AccountId);
+                dateTo = DateTime.UtcNow.Date.AddDays(-14);
+
+                var accClosedOrders = (await LiveDemoServices.GetContext(AppState.IsLive)
+                    .StReader.GetClosedPositionsAsync(traderId, AccountId, dateFrom, dateTo));
+                
+                GridData = accClosedOrders.Select(x => ClosedPositionViewModel.Create(x,
+                        InstrumentsCache.Get(x.Instrument)?.Digits ?? 2)).ToList();
+            }
         }
         finally
         {
              isLoading = false;
         }
 
-    this.StateHasChanged();
+        this.StateHasChanged();
     }
 
     private string GetOrderTakeProfit(ClosedPositionViewModel order)

@@ -11,6 +11,7 @@
 @using SimpleTrading.Abstraction.Trading.BalanceOperations
 @using SimpleTrading.Abstraction.Trading.Settings
 @using SimpleTrading.Engine.Grpc.Contracts
+@using System.Threading
 
 @inject StateManager AppState
 @inject LiveDemoServiceMapper LiveDemoServices
@@ -19,6 +20,8 @@
 @inject Serilog.Core.Logger logger
 @inject ModalService modalService
 @inject IAccountNewTradingGroupValidator accountNewTradingGroupValidator
+@inject NavigationManager NavManager
+@inject IJSRuntime jsRuntime
 @inject Logger logger
 @inject ISnackbar snackbar
 
@@ -53,8 +56,16 @@
         <AntDesign.Column Title="Trading Group"
                 DataIndex="TradingGroup"
                 TData="string"/>
-        <ActionColumn Title="Actions" Width="120">
+        <ActionColumn Title="Actions" Width="200">
             <div>
+                <Tooltip Title="@("Active Positions")">
+                    <a><i @onclick="()=>OpenActiveOrdersInNewTab(context.AccountId)"
+                        class="material-icons color-aquamarine">format_list_bulleted</i></a>
+                </Tooltip>
+                <Tooltip Title="@("Closed Positions")">
+                    <a><i @onclick="()=>OpenClosedOrdersInNewTab(context.AccountId)"
+                        class="material-icons color-green">checklist</i></a>
+                </Tooltip>
                 <Tooltip Title="@("Update Balance")">
                     <a><i @onclick="()=>ShowUpdateBalanceDialog(context.AccountId)"
                         class="material-icons color-primary">account_balance_wallet</i></a>
@@ -205,7 +216,7 @@
             snackbar.Add($"Error during loading Accounts data: {ex.Message}", Severity.Error);
             Console.WriteLine(ex);
             logger.Error(ex, ex.Message);
-            
+
         }
         finally
         {
@@ -228,11 +239,11 @@
     void ShowUpdateTradingGroupDialog(string accountId)
     {
         formUpdateTradingGroup = new UpdateAccountTradingGroupModel
-            {
-                TraderId = TraderId,
-                AccountId = accountId,
-                TradingGroupToAssign = GridData.First(x => x.AccountId == accountId).TradingGroup,
-            };
+        {
+            TraderId = TraderId,
+            AccountId = accountId,
+            TradingGroupToAssign = GridData.First(x => x.AccountId == accountId).TradingGroup,
+        };
 
         this.isUpdateTradingGroupDialogVisible = true;
     }
@@ -294,7 +305,7 @@
             await MessageService.ErrorAsync("API Key is not valid");
             return;
         }
-        
+
         var newGroupValidatorErrorMessage = await accountNewTradingGroupValidator
             .ValidateAccountNewTradingGroup(formUpdateTradingGroup);
 
@@ -327,5 +338,27 @@
 
         await RefreshData();
         StateHasChanged();
+    }
+
+    private async void OpenActiveOrdersInNewTab(string accountId)
+    {
+        if (!String.IsNullOrEmpty(accountId))
+        {
+            string url = $"/Orders/ActivePositions/{accountId}";
+            string[] urlParams = { url, "_blank" };
+            CancellationToken token = new CancellationToken(false);
+            await jsRuntime.InvokeAsync<object>("open", token, urlParams);
+        }
+    }
+
+    private async void OpenClosedOrdersInNewTab(string accountId)
+    {
+        if (!String.IsNullOrEmpty(accountId))
+        {
+            string url = $"/Orders/ClosedPositions/{accountId}";
+            string[] urlParams = { url, "_blank" };
+            CancellationToken token = new CancellationToken(false);
+            await jsRuntime.InvokeAsync<object>("open", token, urlParams);
+        }
     }
 }

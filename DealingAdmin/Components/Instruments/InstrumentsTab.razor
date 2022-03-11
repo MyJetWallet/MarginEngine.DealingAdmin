@@ -20,6 +20,7 @@
 @inject ITradingInstrumentsRepository InstrumentsRepository
 @inject TradingInstrumentMyNoSqlRepository avatarRepository
 @inject InstrumentSourcesMapsMyNoSqlRepository sourcesMapsRepository
+@inject TradingInstrumentMyNoSqlRepository imagesMyNoSqlRepository
 @inject IDefaultValuesRepository defValuesRepository
 @inject ILiquidityProviderReader liquidityProviderReader
 @inject IDefaultLiquidityProviderWriter defLiquidityProviderWriter
@@ -67,6 +68,34 @@
                 TData="string"
                 Sortable
                 Filterable/>
+        <AntDesign.Column Title="Avatar"
+                TData="string"
+                Width="80">
+            <a @onclick="()=>ShowEditAvatarDialog(context)">
+                @if (dictAvatars[context.Id].ContainsKey(ImageTypes.SVG))
+                {
+                    <Image Preview="@false" 
+                        Src="@($"{FormatUtils.ImageSvgDataPrefix}{dictAvatars[context.Id][ImageTypes.SVG].Avatar}")"/>
+                }
+                else if (dictAvatars[context.Id].ContainsKey(ImageTypes.PNG))
+                {
+                    <Image Preview="@false" 
+                        Src="@($"{FormatUtils.ImagePngDataPrefix}{dictAvatars[context.Id][ImageTypes.PNG].Avatar}")"/>
+                }
+                else if (!String.IsNullOrEmpty(defaultAvatarSvgSrc))
+                {
+                    <Image Preview="@false" Src="@defaultAvatarSvgSrc"/>
+                }
+                else if (!String.IsNullOrEmpty(defaultAvatarPngSrc))
+                {
+                    <Image Preview="@false" Src="@defaultAvatarPngSrc"/>
+                }
+                else
+                {
+                    <div>Default</div>
+                }
+            </a>
+        </AntDesign.Column>
         <AntDesign.Column Title="Base"
                 DataIndex="Base" 
                 TData="string"
@@ -156,7 +185,6 @@
 
 <Modal Title="@instrumentEditLiquidityProviderTitle"
        Visible="@isEditLiquidityProvidertDialogVisible"
-       OkText="@("Save")"
        Footer=@null
        Closable=@false
        Width="320">
@@ -169,7 +197,7 @@
             ValueName="Value"
             Style="width:220px"
             DropdownMaxWidth="200"/>
-    <AntDesign.Row Class="center-middle p-3">
+    <AntDesign.Row Class="center-middle py-3">
         <Col Span="4">
         </Col>    
         <Col Span="10">
@@ -193,12 +221,69 @@
        OnOk="()=>SaveTradingDisable()"
        OnCancel="()=>CloseTradingDisableDialog()"
        Width="600">
-    <AntDesign.Row Class="center-middle" p-3>
+    <AntDesign.Row Class="center-middle" py-3>
         <Switch @bind-Value="@isTradingDisabled"></Switch><span class="px-3">Disable Trading</span>
     </AntDesign.Row>
     <AntDesign.Row Class="center-middle">
        <span class="px-2">API Key:</span><InputPassword @bind-Value="@disableTradingApiKey" />
     </AntDesign.Row>
+</Modal>
+
+<Modal Title="@avatarEditFormTitle"
+       Visible="@isEditAvatartDialogVisible"
+       Footer=@null
+       Closable=@false
+       Width="640">
+    <Card Title="Current Instrument Avatar" Class="my-2" Style="width: 600px;">
+        <Body>
+            <CardGrid Style="width:50%;text-align:center">
+                <div>Current SVG Avatar:</div>
+                @if (dictAvatars[editedInstrument.Id].ContainsKey(ImageTypes.SVG))
+                {
+                    <Image Preview="@false" Width="150px"
+                        Src="@($"{FormatUtils.ImageSvgDataPrefix}{dictAvatars[editedInstrument.Id][ImageTypes.SVG].Avatar}")"/>
+                }
+            </CardGrid>
+            <CardGrid Style="width:50%;text-align:center">
+                <div>Current PNG Avatar:</div>
+                @if (dictAvatars[editedInstrument.Id].ContainsKey(ImageTypes.PNG))
+                {
+                    <Image Preview="@false" Width="150px"
+                        Src="@($"{FormatUtils.ImagePngDataPrefix}{dictAvatars[editedInstrument.Id][ImageTypes.PNG].Avatar}")"/>
+                }
+            </CardGrid>
+            <CardGrid Style="width:100%;" Class="my-3">
+                <AntDesign.Row>
+                    <Col Span="18">
+                        <div>Pick an image (svg/png) for new avatar:</div>
+                        <InputFile AdditionalAttributes=@imageAcceptFilterDict OnChange="@ImageFileChanged"/>
+                    </Col>
+                    <Col Span="6">
+                        <AntDesign.Button Icon="upload"
+                            Type="primary"
+                            Class="btn-text"
+                            OnClick="@UploadAvatarImage"
+                            Disabled="@(imageFile == null)">
+                                <span>Upload</span>
+                        </AntDesign.Button>
+                    </Col>
+                </AntDesign.Row>
+            </CardGrid>
+            <CardGrid Style="width:100%;">
+                <AntDesign.Row>
+                </AntDesign.Row>
+                <AntDesign.Row>
+                    <Col Span="20">
+                    </Col>   
+                    <Col Span="4">
+                        <AntDesign.Button OnClick="CloseEditAvatarDialog" Class="btn-text">
+                            Close
+                        </AntDesign.Button>
+                    </Col>
+                </AntDesign.Row>
+            </CardGrid>
+        </Body>
+    </Card>
 </Modal>
 
 @code {
@@ -214,6 +299,7 @@
     private string tradingDisableDialogTitle;
     private bool isEditInstrumentDialogVisible;
     private bool isEditLiquidityProvidertDialogVisible;
+    private bool isEditAvatartDialogVisible;
     private bool isTradingDisableDialogVisible;
     private bool isTradingDisabled;
     private string disableTradingApiKey;
@@ -221,7 +307,20 @@
     private string defaultLpListItem;
     private List<InstrumentSourcesMapsMyNoSqlTableEntity> sourcesMapsList;
     private string instrumentEditLiquidityProviderTitle;
+    private string avatarEditFormTitle;
     private string editedLiquidityProviderId;
+
+    private Dictionary<string, Dictionary<ImageTypes, ITradingInstrumentsAvatar>> dictAvatars
+        = new Dictionary<string, Dictionary<ImageTypes, ITradingInstrumentsAvatar>>();
+
+    Dictionary<string, object> imageAcceptFilterDict = new Dictionary<string, object>()
+    {
+         { "accept", "image/png, image/svg+xml" }
+    };
+
+    string defaultAvatarSvgSrc;
+    string defaultAvatarPngSrc;
+    IBrowserFile imageFile;
 
     protected override async Task OnInitializedAsync()
     {
@@ -229,7 +328,7 @@
         instrumentGroups = (await GroupsRepository.GetAllAsync()).Select(InstrumentGroupModel.Create);
         swapProfiles = await SwapProfileWriter.GetAllAsync();
         await RefreshData();
-        await base.OnInitializedAsync();
+        await RefreshAvatars();
     }
 
     private async Task RefreshData()
@@ -260,6 +359,67 @@
         isLoading = false;
     }
 
+    private async Task RefreshAvatars()
+    {
+        isLoading = true;
+
+        var defaultAvatarSvg = await defValuesRepository.GetTradingInstrumentAvatarSvgAsync();
+        var defaulAvatarPng = await defValuesRepository.GetTradingInstrumentAvatarPngAsync();
+        defaultAvatarSvgSrc = $"{FormatUtils.ImageSvgDataPrefix}{defaultAvatarSvg}";        
+        defaultAvatarPngSrc = $"{FormatUtils.ImagePngDataPrefix}{defaulAvatarPng}";
+
+        dictAvatars = new Dictionary<string, Dictionary<ImageTypes, ITradingInstrumentsAvatar>>();
+
+        var instruments = await InstrumentsRepository.GetAllAsync();
+
+        foreach (var inst in instruments)
+        {
+            await InitAvatarById(inst.Id);
+        }
+
+        isLoading = false;
+    }
+
+    private async Task InitAvatarById(string instrumentId)
+    {
+        var avatarSvg = await imagesMyNoSqlRepository.GetInstrumentsAvatarAsync(instrumentId, ImageTypes.SVG);
+        var avatarPng = await imagesMyNoSqlRepository.GetInstrumentsAvatarAsync(instrumentId, ImageTypes.PNG);
+
+        dictAvatars.Add(instrumentId, new Dictionary<ImageTypes, ITradingInstrumentsAvatar>());
+
+        if (avatarSvg != null)
+        {
+            dictAvatars[instrumentId].Add(ImageTypes.SVG, avatarSvg);
+        }
+
+        if (avatarPng != null)
+        {
+            dictAvatars[instrumentId].Add(ImageTypes.PNG, avatarPng);
+        }
+    }
+
+    private async Task RefreshAvatarById(string instrumentId, ImageTypes imgType)
+    {
+        var avatar = await imagesMyNoSqlRepository.GetInstrumentsAvatarAsync(instrumentId, imgType);
+
+        if (!dictAvatars.ContainsKey(instrumentId))
+        {
+            dictAvatars.Add(instrumentId, new Dictionary<ImageTypes, ITradingInstrumentsAvatar>());
+        }
+
+        if (avatar != null)
+        {
+            if (dictAvatars[instrumentId].ContainsKey(imgType))
+            {
+                dictAvatars[instrumentId][imgType] = avatar;
+            }
+            else
+            {
+                dictAvatars[instrumentId].Add(imgType, avatar);
+            }
+        }
+    }
+
     private string GetLiquidityProviderIdForInstrument(string instrumentId)
     {
         var overwrittenProviderId = sourcesMapsList.FirstOrDefault(x => x.InstrumentId == instrumentId)?.SourceId;
@@ -285,6 +445,68 @@
         editedLiquidityProviderId = lpInstrument.DefaultLiquidityProvider ? String.Empty : lpInstrument.LiquidityProviderId;
         instrumentEditLiquidityProviderTitle = $"Update Liquidity Provider for '{lpInstrument.Name}'";
         isEditLiquidityProvidertDialogVisible = true;
+    }
+
+    private void ShowEditAvatarDialog(TradingInstrumentViewModel avatarInstrument)
+    {
+        editedInstrument = avatarInstrument;
+        isEditAvatartDialogVisible = true;
+    }
+
+    private void ImageFileChanged(InputFileChangeEventArgs e)
+    {
+        imageFile = e.File;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UploadAvatarImage()
+    {
+        try
+        {
+            var maxFileSizeInMb = 5;
+            var fileSizeInBytes = maxFileSizeInMb * 1024 * 1024;
+
+            if (imageFile == null)
+            {
+                snackbar.Add("Choose a file to upload", Severity.Warning);
+                return;
+            }
+
+            if (imageFile.Size > fileSizeInBytes)
+            {
+                snackbar.Add($"Max file size is {maxFileSizeInMb} MB", Severity.Warning);
+                return;
+            }
+
+            var fileExtension = imageFile.Name.Substring(imageFile.Name.LastIndexOf('.') + 1);
+
+            ImageTypes? imageType = fileExtension.ToLower() switch 
+            {
+                "svg" => ImageTypes.SVG,
+                "png" => ImageTypes.PNG,
+                _ => null
+            };
+
+            if (imageType == null)
+            {
+                snackbar.Add("File Extension is not svg/png", Severity.Warning);
+                return;
+            }
+
+            var imgArray = await CommonUtils.FileToBytesAsync(imageFile);
+            var avatarStr = Convert.ToBase64String(imgArray);
+
+            await imagesMyNoSqlRepository.UpdateAsync(editedInstrument.Id, avatarStr, imageType.Value);
+            snackbar.Add($"New {imageType.Value.ToString()} avatar for '{editedInstrument.Name}' saved", Severity.Success);
+            await RefreshAvatarById(editedInstrument.Id, imageType.Value);
+            StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Error during saving new avatar for '{editedInstrument.Name}': {ex.Message}", Severity.Error);
+        }
+
     }
 
     private async Task SaveLiquidityProvider()
@@ -381,48 +603,21 @@
         isEditInstrumentDialogVisible = true;
     }
 
-    private void ShowEditInstrumentDialog(TradingInstrumentViewModel instrument)
+    private void ShowEditInstrumentDialog(TradingInstrumentViewModel instr)
     {
-        instrumentEditFormTitle = $"Edit '{instrument.Name}' Instrument";
-        editedInstrument = instrument;
-        isTradingDisabled = instrument.TradingDisabled;
-        isEditInstrumentDialogVisible = true;
+        avatarEditFormTitle = $"Edit Avatar for '{instr.Name}'";
+        isEditAvatartDialogVisible = true;
+    }
+
+    private void CloseEditAvatarDialog()
+    {
+        isEditAvatartDialogVisible = false;        
     }
 
     private void CloseEditInstrumentDialog()
     {
         isEditInstrumentDialogVisible = false;
         editedInstrument = null;
-    }
-
-
-    private async Task<string> GetInstrumentAvatarSrc(string instumentId, ImageTypes imgType)
-    {
-        ITradingInstrumentsAvatar instrumentAvatar = null;
-        var avatarSrc = "";
-
-        try
-        {
-            instrumentAvatar = await avatarRepository.GetInstrumentsAvatarAsync(instumentId, imgType);
-            avatarSrc = instrumentAvatar.Avatar;
-        }
-        catch(Exception ex)
-        {
-            Console.WriteLine(ex);
-            logger.Warning(ex, ex.Message);
-            logger.Warning($"Can't read instrument avatar (ID:'{instumentId}') from repository");
-        }
-
-        if (instrumentAvatar == null)
-        {
-            avatarSrc = imgType == ImageTypes.SVG
-                ? await defValuesRepository.GetTradingInstrumentAvatarSvgAsync()
-                : await defValuesRepository.GetTradingInstrumentAvatarPngAsync();
-        }
-
-        return imgType == ImageTypes.SVG
-            ? $"{FormatUtils.ImageSvgDataPrefix}{avatarSrc}"
-            : $"{FormatUtils.ImagePngDataPrefix}{avatarSrc}";
     }
 
     private async void SaveInstrument()

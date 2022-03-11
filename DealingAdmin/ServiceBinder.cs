@@ -165,7 +165,6 @@ namespace DealingAdmin
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
             services.AddSingleton<IInstrumentSubGroupsRepository>(MyNoSqlServerFactory.CreateInstrumentSubGroupsMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
-
             services.AddSingleton(CommonMyNoSqlServerFactory.CreateTradingInstrumentMyNoSqlRepository(
                 () => settingsModel.DictionariesMyNoSqlServerWriter));
 

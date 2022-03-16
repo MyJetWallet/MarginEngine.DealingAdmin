@@ -6,7 +6,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="AntDesign" Version="0.10.4" />
+        <PackageReference Include="AntDesign" Version="0.10.5" />
         <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
 		<PackageReference Include="Flurl" Version="3.0.4" />
 		<PackageReference Include="Flurl.Http" Version="3.2.2" />

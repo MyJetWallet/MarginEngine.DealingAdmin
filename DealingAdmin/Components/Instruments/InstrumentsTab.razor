@@ -172,6 +172,7 @@
    
 <Modal Title="@instrumentEditFormTitle"
        Visible="@isEditInstrumentDialogVisible"
+       Closable=@false
        OkText="@("Save")"
        OnOk="()=>SaveInstrument()"
        OnCancel="()=>CloseEditInstrumentDialog()"
@@ -449,6 +450,7 @@
 
     private void ShowEditAvatarDialog(TradingInstrumentViewModel avatarInstrument)
     {
+        avatarEditFormTitle = $"Edit Avatar for '{avatarInstrument.Name}'";
         editedInstrument = avatarInstrument;
         isEditAvatartDialogVisible = true;
     }
@@ -605,7 +607,7 @@
 
     private void ShowEditInstrumentDialog(TradingInstrumentViewModel instr)
     {
-        avatarEditFormTitle = $"Edit Avatar for '{instr.Name}'";
+        instrumentEditFormTitle = $"Edit Instrument '{instr.Name}'";
         isEditInstrumentDialogVisible = true;
     }
 
@@ -617,7 +619,7 @@
     private void CloseEditInstrumentDialog()
     {
         isEditInstrumentDialogVisible = false;
-        editedInstrument = null;
+        // editedInstrument = null;
     }
 
     private async void SaveInstrument()

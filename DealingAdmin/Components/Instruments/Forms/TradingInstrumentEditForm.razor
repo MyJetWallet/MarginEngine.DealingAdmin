@@ -13,7 +13,7 @@
 <Form @ref="editForm"
         Model="Instrument" 
         ValidateOnChange="@true"
-        ValidateMode="@FormValidateMode.Rules"       
+        ValidateMode="@FormValidateMode.Rules"
         LabelColSpan="6"
         WrapperColSpan="18">
     <Validator>
@@ -82,10 +82,10 @@
  
 @code {
     [Parameter]
-    public TradingInstrumentModel Instrument { get; set; } = new();
+    public TradingInstrumentViewModel Instrument { get; set; } = new();
 
     [Parameter]
-    public EventCallback<TradingInstrumentModel> InstrumentChanged { get; set; }
+    public EventCallback<TradingInstrumentViewModel> InstrumentChanged { get; set; }
 
     [Parameter]
     public IEnumerable<ISwapProfile> SwapProfiles { get; set; }
@@ -96,7 +96,7 @@
     [Parameter]
     public IEnumerable<IInstrumentSubGroup> SubGroups { get; set; }
 
-    AntDesign.Form<TradingInstrumentModel> editForm;
+    AntDesign.Form<TradingInstrumentViewModel> editForm;
 
     private FormValidationRule[] RequiredRule = { new FormValidationRule { Required = true } };
     private FormValidationRule[] CrudApiKeyRule;
@@ -125,3 +125,4 @@
         await InstrumentChanged.InvokeAsync(Instrument);
     }
 }
+

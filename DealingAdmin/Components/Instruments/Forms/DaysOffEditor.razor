@@ -75,10 +75,10 @@
 
 @code {
     [Parameter]
-    public TradingInstrumentModel Instrument { get; set; } = new();
+    public TradingInstrumentViewModel Instrument { get; set; } = new();
 
     [Parameter]
-    public EventCallback<TradingInstrumentModel> InstrumentChanged { get; set; }
+    public EventCallback<TradingInstrumentViewModel> InstrumentChanged { get; set; }
 
     TradingInstrumentDayOffModel newItem = new TradingInstrumentDayOffModel();
     

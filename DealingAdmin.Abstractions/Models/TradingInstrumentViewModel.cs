@@ -7,7 +7,7 @@ namespace DealingAdmin.Abstractions.Models
     {
         public string LiquidityProviderId { get; set; }
 
-        public bool DefaultLiquidityProvider { get; set; }
+        public bool DefaultLiquidityProvider { get; set; } = true;
 
         public static TradingInstrumentViewModel Create(
             ITradingInstrument src,

@@ -375,6 +375,7 @@
 
     private void ShowEditInstrumentDialog(TradingInstrumentViewModel instr)
     {
+        editedInstrument = instr;
         instrumentEditFormTitle = $"Edit Instrument '{instr.Name}'";
         isEditInstrumentDialogVisible = true;
     }

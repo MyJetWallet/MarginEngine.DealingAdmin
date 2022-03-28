@@ -16,8 +16,8 @@ var settingsModel = SettingsReader.ReadSettings<SettingsModel>();
 // Add services to the container
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor()
-    .AddCircuitOptions(options => { options.DetailedErrors = true; });
+builder.Services.AddServerSideBlazor();
+//    .AddCircuitOptions(options => { options.DetailedErrors = true; });
 
 builder.Services.BindLogger(settingsModel);
 var serviceBusTcpClient = builder.Services.BindServiceBus(settingsModel);

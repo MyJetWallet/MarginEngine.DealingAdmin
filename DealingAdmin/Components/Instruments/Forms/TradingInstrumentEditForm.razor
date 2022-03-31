@@ -65,9 +65,14 @@
                 </SelectOptions>
             </Select>
         </FormItem>
-        <FormItem Label="Days Off">
-            <DaysOffEditor @bind-Instrument="@context"/>
-        </FormItem>
+        <AntDesign.Row Class="center-middle py-3">
+            <Col Span="6">
+                Days Off
+            </Col>
+            <Col Span="18">
+                 <DaysOffEditor @bind-Instrument="@context"/>
+            </Col>   
+        </AntDesign.Row>
         <FormItem Label="Day Timeout">
             <Input @bind-Value="@context.DayTimeout" TValue="int?" Placeholder="Day Timeout" />
         </FormItem>

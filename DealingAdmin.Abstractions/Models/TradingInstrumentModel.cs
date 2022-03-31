@@ -29,6 +29,7 @@ namespace DealingAdmin.Abstractions.Models
         public int? Weight { get; set; }
 
         public List<TradingInstrumentDayOffModel> DaysOff { get; set; }
+            = new List<TradingInstrumentDayOffModel>();
         
         public int? DayTimeout { get; set; }
         

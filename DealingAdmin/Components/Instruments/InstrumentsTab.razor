@@ -139,11 +139,11 @@
        OnOk="()=>SaveInstrument()"
        OnCancel="()=>CloseEditInstrumentDialog()"
        Width="900">
-    <TradingInstrumentEditForm
+    <TradingInstrumentEditForm @ref="editForm"
         Instrument="editedInstrument"
         InstrumentGroups="instrumentGroups" 
         SubGroups="instrumentSubGroups"
-        SwapProfiles="swapProfiles"/>   
+        SwapProfiles="swapProfiles" />   
 </Modal>
 
 <Modal Title="@instrumentEditLiquidityProviderTitle"
@@ -201,6 +201,7 @@
 
     private bool isLoading = false;
     private TradingInstrumentViewModel editedInstrument;
+    private TradingInstrumentEditForm editForm;
     private string instrumentEditFormTitle;
     private string tradingDisableDialogTitle;
     private bool isEditInstrumentDialogVisible;
@@ -213,6 +214,7 @@
     private List<InstrumentSourcesMapsMyNoSqlTableEntity> sourcesMapsList;
     private string instrumentEditLiquidityProviderTitle;
     private string editedLiquidityProviderId;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -390,6 +392,14 @@
     {
         try
         {
+            var isFormValid = editForm.ValidateEditForm();
+
+            if (!isFormValid)
+            {
+                snackbar.Add($"Edit Form for '{editedInstrument.Id}' is not valid", Severity.Warning);
+                return;
+            }
+
             await InstrumentsRepository.UpdateAsync(editedInstrument);
             isEditInstrumentDialogVisible = false;
             snackbar.Add($"Instrument '{editedInstrument.Id}' saved", Severity.Success);

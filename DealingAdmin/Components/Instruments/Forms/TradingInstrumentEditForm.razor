@@ -12,7 +12,7 @@
 
 <Form @ref="editForm"
         Model="Instrument" 
-        ValidateOnChange="@true"
+        ValidateOnChange="@false"
         ValidateMode="@FormValidateMode.Rules"
         LabelColSpan="6"
         WrapperColSpan="18">
@@ -120,14 +120,9 @@
         };
     }
 
-    public async Task UpdateEditedInstrument()
+    public bool ValidateEditForm()
     {
-        if (!editForm.Validate())
-        {
-            return;
-        }
-
-        await InstrumentChanged.InvokeAsync(Instrument);
+        return editForm.Validate();
     }
 }
 

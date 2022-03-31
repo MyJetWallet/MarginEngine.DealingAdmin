@@ -58,7 +58,7 @@ jobs:
     - name: Restart pod
       uses: Myjetwallet/kube-restart-pods@master
       env:
-        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA__MARGINTRADING_TEST }}
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
         NAMESPACE: simple-trading
         POD: dealing-admin
 

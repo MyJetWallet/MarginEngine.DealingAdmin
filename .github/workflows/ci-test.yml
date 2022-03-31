@@ -52,11 +52,16 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+    - name: decode kubeconfig
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
+        NAMESPACE: "simple-trading"
+      run: echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
     - name: change image name in deployment
       uses: azure/k8s-set-context@v2
       with:
         method: kubeconfig
-        kubeconfig: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
+        kubeconfig: /tmp/config
     - run: |
         kubectl config current-context
         kubectl get nodes

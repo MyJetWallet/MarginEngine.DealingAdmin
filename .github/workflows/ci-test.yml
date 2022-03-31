@@ -48,23 +48,37 @@ jobs:
         tags: latest
         add_git_labels: true
         build_args: app_version=dealing.admin-test:latest,app_compilation_date=${{ steps.current-time.outputs.formattedTime }}
-
   update_version_uat_kube:
     needs: build
     runs-on: ubuntu-latest
     steps:
     - name: change image name in deployment
-      uses: actions/checkout@v2
-      env:
-        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
-        NAMESPACE: "simple-trading"
+      uses: azure/k8s-set-context@v2
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
     - run: |
-        echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-        export KUBECONFIG=/tmp/config
         kubectl config current-context
         kubectl get nodes
         ls -la
         kubectl set image deployment/dealing-admin dealing-admin=${{ secrets.AZURE_CONTAINER_REGISTRY }}/margin/dealing.admin:${GITHUB_REF#refs/tags/} --namespace=${NAMESPACE} --record
+
+#   update_version_uat_kube:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: change image name in deployment
+#       uses: actions/checkout@v2
+#       env:
+#         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
+#         NAMESPACE: "simple-trading"
+#     - run: |
+#         echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+#         export KUBECONFIG=/tmp/config
+#         kubectl config current-context
+#         kubectl get nodes
+#         ls -la
+#         kubectl set image deployment/dealing-admin dealing-admin=${{ secrets.AZURE_CONTAINER_REGISTRY }}/margin/dealing.admin:${GITHUB_REF#refs/tags/} --namespace=${NAMESPACE} --record
 
 #   restart:
 #     runs-on: self-hosted

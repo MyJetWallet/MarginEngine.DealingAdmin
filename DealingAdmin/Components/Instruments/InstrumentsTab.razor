@@ -404,6 +404,7 @@
             isEditInstrumentDialogVisible = false;
             snackbar.Add($"Instrument '{editedInstrument.Id}' saved", Severity.Success);
             await RefreshData();
+            CloseEditInstrumentDialog();
         }
         catch(Exception ex)
         {

@@ -97,20 +97,16 @@
 
     private void ShowNewGroupDialog()
     {
-        Console.WriteLine(">>> InstrumentSubGroupsTab >>> ShowNewGroupDialog >>> START"); // REMOVE AFTER TEST !!!!
         subgroupEditFormTitle = "Add New SubGroup";
         editedSubGroup = new InstrumentSubGroupModel();
         isEditSubGroupDialogVisible = true;
-        Console.WriteLine(">>> InstrumentSubGroupsTab >>> ShowNewGroupDialog >>> END"); // REMOVE AFTER TEST !!!!
     }
 
     private void ShowEditGroupDialog(InstrumentSubGroupModel group)
     {
-        Console.WriteLine(">>> InstrumentSubGroupsTab >>> ShowEditGroupDialog >>> START"); // REMOVE AFTER TEST !!!!
         subgroupEditFormTitle = $"Edit '{group.Id}' Group";
         editedSubGroup = InstrumentSubGroupModel.Create(group);
         isEditSubGroupDialogVisible = true;
-        Console.WriteLine(">>> InstrumentSubGroupsTab >>> ShowEditGroupDialog >>> END"); // REMOVE AFTER TEST !!!!
     }
 
     private void CloseEditDialog()

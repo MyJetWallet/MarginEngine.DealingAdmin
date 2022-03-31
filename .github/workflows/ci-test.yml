@@ -49,17 +49,32 @@ jobs:
         add_git_labels: true
         build_args: app_version=dealing.admin-test:latest,app_compilation_date=${{ steps.current-time.outputs.formattedTime }}
 
-
-
-  restart:
-    runs-on: self-hosted
+  update_version_uat_kube:
     needs: build
+    runs-on: ubuntu-latest
     steps:
-    - name: Restart pod
-      uses: Myjetwallet/kube-restart-pods@master
+    - name: change image name in deployment
+      uses: actions/checkout@v2
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
-        NAMESPACE: simple-trading
-        POD: dealing-admin
+        NAMESPACE: "simple-trading"
+    - run: |
+        echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+        export KUBECONFIG=/tmp/config
+        kubectl config current-context
+        kubectl get nodes
+        ls -la
+        kubectl set image deployment/dealing-admin dealing-admin=${{ secrets.AZURE_CONTAINER_REGISTRY }}/margin/dealing.admin:${GITHUB_REF#refs/tags/} --namespace=${NAMESPACE} --record
+
+#   restart:
+#     runs-on: self-hosted
+#     needs: build
+#     steps:
+#     - name: Restart pod
+#       uses: Myjetwallet/kube-restart-pods@master
+#       env:
+#         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
+#         NAMESPACE: simple-trading
+#         POD: dealing-admin
 
 

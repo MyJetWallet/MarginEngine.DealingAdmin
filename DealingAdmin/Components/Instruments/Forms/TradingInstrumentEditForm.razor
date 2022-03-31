@@ -53,7 +53,7 @@
                 </SelectOptions>
             </Select>
         </FormItem>
-        <FormItem Label="Trading Group" Required Rules=@RequiredRule>
+        <FormItem Label="Trading Group" Required Rules=@RequiredRule >
              <Select @bind-Value="@Instrument.GroupId"
                     TItemValue="string"
                     TItem="string">
@@ -70,7 +70,7 @@
                 Days Off
             </Col>
             <Col Span="18">
-                 <DaysOffEditor @bind-Instrument="@context"/>
+                 <DaysOffEditor @bind-Instrument="@Instrument"/>
             </Col>   
         </AntDesign.Row>
         <FormItem Label="Day Timeout">

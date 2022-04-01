@@ -78,8 +78,10 @@ jobs:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
         NAMESPACE: "simple-trading"
     - run: |
-        echo "$KUBE_CONFIG_DATA"
-#        export KUBECONFIG=/tmp/config
+        echo "${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}" | base64 --decode > /tmp/config
+        export KUBECONFIG=/tmp/config
+        cat /tmp/config
+        echo $KUBECONFIG
  #       kubectl config current-context
  #       kubectl get nodes
   #      ls -la

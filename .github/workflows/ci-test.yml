@@ -80,7 +80,7 @@ jobs:
         kubectl config current-context
         kubectl get nodes
         ls -la
-        kubectl set image deployment/dealing-admin dealing-admin=${{ secrets.AZURE_CONTAINER_REGISTRY }}/margin/dealing.admin:${GITHUB_REF#refs/tags/} --namespace="simple-trading"
+        kubectl set image deployment/dealing-admin dealing-admin=${{ secrets.AZURE_CONTAINER_REGISTRY }}/margin/dealing.admin-test:latest --namespace="simple-trading"
 
 #   restart:
 #     runs-on: self-hosted

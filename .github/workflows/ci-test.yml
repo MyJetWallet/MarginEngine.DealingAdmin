@@ -75,17 +75,15 @@ jobs:
     - name: change image name in deployment
       uses: actions/checkout@v2
       env:
-        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}
         NAMESPACE: "simple-trading"
     - run: |
         echo "${{ secrets.KUBE_CONFIG_DATA_ST_UAT }}" | base64 --decode > /tmp/config
         export KUBECONFIG=/tmp/config
-        cat /tmp/config
-        echo $KUBECONFIG
- #       kubectl config current-context
- #       kubectl get nodes
-  #      ls -la
-  #      kubectl set image deployment/dealing-admin dealing-admin=${{ secrets.AZURE_CONTAINER_REGISTRY }}/margin/dealing.admin:${GITHUB_REF#refs/tags/} --namespace=${NAMESPACE} --record
+        kubectl config current-context
+        kubectl get nodes
+        echo $NAMESPACE
+        ls -la
+        kubectl set image deployment/dealing-admin dealing-admin=${{ secrets.AZURE_CONTAINER_REGISTRY }}/margin/dealing.admin:${GITHUB_REF#refs/tags/} --namespace=${NAMESPACE} --record
 
 #   restart:
 #     runs-on: self-hosted

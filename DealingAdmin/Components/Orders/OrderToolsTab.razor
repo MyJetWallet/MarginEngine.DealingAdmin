@@ -1,0 +1,122 @@
+﻿@using System.ComponentModel
+@using AntDesign.TableModels
+@using AntDesign
+@using DealingAdmin.Abstractions
+@using DealingAdmin.Abstractions.Models
+@using DealingAdmin.Services
+@using DealingAdmin.Shared.Services
+@using Serilog.Core
+@using SimpleTrading.Abstraction.Caches.ActiveOrders
+@using SimpleTrading.Abstraction.Trading.Settings
+@using SimpleTrading.Engine.Grpc.Contracts
+
+@inject StateManager AppState
+@inject LiveDemoServiceMapper LiveDemoServices
+@inject IAccountTypeFilter AccTypeFilter
+@inject IInstrumentsCache InstrumentsCache
+@inject AdminAppSettings appSettings
+@inject ISnackbar snackbar
+@inject Logger logger
+
+
+<div style="width:600px;">
+<Title Level="4">Close Order Manually:</Title>
+<Form @ref="closePositionForm"
+      Model="traderId"
+      ValidateOnChange="@true"
+      ValidateMode="@FormValidateMode.Rules"
+      LabelColSpan="6"
+      WrapperColSpan="12">
+    <Validator>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+    </Validator>
+    <ChildContent>
+        <FormItem Label="Trader Id" Required>
+            <AntDesign.Input @bind-Value="@traderId" />
+        </FormItem>
+        <FormItem Label="Account Id" Required>
+            <AntDesign.Input @bind-Value="@accountId" />
+        </FormItem>
+        <FormItem Label="Position Id" Required Rules=@RequiredNumberRule>
+            <AntDesign.InputNumber @bind-Value="@positionId" />
+        </FormItem>
+         <FormItem Label="API Key" Required>
+            <InputPassword @bind-Value="@closePositionToken" />
+        </FormItem>
+        <AntDesign.Row Class="center-middle p-3">
+            <Col Span="18">
+            </Col>    
+            <Col Span="6">
+                <AntDesign.Button Icon="send"
+                    OnClick="@ClosePosition"
+                    Type="@AntDesign.ButtonType.Primary"
+                    Class="btn-text"
+                    Disabled="@(String.IsNullOrEmpty(traderId) || String.IsNullOrEmpty(accountId) || positionId > 0 || String.IsNullOrEmpty(closePositionToken))">
+                    Close Position
+                </AntDesign.Button>
+            </Col>
+        </AntDesign.Row>
+    </ChildContent>
+</Form>
+</div>
+
+<style>
+.ant-table td {
+    padding: 5px 10px !important
+}
+</style>
+
+@code
+{
+    private string traderId;
+    private string accountId;
+    private long positionId;
+    private string closePositionToken;
+
+    AntDesign.Form<string> closePositionForm;
+    private FormValidationRule[] CrudApiKeyRule;
+    private FormValidationRule[] RequiredNumberRule = { new FormValidationRule { Required = true, Type = FormFieldType.Number } };
+
+    protected override async Task OnInitializedAsync()
+    {
+        CrudApiKeyRule = new FormValidationRule[]
+        {
+            new FormValidationRule
+            {
+                Required = true,
+                Type = FormFieldType.String,
+                OneOf = new string[] { appSettings.AdminCrudApiKey },
+                Message = "API Key is not valid"
+            }
+        };
+    }
+
+    private async void ClosePosition()
+    {
+        if (!closePositionForm.Validate())
+        {
+            snackbar.Add("Form is not valid", Severity.Error);
+            return;
+        }
+
+        if (closePositionToken != appSettings.AdminCrudApiKey)
+        {
+            snackbar.Add("Api Key is not valid", Severity.Error);
+            return;
+        }
+
+        var contract = new ClosePositionGrpcRequestContract
+        {
+            TraderId = traderId,
+            AccountId = accountId,
+            PositionId = positionId,
+            ProcessId = "Dealing-Admin-" + Guid.NewGuid(),
+            Reason = CloseReasonGrpc.AdminAction
+        };
+
+        var grpcResponse = await LiveDemoServices.GetContext(AppState.IsLive)
+            .EngineApi.ClosePositionAsync(contract);
+
+        snackbar.Add($"Close Position - API result: {grpcResponse.Result.ToString()}", Severity.Info);
+    }
+}

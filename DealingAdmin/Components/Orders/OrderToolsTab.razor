@@ -22,7 +22,7 @@
 <div style="width:600px;">
 <Title Level="4">Close Order Manually:</Title>
 <Form @ref="closePositionForm"
-      Model="traderId"
+      Model="closePositionToken"
       ValidateOnChange="@true"
       ValidateMode="@FormValidateMode.Rules"
       LabelColSpan="6"
@@ -47,11 +47,10 @@
             <Col Span="18">
             </Col>    
             <Col Span="6">
-                <AntDesign.Button Icon="send"
-                    OnClick="@ClosePosition"
-                    Type="@AntDesign.ButtonType.Primary"
-                    Class="btn-text"
-                    Disabled="@(String.IsNullOrEmpty(traderId) || String.IsNullOrEmpty(accountId) || positionId > 0 || String.IsNullOrEmpty(closePositionToken))">
+                <AntDesign.Button
+                        OnClick="@ClosePosition"
+                        Type="@AntDesign.ButtonType.Primary"
+                        Class="btn-text">
                     Close Position
                 </AntDesign.Button>
             </Col>
@@ -68,10 +67,10 @@
 
 @code
 {
-    private string traderId;
-    private string accountId;
+    private string traderId = "";
+    private string accountId = "";
     private long positionId;
-    private string closePositionToken;
+    private string closePositionToken = "";
 
     AntDesign.Form<string> closePositionForm;
     private FormValidationRule[] CrudApiKeyRule;
@@ -91,7 +90,7 @@
         };
     }
 
-    private async void ClosePosition()
+    private async Task ClosePosition()
     {
         if (!closePositionForm.Validate())
         {
@@ -105,18 +104,26 @@
             return;
         }
 
-        var contract = new ClosePositionGrpcRequestContract
+        try
         {
-            TraderId = traderId,
-            AccountId = accountId,
-            PositionId = positionId,
-            ProcessId = "Dealing-Admin-" + Guid.NewGuid(),
-            Reason = CloseReasonGrpc.AdminAction
-        };
+            var contract = new ClosePositionGrpcRequestContract
+                {
+                    TraderId = traderId,
+                    AccountId = accountId,
+                    PositionId = positionId,
+                    ProcessId = "Dealing-Admin-" + Guid.NewGuid(),
+                    Reason = CloseReasonGrpc.AdminAction
+                };
 
-        var grpcResponse = await LiveDemoServices.GetContext(AppState.IsLive)
-            .EngineApi.ClosePositionAsync(contract);
+            var grpcResponse = await LiveDemoServices.GetContext(AppState.IsLive)
+                .EngineApi.ClosePositionAsync(contract);
 
-        snackbar.Add($"Close Position - API result: {grpcResponse.Result.ToString()}", Severity.Info);
+            snackbar.Add($"Close Position - API result: {grpcResponse.Result.ToString()}", Severity.Info);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, ex.Message);
+            snackbar.Add($"Close Position Error: {ex.Message})", Severity.Error);
+        }
     }
 }

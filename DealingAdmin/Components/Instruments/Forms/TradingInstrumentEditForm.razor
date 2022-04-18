@@ -46,9 +46,9 @@
                     TItemValue="string"
                     TItem="string">
                 <SelectOptions>
-                    @foreach (var item in SwapProfiles)
+                    @foreach (var item in SwapProfiles.Where(x => x.InstrumentId == Instrument.Id))
                     {
-                        <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Id/>
+                        <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@($"[{item.Id}] Long:{item.Long} Short:{item.Short}")/>
                     }
                 </SelectOptions>
             </Select>

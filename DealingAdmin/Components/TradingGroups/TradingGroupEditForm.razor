@@ -66,7 +66,7 @@
                 <SelectOptions>
                     @foreach (var item in swapProfiles)
                     {
-                        <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@item.Id/>
+                        <SelectOption TItemValue="string" TItem="string" Value=@item.Id Label=@($"[{item.Id}]")/>
                     }
                 </SelectOptions>
             </Select>
@@ -112,7 +112,7 @@
         isNewGroup = String.IsNullOrEmpty(TradingGroup.Id);
         tradingProfiles = (await liveDemoServices.GetContext(AppState.IsLive)
             .TradingProfileRepository.GetAllAsync()).ToList();
-        swapProfiles = (await swapProfileWriter.GetAllAsync()).ToList();
+        swapProfiles = (await swapProfileWriter.GetAllAsync()).DistinctBy(x => x.Id).ToList();
 
         var markupProfileProps = (await liveDemoServices.GetContext(AppState.IsLive)
           .TradingGroupMarkupProfilePropertiesRepository.GetAllAsync()).ToList();

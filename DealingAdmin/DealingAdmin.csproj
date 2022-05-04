@@ -10,7 +10,7 @@
         <PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
 		<PackageReference Include="Flurl" Version="3.0.5" />
 		<PackageReference Include="Flurl.Http" Version="3.2.3" />
-		<PackageReference Include="MudBlazor" Version="6.0.9" />
+		<PackageReference Include="MudBlazor" Version="6.0.10" />
         <PackageReference Include="MyNoSqlServer.DataReader" Version="1.7.3" />
         <PackageReference Include="SimpleTrading.SettingsReader" Version="1.1.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />

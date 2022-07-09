@@ -9,7 +9,7 @@
 	<ItemGroup>
 		<!--<PackageReference Include="AutoMapper" Version="10.1.1" />
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />-->
-		<PackageReference Include="CsvHelper" Version="27.2.1" />
+		<PackageReference Include="CsvHelper" Version="28.0.0" />
 		<PackageReference Include="CsvHelper.Excel.Core" Version="27.2.1" />
 		<PackageReference Include="DotNetCoreDecorators" Version="1.0.21" />
 		<PackageReference Include="Grpc.Net.Client" Version="2.47.0" />
